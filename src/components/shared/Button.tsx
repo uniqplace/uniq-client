@@ -2,7 +2,7 @@ import React from 'react';
 import { Button as PrimeButton } from 'primereact/button';
 import type { ButtonProps } from 'primereact/button';
 
-interface SharedButtonProps extends ButtonProps {
+interface SharedButtonProps  extends ButtonProps {
   variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning';
   size?: 'small' | 'medium' | 'large';
 }
