@@ -7,7 +7,7 @@ interface SharedButtonProps  extends ButtonProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-const Button: React.FC<SharedButtonProps> = ({ 
+ const Button: React.FC<SharedButtonProps> = ({ 
   variant = 'primary', 
   size = 'medium',
   className = '',
