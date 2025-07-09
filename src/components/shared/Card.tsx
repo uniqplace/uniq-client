@@ -7,7 +7,7 @@ interface SharedCardProps {
   children: React.ReactNode;
   className?: string;
   header?: React.ReactNode;
-  footer?: React.ReactNode;
+  footer?: React.ReactNode;  
 }
 
 const Card: React.FC<SharedCardProps> = ({ 
