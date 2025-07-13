@@ -11,6 +11,7 @@ import './App.css'
 import { increment, decrement } from './store'
 import Marketplace from './pages/Marketplace'
 import Orders from './pages/Orders'
+import Register from './pages/Register'
 
 function Home() {
   const [count, setCount] = useState(0)
@@ -39,6 +40,7 @@ function App() {
           <Link to="/marketplace" className="text-blue-600 hover:text-blue-800">Marketplace</Link>
           <Link to="/orders" className="text-blue-600 hover:text-blue-800">Orders</Link>
           <Link to="/about" className="text-blue-600 hover:text-blue-800">About</Link>
+          <Link to="/register" className="text-blue-600 hover:text-blue-800">Register</Link>
         </div>
       </nav>
       <Routes>
@@ -46,6 +48,7 @@ function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/about" element={<About />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </div>
   )
