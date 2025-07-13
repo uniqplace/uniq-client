@@ -1,21 +1,11 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Card } from '../components/shared';
+import { useSelector } from 'react-redux';
 import ProductCard from '../features/marketplace/components/ProductCard';
-import { setSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
-import type { RootState, AppDispatch } from '../store';
+import type { RootState } from '../store';
 import type { Product } from '../types';
 
 const Marketplace: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const { products, loading, error } = useSelector((state: RootState) => state.marketplace);
-
-  const handleViewDetails = (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      dispatch(setSelectedProduct(product));
-    }
-  };
 
   const handleAddToCart = (productId: string) => {
     // TODO: Implement cart functionality
@@ -38,7 +28,6 @@ const Marketplace: React.FC = () => {
           <ProductCard
             key={product.id}
             product={product}
-            onViewDetails={handleViewDetails}
             onAddToCart={handleAddToCart}
           />
         ))}

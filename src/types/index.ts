@@ -6,15 +6,26 @@ export interface User {
   avatar?: string;
 }
 
+// Creator/Seller interface - represents the person selling the product
+export interface Creator {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+}
+
+// Updated Product interface to match backend structure
 export interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
   images: string[];
-  sellerId: string;
   category: string;
+  seller: Creator;  // Changed from sellerId to seller object
   status: 'active' | 'sold' | 'inactive';
+  condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';  // Added condition field
+  location: string;  // Added location field
+  tags: string[];   // Added tags field
   createdAt: Date;
   updatedAt: Date;
 }
