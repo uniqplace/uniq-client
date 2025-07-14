@@ -10,18 +10,18 @@ export interface User {
 export interface Creator {
   id: string;
   name: string;
-  avatarUrl?: string;
+  avatar?: string;
 }
 
 // Updated Product interface to match backend structure
 export interface Product {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   price: number;
   images: string[];
   category: string;
-  seller: Creator;  // Changed from sellerId to seller object
+  creator: Creator;  // Changed from sellerId to seller object
   status: 'active' | 'sold' | 'inactive';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';  // Added condition field
   location: string;  // Added location field

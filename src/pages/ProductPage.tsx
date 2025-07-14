@@ -4,22 +4,24 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, ImageGallery, CreatorCard, Payment } from '../components/shared';
+import { Button, ImageGallery, Payment, CreatorCard } from '../components/shared';
 import { fetchProduct } from '../features/marketplace/thunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
+
+
 
 const ProductPage: React.FC = () => {
   // Get product ID from URL parameters
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  
+
   // Get product data and loading states from Redux store
   const { selectedProduct, productLoading, productError } = useSelector(
     (state: RootState) => state.marketplace
   );
-  
+
   // Local state for payment modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
@@ -28,7 +30,6 @@ const ProductPage: React.FC = () => {
     if (id) {
       dispatch(fetchProduct(id));
     }
-    
     // Cleanup function - clear selected product when leaving page
     return () => {
       dispatch(clearSelectedProduct());
@@ -111,14 +112,20 @@ const ProductPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Back button */}
-      <div className="mb-6">
+      {/* Top row: Back button and Seller profile */}
+      <div className="flex flex-col lg:flex-row justify-between items-start mb-6 gap-4">
         <Button
           variant="secondary"
           onClick={handleBackToMarketplace}
           icon="pi pi-arrow-left"
           label="Back to Marketplace"
         />
+        {/* Seller profile at top right */}
+        {selectedProduct.creator ? (
+          <div className="w-full lg:w-auto">
+            <CreatorCard creator={selectedProduct.creator} />
+          </div>
+        ) : null}
       </div>
 
       {/* Main product content */}
@@ -195,12 +202,6 @@ const ProductPage: React.FC = () => {
             </div>
           )}
 
-          {/* Seller Information */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Seller</h3>
-            <CreatorCard creator={selectedProduct.seller} />
-          </div>
-
           {/* Buy Now Button */}
           <div className="pt-4">
             <Button
@@ -229,6 +230,7 @@ const ProductPage: React.FC = () => {
       />
     </div>
   );
+// ...existing code up to the first return block...
 };
 
 export default ProductPage;

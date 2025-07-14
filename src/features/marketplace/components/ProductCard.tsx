@@ -16,7 +16,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   // Navigate to product detail page when View Details is clicked
   const handleViewDetails = () => {
-    navigate(`/product/${product.id}`);
+    
+    navigate(`/product/${product._id}`);
   };
   return (
     <Card
@@ -40,7 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </button>
           {onAddToCart && (
             <button 
-              onClick={() => onAddToCart(product.id)}
+          onClick={() => onAddToCart(product._id)}
               className="p-button p-button-success"
             >
               Add to Cart

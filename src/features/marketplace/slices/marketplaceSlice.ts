@@ -59,13 +59,13 @@ const marketplaceSlice = createSlice({
       state.products.push(action.payload);
     },
     updateProduct: (state, action: PayloadAction<Product>) => {
-      const index = state.products.findIndex(p => p.id === action.payload.id);
+      const index = state.products.findIndex(p => p._id === action.payload._id);
       if (index !== -1) {
         state.products[index] = action.payload;
       }
     },
     removeProduct: (state, action: PayloadAction<string>) => {
-      state.products = state.products.filter(p => p.id !== action.payload);
+      state.products = state.products.filter(p => p._id !== action.payload);
     },
   },
   // Handle async action states
