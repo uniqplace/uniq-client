@@ -11,6 +11,7 @@ export interface Creator {
   id: string;
   name: string;
   avatar?: string;
+  followers: number; // Can be a number or an array of followers
 }
 
 // Updated Product interface to match backend structure
