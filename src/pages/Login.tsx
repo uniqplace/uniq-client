@@ -32,13 +32,18 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/');
       }
-    } catch (error: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Login Failed',
-        detail: error.response?.data?.message || 'Unknown error',
-        life: 4000,
-      });
+    } catch (error: unknown) {
+        const message =
+    axios.isAxiosError(error) && error.response?.data?.message
+      ? error.response.data.message
+      : 'Login failed';
+
+  toast.current?.show({
+    severity: 'error',
+    summary: 'Login Failed',
+    detail: message,
+    life: 4000,
+  });
     }
   };
 
