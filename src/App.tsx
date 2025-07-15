@@ -4,12 +4,9 @@ import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
 // import 'primeflex/primeflex.css'
 import './App.css'
-
 import Marketplace from './pages/Marketplace'
 import Orders from './pages/Orders'
-
 import ProductPage from './pages/ProductPage'
-=======
 import Register from './pages/Register'
 import Login from './pages/Login'
 import About from './pages/About'

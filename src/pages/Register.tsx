@@ -89,9 +89,11 @@ const Register: React.FC = () => {
 
 
         localStorage.setItem('user', JSON.stringify({
-          fullName: user.name,
+          id: user._id || user.id || null,
+          name: user.name,
           email: user.email,
-          avatar: user.avatar
+          avatar: user.avatar,
+          role: user.role // הוסף את השדה role
         }));
 
 
@@ -99,7 +101,8 @@ const Register: React.FC = () => {
           id: user._id || user.id || null,
           name: user.name,
           email: user.email,
-          avatar: user.avatar || null
+          avatar: user.avatar || null,
+          role: user.role || null // הוסף גם כאן
         }));
 
 

@@ -5,6 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +29,7 @@ const Login = () => {
       const res = await axios.post('/api/auth/login', { email, password });
 
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
+        Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/');
       }
@@ -48,6 +49,8 @@ const Login = () => {
   };
 
   const isInvalid = (val: string) => val.trim().length === 0;
+
+  const token = Cookies.get('token');
 
   return (
     <div className="flex justify-center mt-10">
