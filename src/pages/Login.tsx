@@ -5,6 +5,9 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../features/marketplace/slices/userSlice';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,15 +15,22 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
+  
     const savedEmail = localStorage.getItem('prefillEmail');
     const savedName = localStorage.getItem('prefillName');
+    const savedPassword = localStorage.getItem('prefillPassword');
+
     if (savedEmail) setEmail(savedEmail);
     if (savedName) setName(savedName);
+    if (savedPassword) setPassword(savedPassword);
+
 
     localStorage.removeItem('prefillEmail');
     localStorage.removeItem('prefillName');
+    localStorage.removeItem('prefillPassword');
   }, []);
 
   const handleLogin = async () => {
@@ -28,22 +38,31 @@ const Login = () => {
       const res = await axios.post('/api/auth/login', { email, password });
 
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
+
+        Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
+
+        dispatch(setUser({
+          id: res.data.user._id || res.data.user.id || null,
+          name: res.data.user.name,
+          email: res.data.user.email,
+          avatar: res.data.user.avatar || null
+        }));
+
         navigate('/');
       }
     } catch (error: unknown) {
-        const message =
-      axios.isAxiosError(error) && error.response?.data?.message
-      ? error.response.data.message
-      : 'Login failed';
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : 'Login failed';
 
-  toast.current?.show({
-    severity: 'error',
-    summary: 'Login Failed',
-    detail: message,
-    life: 4000,
-  });
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: message,
+        life: 4000,
+      });
     }
   };
 

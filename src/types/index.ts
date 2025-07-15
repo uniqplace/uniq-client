@@ -66,3 +66,10 @@ export interface Address {
   zipCode: string;
   country: string;
 }
+
+// FormData for registration/login forms
+export interface RegisterFormData {
+  fullName: string;
+  email: string;
+  password: string;
+}
