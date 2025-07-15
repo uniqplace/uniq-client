@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
@@ -11,6 +13,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
 import { useAddProductMutation } from '../slices/marketplaceApiSlice';
+
 interface ProductFormData {
   name: string;
   description: string;
@@ -18,32 +21,44 @@ interface ProductFormData {
   price: number;
   tags: string[];
   customizationOptions?: string;
-  status: 'active'|'sold'|'inactive';
+  status: 'active' | 'sold' | 'inactive';
 }
 
-interface Option {
-  label: string;
-  value: string;
-}
-
-const categories: Option[] = [
+const categories = [
   { label: 'Art', value: 'art' },
   { label: 'Jewelry', value: 'jewelry' },
   { label: 'Home Decor', value: 'home_decor' },
 ];
 
-const statusOptions: Option[] = [
+const statusOptions = [
   { label: 'Active', value: 'active' },
-  { label: 'Sold', value: 'Sold' },
+  { label: 'Sold', value: 'sold' },
   { label: 'Inactive', value: 'inactive' },
 ];
+
+const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
+  name: yup.string().required('Name is required').max(100),
+  description: yup.string().required('Description is required').max(1000),
+  category: yup.string().required('Category is required'),
+  price: yup.number().typeError('Price must be a number').required('Price is required').min(0, 'Price must be positive'),
+  tags: yup.array().of(yup.string().defined()).required(),
+  customizationOptions: yup.string().optional(),
+  status: yup.string().oneOf(['active', 'sold', 'inactive']).required(),
+});
 
 const ProductUploadForm: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [addProduct] = useAddProductMutation();
+  const [addProduct, { isLoading }] = useAddProductMutation();
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const {control,register,handleSubmit,formState: { errors },} = useForm<ProductFormData>({
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProductFormData>({
+    resolver: yupResolver(schema),
     defaultValues: {
       name: '',
       description: '',
@@ -55,81 +70,71 @@ const ProductUploadForm: React.FC = () => {
     },
   });
 
- const onSubmit = async (data: ProductFormData) => {
-  if (images.length === 0) {
-    setImageError('At least one image is required');
-    return;
-  }
-  const formData = new FormData();
-  formData.append('name', data.name);
-  formData.append('description', data.description);
-  formData.append('category', data.category);
-  formData.append('price', String(data.price));
-  data.tags.forEach(tag => formData.append('tags', tag));
-  if (data.customizationOptions) formData.append('customizationOptions', data.customizationOptions);
-  formData.append('status', data.status);
-  images.forEach((file) => formData.append('images', file));
+  const onSubmit = async (data: ProductFormData) => {
+    if (images.length === 0) {
+      setImageError('At least one image is required');
+      return;
+    }
 
-  try {
-    await addProduct(formData).unwrap();
-  } catch (error) {
-    setImageError('Failed to upload product. Please try again.');
-  }
-};
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((v) => formData.append(key, v));
+      } else {
+        formData.append(key, value);
+      }
+    });
 
-  const handleUploadImage = (e: FileUploadHandlerEvent) => {
+    images.forEach((file) => formData.append('images', file));
+
+    try {
+      await addProduct(formData).unwrap();
+    } catch {
+      setUploadError('Failed to upload product. Please try again.');
+    }
+  };
+
+  const handleUploadImage = useCallback((e: FileUploadHandlerEvent) => {
     const uploadedFiles = e.files as File[];
     setImages(uploadedFiles);
     if (uploadedFiles.length > 0) setImageError(null);
-  };
+  }, []);
+
+  const renderError = (fieldName: keyof ProductFormData) =>
+    errors[fieldName] ? <Message severity="error" text={errors[fieldName]?.message?.toString()} /> : null;
 
   return (
     <Card title="Upload New Product" className="p-4 w-full md:w-1/1 mx-auto">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div>
-          <InputText
-            {...register('name', { required: 'Name is required', maxLength: 100 })}
-            placeholder="Name"
-            className={errors.name ? 'p-invalid w-full' : 'w-full'}
-          />
-          {errors.name && <Message severity="error" text={errors.name.message} />}
+          <InputText {...register('name')} placeholder="Name" className={errors.name ? 'p-invalid w-full' : 'w-full'} />
+          {renderError('name')}
         </div>
 
         <div>
-          <InputTextarea
-            {...register('description', { required: 'Description is required', maxLength: 1000 })}
-            placeholder="Description"
-            rows={4}
-            className={errors.description ? 'p-invalid w-full' : 'w-full'}
-          />
-          {errors.description && <Message severity="error" text={errors.description.message} />}
+          <InputTextarea {...register('description')} placeholder="Description" rows={4} className={errors.description ? 'p-invalid w-full' : 'w-full'} />
+          {renderError('description')}
         </div>
 
         <div>
           <Controller
             name="category"
             control={control}
-            rules={{ required: 'Category is required' }}
             render={({ field }) => (
-              <Dropdown
-                {...field}
-                options={categories}
-                placeholder="Select Category"
-                className={errors.category ? 'p-invalid w-full' : 'w-full'}
-              />
+              <Dropdown {...field} options={categories} placeholder="Select Category" className={errors.category ? 'p-invalid w-full' : 'w-full'} />
             )}
           />
-          {errors.category && <Message severity="error" text={errors.category.message} />}
+          {renderError('category')}
         </div>
 
         <div>
           <Controller
             name="price"
             control={control}
-            rules={{ required: 'Price is required', min: { value: 0, message: 'Price must be positive' } }}
             render={({ field }) => (
               <InputNumber
-                {...field}
+                value={field.value}
+                onValueChange={(e) => field.onChange(e.value)}
                 placeholder="Price"
                 mode="currency"
                 currency="USD"
@@ -138,18 +143,14 @@ const ProductUploadForm: React.FC = () => {
               />
             )}
           />
-          {errors.price && <Message severity="error" text={errors.price.message} />}
+          {renderError('price')}
         </div>
 
         <Controller
           name="tags"
           control={control}
           render={({ field }) => (
-            <Chips
-              value={field.value}
-              onChange={e => field.onChange(e.value)}
-              placeholder="Tags"
-            />
+            <Chips value={field.value} onChange={(e) => field.onChange(e.value)} placeholder="Tags" />
           )}
         />
 
@@ -171,27 +172,18 @@ const ProductUploadForm: React.FC = () => {
           name="customizationOptions"
           control={control}
           render={({ field }) => (
-            <InputTextarea
-              {...field}
-              rows={2}
-              placeholder="Customization Options (Optional)"
-              className="w-full"
-            />
+            <InputTextarea {...field} rows={2} placeholder="Customization Options (Optional)" className="w-full" />
           )}
         />
 
         <Controller
           name="status"
           control={control}
-          render={({ field }) => (
-            <SelectButton
-              {...field}
-              options={statusOptions}
-            />
-          )}
+          render={({ field }) => <SelectButton {...field} options={statusOptions} />}
         />
 
-        <Button type="submit" label="Submit Product" icon="pi pi-check" className="w-fit self-end" />
+        <Button type="submit" label="Submit Product" icon="pi pi-check" className="w-fit self-end" loading={isLoading} />
+        {uploadError && <Message severity="error" text={uploadError} />}
       </form>
     </Card>
   );

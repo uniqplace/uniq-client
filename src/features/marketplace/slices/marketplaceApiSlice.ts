@@ -34,16 +34,10 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     addProduct: builder.mutation<Product, FormData>({
       query: (formData) => {
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NzM5OTE5MjJmYTEzOGUzMDRmMTcyNCIsImlhdCI6MTc1MjUwMDYxMywiZXhwIjoxNzUzMTA1NDEzfQ.W75iSr--dJzsZhJsqUONvhYmT0_DWL8I6A38VW3hTy8";
         return {
           url: '/api/products',
           method: 'POST',
           body: formData,
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : {},
         };
       },
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
