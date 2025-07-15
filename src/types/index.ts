@@ -40,6 +40,7 @@ export interface Address {
   country: string;
 }
 
+
 export interface Payment {
   id: string;
   orderId: string;
@@ -49,3 +50,14 @@ export interface Payment {
   transactionId?: string;
   createdAt: Date;
 } 
+
+// FormData for registration/login forms
+export type RoleType = 'customer' | 'manufacturer' | 'creator' | 'admin';
+
+export type RegisterFormData = {
+  fullName: string;
+  email: string;
+  password: string;
+  role: RoleType;
+};
+
