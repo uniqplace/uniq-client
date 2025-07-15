@@ -12,6 +12,11 @@ import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
 import { classNames } from 'primereact/utils';
 
+type FormData = {
+  fullName: string;
+  email: string;
+  password: string;
+};
 
 const schema = yup.object().shape({
   fullName: yup
@@ -42,7 +47,7 @@ const Register: React.FC = () => {
     handleSubmit,
     control,
     formState: { errors, isSubmitting }
-  } = useForm({
+  } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
       fullName: '',
@@ -52,7 +57,7 @@ const Register: React.FC = () => {
   });
 
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormData) => {
     try {
       const res = await axios.post('api/auth/register', {
         name: data.fullName,
