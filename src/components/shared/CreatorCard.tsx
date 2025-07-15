@@ -31,7 +31,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
       <span className="font-semibold text-sm text-gray-900">{creator.name}</span>
       <Link to={`/user/${creator.id}`} className="shrink-0 relative">
         <img
-          src={creator.avatar || defaultAvatar}
+          src={defaultAvatar}
           alt={`${creator.name}'s avatar`}
           className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-blue-400 transition"
           style={{ cursor: 'pointer' }}
