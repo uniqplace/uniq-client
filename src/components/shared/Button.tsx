@@ -35,12 +35,9 @@ const Button: React.FC<SharedButtonProps> = ({
     }
   };
 
-  // Convert our size prop to PrimeReact's expected size
-  const primeSize = size === 'medium' ? undefined : size;
 
   return (
     <PrimeButton
-      size={primeSize}
       className={`${getVariantClass()} ${getSizeClass()} ${className}`}
       {...props}
     />
