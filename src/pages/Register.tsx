@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm , Controller} from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +24,7 @@ const roleOptions: { label: string; value: RoleType }[] = [
 ];
 
 
+
 const schema = yup.object().shape({
   fullName: yup
     .string()
@@ -41,6 +42,7 @@ const schema = yup.object().shape({
     .matches(/[a-z]/, 'At least one lowercase letter')
     .matches(/[A-Z]/, 'At least one uppercase letter')
     .matches(/\d/, 'At least one number'),
+
   role: yup
     .string()
     .oneOf(['customer', 'manufacturer', 'creator', 'admin'], 'Role is required')
@@ -52,12 +54,14 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+
   const {
     register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting }
   } = useForm<RegisterFormData>({
+
     resolver: yupResolver(schema),
     defaultValues: {
       fullName: '',
@@ -68,6 +72,7 @@ const Register: React.FC = () => {
   });
 
   const onSubmit = async (data: any) => {
+
     try {
       const res = await axios.post('api/auth/register', {
         name: data.fullName,
@@ -97,6 +102,7 @@ const Register: React.FC = () => {
           avatar: user.avatar || null
         }));
 
+
         toast.current?.show({
           severity: 'success',
           summary: 'Registered',
@@ -104,9 +110,11 @@ const Register: React.FC = () => {
           life: 3000
         });
 
+
         navigate('/');
       } else {
         throw new Error("User data missing in response");
+
       }
     } catch (error: any) {
       toast.current?.show({
@@ -116,6 +124,7 @@ const Register: React.FC = () => {
       });
     }
   };
+
 
   // const handleLogout = () => {
   //   localStorage.removeItem('user');
@@ -142,6 +151,7 @@ const Register: React.FC = () => {
     }
   }, [dispatch]);
 
+
   return (
     <div className="flex justify-center mt-10">
       <Toast ref={toast} />
@@ -155,8 +165,10 @@ const Register: React.FC = () => {
               {...register('fullName')}
               className={errors.fullName ? 'p-invalid w-full' : 'w-full'}
             />
+
             {errors.fullName && <small className="text-red-500">{errors.fullName.message}</small>}
           </div>
+
           <div>
             <label htmlFor="email">Email</label>
             <InputText
@@ -166,8 +178,10 @@ const Register: React.FC = () => {
               className={errors.email ? 'p-invalid w-full' : 'w-full'}
               autoComplete="off"
             />
+
             {errors.email && <small className="text-red-500">{errors.email.message}</small>}
           </div>
+
           <Controller
             name="password"
             control={control}
@@ -181,6 +195,7 @@ const Register: React.FC = () => {
                   {...field}
                   className={classNames({ 'p-invalid': errors.password })}
                 />
+
                 {errors.password && <small className="text-red-500">{errors.password.message}</small>}
               </div>
             )}
@@ -204,6 +219,7 @@ const Register: React.FC = () => {
               </div>
             )}
           />
+
           <Button
             type="submit"
             label="Create Account"
