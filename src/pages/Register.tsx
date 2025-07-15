@@ -60,7 +60,7 @@ const Register: React.FC = () => {
         password: data.password
       });
 
-      if (res.data.success) {
+      if (res.data.success && res.data.user) {
         const user = res.data.user; 
         localStorage.setItem('user', JSON.stringify({
           fullName: user.name, 
@@ -74,6 +74,9 @@ const Register: React.FC = () => {
           life: 3000
         });
         navigate('/');
+      }
+      else {
+      throw new Error("User data missing in response");
       }
     } catch (error: any) {
       toast.current?.show({
