@@ -66,4 +66,13 @@ export const api = {
     }
     return response.json();
   },
+
+  // Fetch creators and manufacturers
+  getCreatorsAndManufacturers: async () => {
+    const response = await fetch(`${API_BASE_URL}/users/creators-and-manufacturers`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch creators and manufacturers');
+    }
+    return response.json();
+  },
 };

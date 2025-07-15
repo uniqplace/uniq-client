@@ -36,11 +36,30 @@ const Marketplace: React.FC = () => {
     }));
   };
 
+  if(loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-spinner pi-spin text-4xl text-blue-500 mb-4"></i>
+          <p className="text-gray-600">Loading marketplace...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if(error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+          <p className="text-gray-600">Error loading marketplace: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-    {loading && <div>Loading...</div>}
-    {error && <div>Error: {error}</div>}
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
       {/* Search/Filter Form */}

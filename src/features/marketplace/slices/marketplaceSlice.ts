@@ -104,11 +104,9 @@ const marketplaceSlice = createSlice({
     builder
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
         // action.payload is array of users { id, name, avatar }
-        console.log(action.payload);
-
-        const creatorOptions = action.payload.map((user: { id: string; name: string; avatar?: string }) => ({
+        const creatorOptions = action.payload.map((user: { _id: string; name: string; avatar?: string }) => ({
           label: user.name,
-          value: user.id,
+          value: user._id,
           avatar: user.avatar
         }));
         state.creators = [{ label: 'All', value: '' }, ...creatorOptions];

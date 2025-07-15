@@ -50,11 +50,7 @@ export const fetchCreatorsAndManufacturers = createAsyncThunk(
   'marketplace/fetchCreatorsAndManufacturers',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/users/creators-and-manufacturers');
-      if (!response.ok) {
-        throw new Error('Failed to fetch creators and manufacturers');
-      }
-      const users = await response.json();
+      const users = await api.getCreatorsAndManufacturers();
       return users;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch creators and manufacturers');
