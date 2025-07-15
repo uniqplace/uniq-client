@@ -46,7 +46,7 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, productTitle, pric
         {productTitle && (
           <div className="bg-gray-50 p-4 rounded-lg mb-4">
             <p className="font-medium">{productTitle}</p>
-            {price && (
+            {price && typeof price === 'number' && (
               <p className="text-lg font-bold text-green-600">${price.toFixed(2)}</p>
             )}
           </div>
