@@ -32,18 +32,26 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
           : [{ type: 'Product', id: 'LIST' }],
     }),
 
-    addProduct: builder.mutation<Product, Partial<Product>>({
-      query: (newProduct) => ({
-        url: '/api/product',
-        method: 'POST',
-        body: newProduct,
-      }),
+    addProduct: builder.mutation<Product, FormData>({
+      query: (formData) => {
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NzM5OTE5MjJmYTEzOGUzMDRmMTcyNCIsImlhdCI6MTc1MjUwMDYxMywiZXhwIjoxNzUzMTA1NDEzfQ.W75iSr--dJzsZhJsqUONvhYmT0_DWL8I6A38VW3hTy8";
+        return {
+          url: '/api/products',
+          method: 'POST',
+          body: formData,
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {},
+        };
+      },
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
       query: (updatedProduct) => ({
-        url: `/api/product/${updatedProduct.id}`,
+        url: `/api/products/${updatedProduct.id}`,
         method: 'PUT',
         body: updatedProduct,
       }),
@@ -55,7 +63,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     deleteProduct: builder.mutation<void, string>({
       query: (productId) => ({
-        url: `/api/product/${productId}`,
+        url: `/api/products/${productId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, id) => [
@@ -65,7 +73,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     }),
 
     getProductById: builder.query<Product, string>({
-      query: (id) => `/api/product/${id}`,
+      query: (id) => `/api/products/${id}`,
       providesTags: (result, error, id) => [{ type: 'Product', id }],
     }),
   }),

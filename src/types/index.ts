@@ -11,7 +11,7 @@ export interface Product {
   title: string;
   description: string;
   price: number;
-  images: string[];
+  images: File[];
   sellerId: string;
   category: string;
   status: 'active' | 'sold' | 'inactive';
