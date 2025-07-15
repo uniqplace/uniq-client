@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import { Button } from 'primereact/button'
 import { useSelector, useDispatch } from 'react-redux'
-import React, { useState } from 'react';
 import type { RootState, AppDispatch } from './store'
 import 'primereact/resources/themes/lara-light-blue/theme.css'
 import 'primereact/resources/primereact.min.css'

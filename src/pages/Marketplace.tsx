@@ -37,7 +37,6 @@ const Marketplace: React.FC = () => {
       <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {products.map((product: Product) => (
-          console.log(product._id),
           <ProductCard
             key={product._id}
             product={product}

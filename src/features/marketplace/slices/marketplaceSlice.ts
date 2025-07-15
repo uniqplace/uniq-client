@@ -62,6 +62,8 @@ const marketplaceSlice = createSlice({
       const index = state.products.findIndex(p => p._id === action.payload._id);
       if (index !== -1) {
         state.products[index] = action.payload;
+      } else {
+        console.warn(`Product with _id=${action.payload._id} not found in store.`);
       }
     },
     removeProduct: (state, action: PayloadAction<string>) => {
@@ -104,8 +106,6 @@ const marketplaceSlice = createSlice({
 
 export const {
   setProducts,
-  setLoading,
-  setError,
   setSelectedProduct,
   clearSelectedProduct,
   updateFilters,

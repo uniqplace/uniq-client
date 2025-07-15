@@ -12,32 +12,29 @@ interface ApiResponse<T> {
   message?: string;
 }
 
+// Centralized API error handler
+function handleError(status: number, message?: string) {
+  if (status === 401) {
+    // e.g. redirect to login in the future
+  }
+  console.error(`API error ${status}: ${message}`);
+}
+
+// Reusable GET helper
+async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    handleError(response.status, errorText);
+    throw new Error(`Error ${response.status}: ${errorText}`);
+  }
+  const json = await response.json();
+  return json;
+}
+
 // API service object with all endpoint methods
 export const api = {
-  // Fetch all products from marketplace
-  getProducts: async (): Promise<ApiResponse<Product[]>> => {
-    const response = await fetch(`${API_BASE_URL}/products`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  },
-
-  // Fetch single product by ID - used for product detail page
-  getProduct: async (id: string): Promise<ApiResponse<Product>> => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  },
-
-  // Fetch user/creator profile by ID (for future use)
-  getUser: async (id: string): Promise<ApiResponse<User>> => {
-    const response = await fetch(`${API_BASE_URL}/users/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  }
+  getProducts: () => get<Product[]>('/products'),
+  getProduct: (id: string) => get<Product>(`/products/${id}`),
+  getUser: (id: string) => get<User>(`/users/${id}`),
 };

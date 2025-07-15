@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, ImageGallery, Payment, CreatorCard } from '../components/shared';
+import { getStatusColor, getConditionColor } from '../utils/product';
 import { fetchProduct } from '../features/marketplace/thunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
@@ -88,27 +89,8 @@ const ProductPage: React.FC = () => {
     );
   }
 
-  // Helper function to get status badge color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'sold': return 'bg-red-100 text-red-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  // Helper function to get condition badge color
-  const getConditionColor = (condition: string) => {
-    switch (condition) {
-      case 'new': return 'bg-blue-100 text-blue-800';
-      case 'like_new': return 'bg-green-100 text-green-800';
-      case 'good': return 'bg-yellow-100 text-yellow-800';
-      case 'fair': return 'bg-orange-100 text-orange-800';
-      case 'poor': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const formattedPrice = `$${selectedProduct.price.toFixed(2)}`;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -147,7 +129,7 @@ const ProductPage: React.FC = () => {
             </h1>
             <div className="flex items-center space-x-4 mb-4">
               <span className="text-3xl font-bold text-green-600">
-                ${selectedProduct.price.toFixed(2)}
+                {formattedPrice}
               </span>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedProduct.status)}`}>
                 {selectedProduct.status.toUpperCase()}
@@ -213,7 +195,7 @@ const ProductPage: React.FC = () => {
               icon="pi pi-shopping-cart"
             >
               {selectedProduct.status === 'active' 
-                ? `Buy Now - $${selectedProduct.price.toFixed(2)}`
+                ? `Buy Now - ${formattedPrice}`
                 : 'Not Available'
               }
             </Button>
