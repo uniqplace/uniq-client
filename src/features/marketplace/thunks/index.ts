@@ -2,7 +2,7 @@
 // This file makes it easy to import thunks from a single location
 
 export { 
-  fetchProducts, 
-  fetchProduct,
-  fetchCreatorsAndManufacturers
+  fetchProducts,
+  fetchCreatorsAndManufacturers,
+  fetchProduct, 
 } from './marketplaceThunks';

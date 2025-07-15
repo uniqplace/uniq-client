@@ -8,6 +8,8 @@ interface MarketplaceState {
   loading: boolean;
   error: string | null;
   selectedProduct: Product | null;
+  productLoading: boolean;  // Separate loading state for single product
+  productError: string | null;  // Separate error state for single product
   filters: {
     category: string;
     creator: string;
@@ -23,6 +25,8 @@ const initialState: MarketplaceState = {
   loading: false,
   error: null,
   selectedProduct: null,
+  productLoading: false,
+  productError: null,
   filters: {
     creator: '',
     category: '',
@@ -37,6 +41,7 @@ const marketplaceSlice = createSlice({
   name: 'marketplace',
   initialState,
   reducers: {
+    // Manual setters for when we have data from other sources
     setProducts: (state, action: PayloadAction<Product[]>) => {
       state.products = action.payload;
     },
@@ -49,6 +54,11 @@ const marketplaceSlice = createSlice({
     setSelectedProduct: (state, action: PayloadAction<Product | null>) => {
       state.selectedProduct = action.payload;
     },
+    // Clear selected product when navigating away
+    clearSelectedProduct: (state) => {
+      state.selectedProduct = null;
+      state.productError = null;
+    },
     updateFilters: (state, action: PayloadAction<Partial<MarketplaceState['filters']>>) => {
       state.filters = { ...state.filters, ...action.payload };
     },
@@ -56,13 +66,15 @@ const marketplaceSlice = createSlice({
       state.products.push(action.payload);
     },
     updateProduct: (state, action: PayloadAction<Product>) => {
-      const index = state.products.findIndex(p => p.id === action.payload.id);
+      const index = state.products.findIndex(p => p._id === action.payload._id);
       if (index !== -1) {
         state.products[index] = action.payload;
+      } else {
+        console.warn(`Product with _id=${action.payload._id} not found in store.`);
       }
     },
     removeProduct: (state, action: PayloadAction<string>) => {
-      state.products = state.products.filter(p => p.id !== action.payload);
+      state.products = state.products.filter(p => p._id !== action.payload);
     },
     setCreators: (state, action: PayloadAction<Array<{ label: string; value: string; avatar?: string }>>) => {
       state.creators = action.payload;
@@ -121,9 +133,8 @@ const marketplaceSlice = createSlice({
 
 export const {
   setProducts,
-  setLoading,
-  setError,
   setSelectedProduct,
+  clearSelectedProduct,
   updateFilters,
   addProduct,
   updateProduct,

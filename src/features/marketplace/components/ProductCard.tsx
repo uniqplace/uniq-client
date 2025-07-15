@@ -1,18 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../../../components/shared';
 import type { Product } from '../../../types';
 
 interface ProductCardProps {
   product: Product;
-  onViewDetails: (productId: string) => void;
   onAddToCart?: (productId: string) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ 
   product, 
-  onViewDetails, 
   onAddToCart 
 }) => {
+  const navigate = useNavigate();
+
+  // Navigate to product detail page when View Details is clicked
+  const handleViewDetails = () => {
+    
+    navigate(`/product/${product._id}`);
+  };
   return (
     <Card
       title={product.title}
@@ -28,14 +34,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
       footer={
         <div className="flex gap-2">
           <button 
-            onClick={() => onViewDetails(product.id)}
+            onClick={handleViewDetails}
             className="p-button p-button-outlined"
           >
             View Details
           </button>
           {onAddToCart && (
             <button 
-              onClick={() => onAddToCart(product.id)}
+          onClick={() => onAddToCart(product._id)}
               className="p-button p-button-success"
             >
               Add to Cart

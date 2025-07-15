@@ -1,6 +1,18 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/api';
 
+// Shared async thunk helper for API calls
+async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: any) => any, fallbackMsg: string, postProcess?: (data: any) => T): Promise<T | ReturnType<typeof rejectWithValue>> {
+  try {
+    const response = await fn();
+    const data = response.data;
+    return postProcess ? postProcess(data) : data;
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : fallbackMsg);
+  }
+}
+
+// Async thunk for fetching products
 export const fetchProducts = createAsyncThunk(
   'marketplace/fetchProducts',
   async (params: {
@@ -20,7 +32,7 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
-// Async thunk for fetching single product by ID - used in product detail page
+// Async thunk for fetching single product by ID
 export const fetchProduct = createAsyncThunk(
   'marketplace/fetchProduct',
   async (productId: string, { rejectWithValue }) => {
@@ -33,6 +45,7 @@ export const fetchProduct = createAsyncThunk(
   }
 );
 
+// Async thunk for fetching creators and manufacturers
 export const fetchCreatorsAndManufacturers = createAsyncThunk(
   'marketplace/fetchCreatorsAndManufacturers',
   async (_, { rejectWithValue }) => {

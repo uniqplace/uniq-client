@@ -17,7 +17,7 @@ const Marketplace: React.FC = () => {
   // Fetch creators and manufacturers on mount
   useEffect(() => {
     dispatch(fetchCreatorsAndManufacturers());
-  }, [dispatch]);
+  }, []);
   // Fetch first page of products on mount
   React.useEffect(() => {
     dispatch(fetchProducts({
