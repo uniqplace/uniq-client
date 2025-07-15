@@ -34,7 +34,7 @@ const Login = () => {
       }
     } catch (error: unknown) {
         const message =
-    axios.isAxiosError(error) && error.response?.data?.message
+      axios.isAxiosError(error) && error.response?.data?.message
       ? error.response.data.message
       : 'Login failed';
 
