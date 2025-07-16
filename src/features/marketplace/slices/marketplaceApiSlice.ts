@@ -8,49 +8,54 @@ export interface GetProductsQueryParams {
   minPrice?: number;
   maxPrice?: number;
   searchTerm?: string;
-  // Add pagination, sorting, etc. as needed
+  // ניתן להרחיב בעתיד: pagination, sorting וכו'
 }
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], GetProductsQueryParams>({
-      query: (params) => ({
-        url: '/api/products',
-        params: {
-          category: params.category || undefined,
-          minPrice: params.minPrice || undefined,
-          maxPrice: params.maxPrice || undefined,
-          q: params.searchTerm || undefined,
-        },
-      }),
+      query: (params) => {
+        const cleanParams = Object.fromEntries(
+          Object.entries({
+            category: params.category,
+            minPrice: params.minPrice,
+            maxPrice: params.maxPrice,
+            q: params.searchTerm,
+          }).filter(([_, value]) => value !== undefined)
+        );
+
+        return {
+          url: '/api/products',
+          params: cleanParams,
+        };
+      },
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: 'Product' as const, id })),
+              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
               { type: 'Product', id: 'LIST' },
             ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
 
     addProduct: builder.mutation<Product, FormData>({
-      query: (formData) => {
-        return {
-          url: '/api/products',
-          method: 'POST',
-          body: formData,
-        };
-      },
+      query: (formData) => ({
+        
+        url: '/api/products',
+        method: 'POST',
+        body: formData,
+      }),
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
       query: (updatedProduct) => ({
-        url: `/api/products/${updatedProduct.id}`,
+        url: `/api/products/${updatedProduct._id}`,
         method: 'PUT',
         body: updatedProduct,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: 'Product', id },
+      invalidatesTags: (result, error, { _id }) => [
+        { type: 'Product', id: _id },
         { type: 'Product', id: 'LIST' },
       ],
     }),
@@ -81,5 +86,3 @@ export const {
   useDeleteProductMutation,
   useGetProductByIdQuery,
 } = marketplaceApiSlice;
-
-export default marketplaceApiSlice;

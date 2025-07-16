@@ -1,21 +1,23 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Card } from '../components/shared';
+import { useSelector } from 'react-redux';
 import ProductCard from '../features/marketplace/components/ProductCard';
-import { setSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
-import type { RootState, AppDispatch } from '../store';
+import type { RootState } from '../store';
 import type { Product } from '../types';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../store';
+import { fetchProducts } from '../features/marketplace/thunks';
+
 
 const Marketplace: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch: AppDispatch = useDispatch();
   const { products, loading, error } = useSelector((state: RootState) => state.marketplace);
 
-  const handleViewDetails = (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      dispatch(setSelectedProduct(product));
-    }
-  };
+  // Fetch products on mount
+  useEffect(() => {
+    dispatch(fetchProducts());
+    
+  }, [dispatch]);
 
   const handleAddToCart = (productId: string) => {
     // TODO: Implement cart functionality
@@ -36,9 +38,8 @@ const Marketplace: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {products.map((product: Product) => (
           <ProductCard
-            key={product.id}
+            key={product._id}
             product={product}
-            onViewDetails={handleViewDetails}
             onAddToCart={handleAddToCart}
           />
         ))}

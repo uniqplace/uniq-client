@@ -15,13 +15,15 @@ import { Message } from 'primereact/message';
 import { useAddProductMutation } from '../slices/marketplaceApiSlice';
 
 interface ProductFormData {
-  name: string;
+  title: string;
   description: string;
   category: string;
   price: number;
   tags: string[];
   customizationOptions?: string;
   status: 'active' | 'sold' | 'inactive';
+  condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
+  location: string;
 }
 
 const categories = [
@@ -36,14 +38,24 @@ const statusOptions = [
   { label: 'Inactive', value: 'inactive' },
 ];
 
+const conditionOptions = [
+  { label: 'New', value: 'new' },
+  { label: 'Like New', value: 'like_new' },
+  { label: 'Good', value: 'good' },
+  { label: 'Fair', value: 'fair' },
+  { label: 'Poor', value: 'poor' },
+];
+
 const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
-  name: yup.string().required('Name is required').max(100),
+  title: yup.string().required('Title is required').max(100),
   description: yup.string().required('Description is required').max(1000),
   category: yup.string().required('Category is required'),
   price: yup.number().typeError('Price must be a number').required('Price is required').min(0, 'Price must be positive'),
   tags: yup.array().of(yup.string().defined()).required(),
   customizationOptions: yup.string().optional(),
   status: yup.string().oneOf(['active', 'sold', 'inactive']).required(),
+  condition: yup.string().oneOf(['new', 'like_new', 'good', 'fair', 'poor']).required(),
+  location: yup.string().required('Location is required'),
 });
 
 const ProductUploadForm: React.FC = () => {
@@ -55,18 +67,21 @@ const ProductUploadForm: React.FC = () => {
   const {
     control,
     register,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: '',
+      title: '',
       description: '',
       category: '',
       price: 0,
       tags: [],
       customizationOptions: '',
       status: 'active',
+      condition: 'new',
+      location: '',
     },
   });
 
@@ -89,6 +104,10 @@ const ProductUploadForm: React.FC = () => {
 
     try {
       await addProduct(formData).unwrap();
+      reset();
+      setImages([]);
+      setImageError(null);
+      setUploadError(null);
     } catch {
       setUploadError('Failed to upload product. Please try again.');
     }
@@ -107,8 +126,8 @@ const ProductUploadForm: React.FC = () => {
     <Card title="Upload New Product" className="p-4 w-full md:w-1/1 mx-auto">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div>
-          <InputText {...register('name')} placeholder="Name" className={errors.name ? 'p-invalid w-full' : 'w-full'} />
-          {renderError('name')}
+          <InputText {...register('title')} placeholder="Title" className={errors.title ? 'p-invalid w-full' : 'w-full'} />
+          {renderError('title')}
         </div>
 
         <div>
@@ -181,6 +200,20 @@ const ProductUploadForm: React.FC = () => {
           control={control}
           render={({ field }) => <SelectButton {...field} options={statusOptions} />}
         />
+
+        <Controller
+          name="condition"
+          control={control}
+          render={({ field }) => (
+            <Dropdown {...field} options={conditionOptions} placeholder="Condition" className={errors.condition ? 'p-invalid w-full' : 'w-full'} />
+          )}
+        />
+        {renderError('condition')}
+
+        <div>
+          <InputText {...register('location')} placeholder="Location" className={errors.location ? 'p-invalid w-full' : 'w-full'} />
+          {renderError('location')}
+        </div>
 
         <Button type="submit" label="Submit Product" icon="pi pi-check" className="w-fit self-end" loading={isLoading} />
         {uploadError && <Message severity="error" text={uploadError} />}
