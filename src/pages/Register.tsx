@@ -62,9 +62,11 @@ const Register: React.FC = () => {
     }
   });
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const res = await axios.post('api/auth/register', {
+      const res = await axios.post(`${API_BASE_URL}/auth/register`, {
         name: data.fullName,
         email: data.email,
         password: data.password,

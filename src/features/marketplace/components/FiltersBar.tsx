@@ -11,6 +11,7 @@ import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 
+
 const categories = [
     { label: 'All', value: '' },
     { label: 'Clothes', value: 'clothes' },
