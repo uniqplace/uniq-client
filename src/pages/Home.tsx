@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Button } from 'primereact/button'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
@@ -17,7 +18,7 @@ function Home() {
   
   const getInitialRole = (role: string | null | undefined): RoleType => {
     const allowed: RoleType[] = ['customer', 'manufacturer', 'creator', 'admin'];
-    return allowed.includes(role as RoleType) ? (role as RoleType) : 'customer';
+    return allowed.find(r => r === role) ?? 'customer';
   };
 
   const handleRoleUpdated = (updatedUser: any) => {
