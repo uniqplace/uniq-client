@@ -1,7 +1,8 @@
+
 // API Service Layer - handles all HTTP requests to the backend
 // This centralizes all API calls and makes them reusable across components
 
-import type { Product, User } from '../types';
+import type { Product } from '../types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -10,6 +11,7 @@ interface ApiResponse<T> {
   success: boolean;
   data: T;
   message?: string;
+  totalPages?: number; // Optional for paginated responses
 }
 
 // Centralized API error handler
@@ -32,9 +34,35 @@ async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
   return json;
 }
 
-// API service object with all endpoint methods
 export const api = {
-  getProducts: () => get<Product[]>('/products'),
-  getProduct: (id: string) => get<Product>(`/products/${id}`),
-  getUser: (id: string) => get<User>(`/users/${id}`),
+  // Fetch products with filters and pagination
+  getProducts: async (params: {
+    q?: string;
+    category?: string;
+    creator?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+  } = {}): Promise<ApiResponse<{ data: Product[]; totalPages: number }>> => {
+    const query = new URLSearchParams();
+    if (params.q) query.append('q', params.q);
+    if (params.category) query.append('category', params.category);
+    if (params.creator) query.append('creator', params.creator);
+    if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
+    if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());
+    if (params.page) query.append('page', params.page.toString());
+
+    // Use generic get helper
+    return await get<{ data: Product[]; totalPages: number }>(`/products/search?${query.toString()}`);
+  },
+
+  // Fetch single product by ID - used for product detail page
+  getProduct: async (id: string): Promise<ApiResponse<Product>> => {
+    return get<Product>(`/products/${id}`);
+  },
+
+  // Fetch creators and manufacturers
+  getCreatorsAndManufacturers: async (): Promise<ApiResponse<{ _id: string; name: string; avatar?: string }>> => {
+    return await get<{ _id: string; name: string; avatar?: string }>(`/users/creators-and-manufacturers`);
+  },
 };
