@@ -11,9 +11,7 @@ interface ImageGalleryProps {
 }
 
 const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => {
-  // State to track which image is currently displayed as main
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // State to control zoom modal visibility
   const [showZoomModal, setShowZoomModal] = useState(false);
 
   // Handle case when no images are provided
@@ -25,8 +23,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
     );
   }
 
-  // Get current main image
   const currentImage = images[currentImageIndex];
+
+  // Extracted navigation handlers
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => Math.min(images.length - 1, prev + 1));
+  };
 
   return (
     <div className="flex flex-col space-y-4">
@@ -84,14 +90,14 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => setCurrentImageIndex(Math.max(0, currentImageIndex - 1))}
+                onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
                 icon="pi pi-chevron-left"
               />
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => setCurrentImageIndex(Math.min(images.length - 1, currentImageIndex + 1))}
+                onClick={handleNextImage}
                 disabled={currentImageIndex === images.length - 1}
                 icon="pi pi-chevron-right"
               />
