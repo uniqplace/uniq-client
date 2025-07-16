@@ -13,7 +13,7 @@ interface UpdateRoleProps {
 }
 
 const UpdateRole: React.FC<UpdateRoleProps> = ({ currentRole, onRoleUpdated, onCancel, roleOptions }) => {
-  const [selectedRole, setSelectedRole] = useState<string>(currentRole || 'customer');
+  const [selectedRole, setSelectedRole] = useState<RoleType>(currentRole);
   const [loading, setLoading] = useState(false);
 
   const handleUpdateRole = async () => {
