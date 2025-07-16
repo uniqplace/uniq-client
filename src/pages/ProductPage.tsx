@@ -61,6 +61,10 @@ const ProductPage: React.FC = () => {
 
   // Render error state
   if (productError) {
+    // Show toast in dev environment for debugging
+    if (import.meta.env.MODE === 'development') {
+      console.error('Product error:', productError);
+    }
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -212,7 +216,6 @@ const ProductPage: React.FC = () => {
       />
     </div>
   );
-// ...existing code up to the first return block...
 };
 
 export default ProductPage;
