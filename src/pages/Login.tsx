@@ -17,6 +17,8 @@ const Login = () => {
     const savedEmail = localStorage.getItem('prefillEmail');
     if (savedEmail) setEmail(savedEmail);
     localStorage.removeItem('prefillEmail');
+    // נקה גם את הסיסמה מה-state
+    setPassword('');
   }, []);
 
   const handleLogin = async () => {
@@ -26,6 +28,10 @@ const Login = () => {
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        // נקה את הערכים מה-state וה־localStorage
+        setEmail('');
+        setPassword('');
+        localStorage.removeItem('prefillEmail');
         navigate('/');
       }
     } catch (error: unknown) {
@@ -40,6 +46,8 @@ const Login = () => {
         detail: message,
         life: 4000,
       });
+      setEmail('');
+      setPassword('');
     }
   };
 
