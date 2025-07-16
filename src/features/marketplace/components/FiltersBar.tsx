@@ -92,7 +92,7 @@ const FiltersBar: React.FC = () => {
                 page: 1,
             }));
         }
-    }, [location.search, creators, minProductPrice, maxProductPrice]);
+    }, [location.search, creators, memoizedMinProductPrice, memoizedMaxProductPrice]);
 
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
