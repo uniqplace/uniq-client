@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.1.1",
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.10.0",
+    "lodash": "^4.17.21",
     "js-cookie": "^3.0.5",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@types/lodash": "^4.17.20",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",

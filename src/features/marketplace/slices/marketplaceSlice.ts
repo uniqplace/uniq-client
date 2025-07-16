@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Product } from '../../../types';
 import { fetchProducts, fetchProduct } from '../thunks';
+import { fetchCreatorsAndManufacturers } from '../thunks/index';
 
 interface MarketplaceState {
   products: Product[];
@@ -11,9 +12,12 @@ interface MarketplaceState {
   productError: string | null;  // Separate error state for single product
   filters: {
     category: string;
+    creator: string;
     priceRange: [number, number];
     searchTerm: string;
   };
+  totalPages: number;
+  creators: Array<{ label: string; value: string; avatar?: string }>;
 }
 
 const initialState: MarketplaceState = {
@@ -24,10 +28,13 @@ const initialState: MarketplaceState = {
   productLoading: false,
   productError: null,
   filters: {
+    creator: '',
     category: '',
     priceRange: [0, 1000],
     searchTerm: '',
   },
+  totalPages: 1,
+  creators: [{ label: 'All', value: '' }],
 };
 
 const marketplaceSlice = createSlice({
@@ -69,6 +76,9 @@ const marketplaceSlice = createSlice({
     removeProduct: (state, action: PayloadAction<string>) => {
       state.products = state.products.filter(p => p._id !== action.payload);
     },
+    setCreators: (state, action: PayloadAction<Array<{ label: string; value: string; avatar?: string }>>) => {
+      state.creators = action.payload;
+    },
   },
   // Handle async action states
   extraReducers: (builder) => {
@@ -80,13 +90,29 @@ const marketplaceSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        if (Array.isArray(action.payload?.data)) {
+          state.products = action.payload.data;          
+          state.totalPages = action.payload.totalPages || 1;
+        }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-    
+
+    // Fetch creators and manufacturers async actions
+    builder
+      .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
+        // action.payload.data should be an array of users { id, name, avatar }
+        const users = Array.isArray(action.payload) ? action.payload : [];
+        const creatorOptions = users.map((user: { _id: string; name: string; avatar?: string }) => ({
+          label: user.name,
+          value: user._id,
+          avatar: user.avatar
+        }));
+        state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
+      });
+
     // Fetch single product async actions
     builder
       .addCase(fetchProduct.pending, (state) => {

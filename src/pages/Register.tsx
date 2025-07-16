@@ -90,7 +90,7 @@ const Register: React.FC = () => {
 
         navigate('/');
       } else {
-        throw new Error("User data missing in response");
+        throw new Error('User data missing or invalid in response');
       }
     } catch (error: any) {
       toast.current?.show({
