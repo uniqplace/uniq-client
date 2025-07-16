@@ -1,38 +1,17 @@
-import { useState } from 'react';
-import { Button } from 'primereact/button';
+import { Button } from 'primereact/button'
+import { useState } from 'react'
+import { Avatar } from 'primereact/avatar';
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
-import { Avatar } from 'primereact/avatar'
 import { setUser } from '../features/marketplace/slices/userSlice'
-
 import UpdateRole from '../components/shared/UpdateRole'
 import type { RoleType, User } from '../types/index';
 import { roleOptions } from '../constants/roles';
 
 function Home() {
 
-// import { useDispatch } from 'react-redux'
-// import type {  AppDispatch } from '../store'
-// import { useState, useEffect } from 'react'
-// import { Avatar } from 'primereact/avatar';
-
-// function Home() {
-//   const [count, setCount] = useState(0)
-//   const dispatch = useDispatch<AppDispatch>()
-
-
 
   const dispatch = useDispatch<AppDispatch>();
-
-// import { useDispatch } from 'react-redux'
-// import type {  AppDispatch } from '../store'
-// import { useState, useEffect } from 'react'
-// import { Avatar } from 'primereact/avatar';
-
-// function Home() {
-//   const [count, setCount] = useState(0)
-//   const dispatch = useDispatch<AppDispatch>()
-
 
   const user = useSelector((state: RootState) => state.user);
 
