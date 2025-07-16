@@ -1,6 +1,6 @@
 // ImageGallery Component - displays product images with main image and thumbnail navigation
 // Features: main large image, clickable thumbnails, zoom modal functionality
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from '../shared';
 interface ImageGalleryProps {
@@ -18,16 +18,19 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
       </div>
     );
   }
+
   const currentImage = images[currentImageIndex];
 
-  // Helper functions for navigation
-  const goToPreviousImage = useCallback(() => {
+  // Extracted navigation handlers
+  const handlePrevImage = () => {
     setCurrentImageIndex((prev) => Math.max(0, prev - 1));
-  }, []);
+  };
 
-  const goToNextImage = useCallback(() => {
+  const handleNextImage = () => {
     setCurrentImageIndex((prev) => Math.min(images.length - 1, prev + 1));
-  }, [images.length]);
+  };
+
+
   return (
     <div className="flex flex-col space-y-4">
       {/* Main large image - clickable to open zoom modal */}
@@ -82,14 +85,18 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
               <Button
                 variant="secondary"
                 size="small"
-                onClick={goToPreviousImage}
+
+                onClick={handlePrevImage}
+
                 disabled={currentImageIndex === 0}
                 icon="pi pi-chevron-left"
               />
               <Button
                 variant="secondary"
                 size="small"
-                onClick={goToNextImage}
+
+                onClick={handleNextImage}
+
                 disabled={currentImageIndex === images.length - 1}
                 icon="pi pi-chevron-right"
               />

@@ -1,4 +1,3 @@
-// Product utility functions for badge color classes
 
 export type ProductStatus = 'active' | 'sold' | 'inactive';
 export type ProductCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor';

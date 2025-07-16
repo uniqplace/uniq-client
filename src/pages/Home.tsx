@@ -1,21 +1,18 @@
+import { useState } from 'react';
 import { Button } from 'primereact/button'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
-import { useState } from 'react'
 import { Avatar } from 'primereact/avatar'
 import { setUser } from '../features/marketplace/slices/userSlice'
+import { increment, decrement } from '../store'
 import UpdateRole from '../components/shared/UpdateRole'
-import type { RoleType } from '../types/index';
-
-const roleOptions: { label: string; value: RoleType }[] = [
-  { label: 'Customer', value: 'customer' },
-  { label: 'Manufacturer', value: 'manufacturer' },
-  { label: 'Creator', value: 'creator' },
-  { label: 'Admin', value: 'admin' }, // אם צריך גם admin
-];
+import type { RoleType, User } from '../types/index';
+import { roleOptions } from '../constants/roles';
 
 function Home() {
-  const [count, setCount] = useState(0);
+
+  const counter = useSelector((state: RootState) => state.counter.value);
+
   const dispatch = useDispatch<AppDispatch>();
 
 // import { useDispatch } from 'react-redux'
@@ -33,13 +30,17 @@ function Home() {
   
   const getInitialRole = (role: string | null | undefined): RoleType => {
     const allowed: RoleType[] = ['customer', 'manufacturer', 'creator', 'admin'];
-    return allowed.includes(role as RoleType) ? (role as RoleType) : 'customer';
+    return allowed.find(r => r === role) ?? 'customer';
   };
 
+  const handleRoleUpdated = (updatedUser: User) => {
+    const userWithRole = {
+      ...updatedUser,
+      role: updatedUser.role ?? 'customer', // או ערך ברירת מחדל מתאים
+    };
 
-  const handleRoleUpdated = (updatedUser: any) => {
-    dispatch(setUser(updatedUser));
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    dispatch(setUser(userWithRole));
+    localStorage.setItem('user', JSON.stringify(userWithRole));
     setShowRoleUpdate(false);
   };
 
@@ -70,7 +71,10 @@ function Home() {
       )}
 
       <h2>Home</h2>
-      <Button label={`Local Count is ${count}`} icon="pi pi-plus" onClick={() => setCount(count + 1)} className="mr-2" />
+
+      <Button label={`Redux Count is ${counter}`} icon="pi pi-plus" onClick={() => dispatch(increment())} className="mr-2" />
+      <Button label="-" icon="pi pi-minus" onClick={() => dispatch(decrement())} severity="danger" />
+
     </div>
   );
 }

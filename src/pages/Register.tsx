@@ -15,15 +15,7 @@ import { setUser } from '../features/marketplace/slices/userSlice';
 import Cookies from 'js-cookie';
 import { Dropdown } from 'primereact/dropdown';
 import type { RegisterFormData, RoleType } from '../types/index';
-
-const roleOptions: { label: string; value: RoleType }[] = [
-  { label: 'Customer', value: 'customer' },
-  { label: 'Manufacturer', value: 'manufacturer' },
-  { label: 'Creator', value: 'creator' },
-  { label: 'Admin', value: 'admin' },
-];
-
-
+import { roleOptions } from '../constants/roles';
 
 const schema = yup.object().shape({
   fullName: yup
@@ -71,42 +63,35 @@ const Register: React.FC = () => {
     }
   });
 
-  const onSubmit = async (data: any) => {
-
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       const res = await axios.post('api/auth/register', {
         name: data.fullName,
         email: data.email,
         password: data.password,
-        role: data.role, // שלח גם את ה-role
+        role: data.role,
       });
 
 
       if (res.data.success && res.data.user) {
         const user = res.data.user;
-
-
         Cookies.set('token', res.data.token, { expires: 7 });
-
 
         localStorage.setItem('user', JSON.stringify({
           id: user._id || user.id || null,
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          role: user.role // הוסף את השדה role
-
+          role: user.role
         }));
-
 
         dispatch(setUser({
           id: user._id || user.id || null,
           name: user.name,
           email: user.email,
           avatar: user.avatar || null,
-          role: user.role || null // הוסף גם כאן
+          role: user.role || null
         }));
-
 
         toast.current?.show({
           severity: 'success',
@@ -115,10 +100,10 @@ const Register: React.FC = () => {
           life: 3000
         });
 
-
         navigate('/');
       } else {
-        throw new Error('User data missing or invalid in response');
+
+        throw new Error("User data missing in response");
 
       }
     } catch (error: any) {

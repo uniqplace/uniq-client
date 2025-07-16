@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  role: RoleType; // הוסף שדה זה
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
@@ -13,7 +14,7 @@ export interface Creator {
   id: string;
   name: string;
   avatar?: string;
-  followers: number; // Can be a number or an array of followers
+  followers: number | User[]; // Can be a number or an array of followers
 }
 
 // 3. Product (depends on Creator)

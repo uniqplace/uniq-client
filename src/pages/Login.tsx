@@ -9,19 +9,16 @@ import Cookies from 'js-cookie';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('prefillEmail');
-    const savedName = localStorage.getItem('prefillName');
     if (savedEmail) setEmail(savedEmail);
-    if (savedName) setName(savedName);
-
     localStorage.removeItem('prefillEmail');
-    localStorage.removeItem('prefillName');
+    // נקה גם את הסיסמה מה-state
+    setPassword('');
   }, []);
 
   const handleLogin = async () => {
@@ -31,26 +28,34 @@ const Login = () => {
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        // נקה את הערכים מה-state וה־localStorage
+        setEmail('');
+        setPassword('');
+        localStorage.removeItem('prefillEmail');
         navigate('/');
       }
     } catch (error: unknown) {
-        const message =
-      axios.isAxiosError(error) && error.response?.data?.message
-      ? error.response.data.message
-      : 'Login failed';
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : 'Login failed';
 
-  toast.current?.show({
-    severity: 'error',
-    summary: 'Login Failed',
-    detail: message,
-    life: 4000,
-  });
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: message,
+        life: 4000,
+      });
+      setEmail('');
+      setPassword('');
     }
   };
 
   const isInvalid = (val: string) => val.trim().length === 0;
 
-  const token = Cookies.get('token');
+  // Email format validation (simple regex)
+  const isEmailValid = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   return (
     <div className="flex justify-center mt-10">
@@ -70,17 +75,6 @@ const Login = () => {
             />
           </div>
 
-          <div className="p-field mb-4">
-            <label htmlFor="name">Name</label>
-            <InputText
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={isInvalid(name) ? 'p-invalid' : ''}
-              placeholder="Enter your name"
-            />
-          </div>
-
           <div className="p-field mb-5">
             <label htmlFor="password">Password</label>
             <Password
@@ -97,7 +91,9 @@ const Login = () => {
           <Button
             label="Login"
             onClick={handleLogin}
-            disabled={isInvalid(email) || isInvalid(password)}
+            disabled={
+              isInvalid(email) || isInvalid(password) || !isEmailValid(email)
+            }
             className="w-full"
           />
         </div>
