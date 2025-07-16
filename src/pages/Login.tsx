@@ -53,7 +53,6 @@ const Login = () => {
 
   const isInvalid = (val: string) => val.trim().length === 0;
 
-  const token = Cookies.get('token');
 
   return (
     <div className="flex justify-center mt-10">
