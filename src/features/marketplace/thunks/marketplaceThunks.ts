@@ -5,6 +5,9 @@ import { api } from '../../../services/api';
 async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: any) => any, fallbackMsg: string, postProcess?: (data: any) => T): Promise<T | ReturnType<typeof rejectWithValue>> {
   try {
     const response = await fn();
+    if(response.data === undefined) {
+      return response as T; // Handle cases where response is not in expected format
+    }
     const data = response.data;
     return postProcess ? postProcess(data) : data;
   } catch (error) {
@@ -35,25 +38,22 @@ export const fetchProducts = createAsyncThunk(
 // Async thunk for fetching single product by ID
 export const fetchProduct = createAsyncThunk(
   'marketplace/fetchProduct',
-  async (productId: string, { rejectWithValue }) => {
-    try {
-      const response = await api.getProduct(productId);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch product');
-    }
-  }
+  async (productId: string, { rejectWithValue }) =>
+    asyncThunkHelper(
+      () => api.getProduct(productId),
+      rejectWithValue,
+      'Failed to fetch product'
+    )
 );
 
 // Async thunk for fetching creators and manufacturers
 export const fetchCreatorsAndManufacturers = createAsyncThunk(
   'marketplace/fetchCreatorsAndManufacturers',
-  async (_, { rejectWithValue }) => {
-    try {
-      const users = await api.getCreatorsAndManufacturers();
-      return users;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch creators and manufacturers');
-    }
-  }
+  async (_, { rejectWithValue }) =>
+    asyncThunkHelper(
+      () => api.getCreatorsAndManufacturers(),
+      rejectWithValue,
+      'Failed to fetch creators and manufacturers',
+      (res) => res
+    )
 );

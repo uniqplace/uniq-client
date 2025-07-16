@@ -91,7 +91,7 @@ const marketplaceSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         if (Array.isArray(action.payload?.data)) {
-          state.products = action.payload.data;
+          state.products = action.payload.data;          
           state.totalPages = action.payload.totalPages || 1;
         }
       })
@@ -103,8 +103,9 @@ const marketplaceSlice = createSlice({
     // Fetch creators and manufacturers async actions
     builder
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
-        // action.payload is array of users { id, name, avatar }
-        const creatorOptions = action.payload.map((user: { _id: string; name: string; avatar?: string }) => ({
+        // action.payload.data should be an array of users { id, name, avatar }
+        const users = Array.isArray(action.payload) ? action.payload : [];
+        const creatorOptions = users.map((user: { _id: string; name: string; avatar?: string }) => ({
           label: user.name,
           value: user._id,
           avatar: user.avatar

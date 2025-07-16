@@ -13,10 +13,11 @@ const SearchBar: React.FC = () => {
     const [searchTerm, setSearchTerm] = React.useState(filters.searchTerm || '');
 
     const handleSearch = () => {
-        dispatch(updateFilters({ ...filters, searchTerm }));
+        const trimmedSearch = searchTerm.trim();
+        dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
         dispatch(fetchProducts({
             ...filters,
-            q: searchTerm,
+            q: trimmedSearch,
             page: 1,
         }));
     };

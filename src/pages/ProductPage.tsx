@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, ImageGallery, Payment, CreatorCard } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
+import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
@@ -162,7 +163,7 @@ const ProductPage: React.FC = () => {
             <div>
               <h4 className="font-medium text-gray-900">Posted</h4>
               <p className="text-gray-700">
-                {new Date(selectedProduct.createdAt).toLocaleDateString()}
+                {formatDate(selectedProduct.createdAt)}
               </p>
             </div>
           </div>

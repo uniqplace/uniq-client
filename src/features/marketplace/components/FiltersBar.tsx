@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import debounce from 'lodash/debounce';
 import { AutoComplete } from 'primereact/autocomplete';
 import { Dropdown } from 'primereact/dropdown';
 import { Slider } from 'primereact/slider';
@@ -40,11 +41,19 @@ const FiltersBar: React.FC = () => {
         }));
     };
 
+
+    // Debounced search for creators
+    const debouncedSearch = useRef(
+        debounce((query: string) => {
+            const lowered = query.toLowerCase();
+            setFilteredCreators(
+                creators.filter((c: { label: string }) => c.label.toLowerCase().includes(lowered))
+            );
+        }, 300)
+    ).current;
+
     const searchCreator = (event: { query: string }) => {
-        const query = event.query.toLowerCase();
-        setFilteredCreators(
-            creators.filter((c: { label: string }) => c.label.toLowerCase().includes(query))
-        );
+        debouncedSearch(event.query);
     };
 
     return (
@@ -57,7 +66,7 @@ const FiltersBar: React.FC = () => {
                 <AutoComplete
                     id="creator"
                     value={creator}
-                    suggestions={filteredCreators}
+                    suggestions={filteredCreators || []}
                     completeMethod={searchCreator}
                     onChange={(e) => setCreator(e.value)}
                     field="label"
