@@ -81,6 +81,7 @@ const Register: React.FC = () => {
         role: data.role, // שלח גם את ה-role
       });
 
+
       if (res.data.success && res.data.user) {
         const user = res.data.user;
 
@@ -94,6 +95,7 @@ const Register: React.FC = () => {
           email: user.email,
           avatar: user.avatar,
           role: user.role // הוסף את השדה role
+
         }));
 
 
@@ -116,7 +118,7 @@ const Register: React.FC = () => {
 
         navigate('/');
       } else {
-        throw new Error("User data missing in response");
+        throw new Error('User data missing or invalid in response');
 
       }
     } catch (error: any) {

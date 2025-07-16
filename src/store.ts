@@ -2,6 +2,10 @@ import { configureStore, createSlice } from '@reduxjs/toolkit'
 import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
 import userReducer from './features/marketplace/slices/userSlice'
+import apiSlice from './api/apiSlice';
+import authSliceReducer from "./features/auth/authSlice";
+import marketplaceSliceReducer from "./features/marketplace/slices/marketplaceSlice";
+
 const counterSlice = createSlice({
   name: 'counter',
   initialState: { value: 0 },
@@ -19,9 +23,15 @@ const store = configureStore({
     marketplace: marketplaceReducer,
     payments: paymentsReducer,
     user: userReducer,
-  },
-})
+    auth: authSliceReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
 
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
+  },
+  // Add the API middleware to the store
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 export default store 

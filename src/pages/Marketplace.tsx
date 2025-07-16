@@ -1,50 +1,98 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+
+import React, { useEffect, useState } from 'react';
+// Use VITE_MARKETPLACE_PAGE_LIMIT from .env, fallback to 12 if not set
+import { useSelector, useDispatch } from 'react-redux';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import type { RootState } from '../store';
-import type { Product } from '../types';
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
 import { fetchProducts } from '../features/marketplace/thunks';
+import MarketplaceFilters from '../features/marketplace/components/MarketplaceFilters';
+import { Paginator } from 'primereact/paginator';
+import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/marketplaceThunks';
+
 
 
 const Marketplace: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { products, loading, error } = useSelector((state: RootState) => state.marketplace);
-
-  // Fetch products on mount
+  // Fetch creators and manufacturers on mount
   useEffect(() => {
-    dispatch(fetchProducts());
-    
-  }, [dispatch]);
+    dispatch(fetchCreatorsAndManufacturers());
+  }, []);
+  // Fetch first page of products on mount
+  React.useEffect(() => {
+    dispatch(fetchProducts({
+      page: 1,
+    }));
+  }, []);
+  const { products, loading, error, totalPages } = useSelector((state: RootState) => state.marketplace);
 
-  const handleAddToCart = (productId: string) => {
-    // TODO: Implement cart functionality
-    console.log('Add to cart:', productId);
+  const [page, setPage] = useState(1);
+  const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
+
+  const onPageChange = (event: { page: number }) => {
+    setPage(event.page + 1); // PrimeReact starts with 0
+    dispatch(fetchProducts({
+      page: event.page + 1,
+    }));
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if(loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-spinner pi-spin text-4xl text-blue-500 mb-4"></i>
+          <p className="text-gray-600">Loading marketplace...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if(error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+          <p className="text-gray-600">Error loading marketplace: {error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
+    <>
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {products.map((product: Product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-            onAddToCart={handleAddToCart}
-          />
-        ))}
+      {/* Search/Filter Form */}
+      <MarketplaceFilters />
+
+      {/* Products Grid */}
+      <section className="bg-gray-50 rounded-lg p-4 mb-8">
+        <h2 className="text-xl font-semibold mb-4">Products</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.length === 0 ? (
+            <div className="col-span-3 text-center text-gray-500 py-8">Products not found</div>
+          ) : (
+            products.map(product => (
+              <ProductCard
+                key={product._id}
+                product={product}
+              />
+            ))
+          )}
+        </div>
+      </section>
+      {/* Pagination */}
+      <div className="flex justify-center mt-8">
+        <Paginator
+          first={((page - 1) * limit)}
+          rows={limit}
+          totalRecords={totalPages ? totalPages * limit : 0}
+          onPageChange={onPageChange}
+          template="PrevPageLink PageLinks NextPageLink"
+        />
       </div>
     </div>
+    </>
   );
 };
 

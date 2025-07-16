@@ -2,7 +2,6 @@ import { Routes, Route, Link } from 'react-router-dom'
 import 'primereact/resources/themes/lara-light-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
-// import 'primeflex/primeflex.css'
 import './App.css'
 import Marketplace from './pages/Marketplace'
 import Orders from './pages/Orders'
@@ -11,6 +10,7 @@ import Register from './pages/Register'
 import Login from './pages/Login'
 import About from './pages/About'
 import Home from './pages/Home'
+import ProductUploadForm from './features/marketplace/components/ProductUploadForm'
 
 
 
@@ -35,7 +35,7 @@ function App() {
           <Link to="/about" className="text-blue-600 hover:text-blue-800">About</Link>
           <Link to="/register" className="text-blue-600 hover:text-blue-800">Register</Link>
           <Link to="/login" className="text-blue-600 hover:text-blue-800">Login</Link>
-          
+          <Link to="/uploadProduct" className="text-blue-600 hover:text-blue-800">uploadProduct</Link>
         </div>
       </nav>
       <Routes>
@@ -47,6 +47,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/uploadProduct" element={<ProductUploadForm />} />
       </Routes>
     </div>
   )
