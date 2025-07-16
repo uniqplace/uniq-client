@@ -89,3 +89,12 @@ export interface Filters {
 
 
 
+// 6. Address (used by Order)
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+

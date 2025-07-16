@@ -15,6 +15,7 @@ const Login = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
+  
     const savedEmail = localStorage.getItem('prefillEmail');
     if (savedEmail) setEmail(savedEmail);
     localStorage.removeItem('prefillEmail');

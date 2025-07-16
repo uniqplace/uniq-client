@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useForm , Controller} from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +45,6 @@ const Register: React.FC = () => {
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
 
   const {
     register,
@@ -118,7 +117,6 @@ const Register: React.FC = () => {
     }
   };
 
-
   // const handleLogout = () => {
   //   localStorage.removeItem('user');
   //   Cookies.remove('token');
@@ -144,7 +142,6 @@ const Register: React.FC = () => {
     }
   }, [dispatch]);
 
-
   return (
     <div className="flex justify-center mt-10">
       <Toast ref={toast} />
@@ -158,10 +155,8 @@ const Register: React.FC = () => {
               {...register('fullName')}
               className={errors.fullName ? 'p-invalid w-full' : 'w-full'}
             />
-
             {errors.fullName && <small className="text-red-500">{errors.fullName.message}</small>}
           </div>
-
           <div>
             <label htmlFor="email">Email</label>
             <InputText
@@ -171,10 +166,8 @@ const Register: React.FC = () => {
               className={errors.email ? 'p-invalid w-full' : 'w-full'}
               autoComplete="off"
             />
-
             {errors.email && <small className="text-red-500">{errors.email.message}</small>}
           </div>
-
           <Controller
             name="password"
             control={control}
