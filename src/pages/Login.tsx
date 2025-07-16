@@ -9,19 +9,14 @@ import Cookies from 'js-cookie';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('prefillEmail');
-    const savedName = localStorage.getItem('prefillName');
     if (savedEmail) setEmail(savedEmail);
-    if (savedName) setName(savedName);
-
     localStorage.removeItem('prefillEmail');
-    localStorage.removeItem('prefillName');
   }, []);
 
   const handleLogin = async () => {
@@ -34,17 +29,17 @@ const Login = () => {
         navigate('/');
       }
     } catch (error: unknown) {
-        const message =
-      axios.isAxiosError(error) && error.response?.data?.message
-      ? error.response.data.message
-      : 'Login failed';
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : 'Login failed';
 
-  toast.current?.show({
-    severity: 'error',
-    summary: 'Login Failed',
-    detail: message,
-    life: 4000,
-  });
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: message,
+        life: 4000,
+      });
     }
   };
 
@@ -67,17 +62,6 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={isInvalid(email) ? 'p-invalid' : ''}
               placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="p-field mb-4">
-            <label htmlFor="name">Name</label>
-            <InputText
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={isInvalid(name) ? 'p-invalid' : ''}
-              placeholder="Enter your name"
             />
           </div>
 
