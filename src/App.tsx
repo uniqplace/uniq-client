@@ -1,4 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom'
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setUser } from './features/marketplace/slices/userSlice';
 import 'primereact/resources/themes/lara-light-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
@@ -12,8 +15,6 @@ import About from './pages/About'
 import Home from './pages/Home'
 
 
-
-// Placeholder component for user profile page
 function UserProfile() {
   return (
     <div className="p-8 text-center">
@@ -24,6 +25,20 @@ function UserProfile() {
 }
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        dispatch(setUser(user));
+      } catch (err) {
+        console.error('Failed to parse user from localStorage:', err);
+      }
+    }
+  }, [dispatch]);
+
   return (
     <div>
       <nav className="p-4 bg-gray-100">
@@ -34,7 +49,6 @@ function App() {
           <Link to="/about" className="text-blue-600 hover:text-blue-800">About</Link>
           <Link to="/register" className="text-blue-600 hover:text-blue-800">Register</Link>
           <Link to="/login" className="text-blue-600 hover:text-blue-800">Login</Link>
-          
         </div>
       </nav>
       <Routes>
@@ -48,7 +62,7 @@ function App() {
         <Route path="/login" element={<Login />} />
       </Routes>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
