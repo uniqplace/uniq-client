@@ -1,6 +1,7 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
+import userReducer from './features/marketplace/slices/userSlice'
 
 const counterSlice = createSlice({
   name: 'counter',
@@ -18,6 +19,7 @@ const store = configureStore({
     counter: counterSlice.reducer,
     marketplace: marketplaceReducer,
     payments: paymentsReducer,
+    user: userReducer,
   },
 })
 

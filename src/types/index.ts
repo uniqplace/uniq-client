@@ -1,4 +1,6 @@
 // Shared types used across epics
+
+// 1. User (base)
 export interface User {
   id: string;
   name: string;
@@ -6,19 +8,32 @@ export interface User {
   avatar?: string;
 }
 
-export interface Product {
+// 2. Creator/Seller (extends User fields, but not inheritance)
+export interface Creator {
   id: string;
+  name: string;
+  avatar?: string;
+  followers: number; // Can be a number or an array of followers
+}
+
+// 3. Product (depends on Creator)
+export interface Product {
+  _id: string;
   title: string;
   description: string;
   price: number;
   images: string[];
-  sellerId: string;
   category: string;
+  creator: Creator;  // Changed from sellerId to seller object
   status: 'active' | 'sold' | 'inactive';
+  condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
+  location: string;
+  tags: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
+// 4. Order (depends on Product, Address)
 export interface Order {
   id: string;
   productId: string;
@@ -32,14 +47,7 @@ export interface Order {
   updatedAt: Date;
 }
 
-export interface Address {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-}
-
+// 5. Payment (depends on Order)
 export interface Payment {
   id: string;
   orderId: string;
@@ -48,4 +56,20 @@ export interface Payment {
   status: 'pending' | 'completed' | 'failed';
   transactionId?: string;
   createdAt: Date;
-} 
+}
+
+// 6. Address (used by Order)
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+// FormData for registration/login forms
+export interface RegisterFormData {
+  fullName: string;
+  email: string;
+  password: string;
+}
