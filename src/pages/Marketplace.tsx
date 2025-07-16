@@ -20,14 +20,22 @@ const Marketplace: React.FC = () => {
   }, []);
   // Fetch first page of products on mount
   React.useEffect(() => {
+    // Fetch products when component mounts only if url doesn't have filters
+    // This prevents unnecessary fetches when filters are already applied
+    const params = new URLSearchParams(window.location.search);
+    const hasFilters = params.has('category') || params.has('creator') || 
+    params.has('minPrice') || params.has('maxPrice') || params.has('q');
+    if (!hasFilters) {
     dispatch(fetchProducts({
       page: 1,
     }));
+    }
   }, []);
   const { products, loading, error, totalPages } = useSelector((state: RootState) => state.marketplace);
 
   const [page, setPage] = useState(1);
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
+
 
   const onPageChange = (event: { page: number }) => {
     setPage(event.page + 1); // PrimeReact starts with 0

@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import debounce from 'lodash/debounce';
 import { AutoComplete } from 'primereact/autocomplete';
 import { Dropdown } from 'primereact/dropdown';
@@ -21,6 +22,10 @@ const categories = [
 const FiltersBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
     const { filters, creators } = useSelector((state: RootState) => state.marketplace);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // State for filters, initialized from Redux
     const [category, setCategory] = React.useState(filters.category || '');
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = React.useState(initialCreator);
@@ -28,8 +33,59 @@ const FiltersBar: React.FC = () => {
     const [priceRange, setPriceRange] = React.useState<[number, number]>(filters.priceRange || [0, 1000]);
     const pricePanelRef = useRef<OverlayPanel>(null);
 
+    // On mount, read filters from URL and trigger filtering if needed
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlCategory = params.get('category') || '';
+        const urlCreator = params.get('creator') || '';
+        const urlMinPrice = params.get('minPrice');
+        const urlMaxPrice = params.get('maxPrice');
+        const urlPriceRange: [number, number] = [
+            urlMinPrice ? Number(urlMinPrice) : 0,
+            urlMaxPrice ? Number(urlMaxPrice) : 1000
+        ];
+        setCategory(urlCategory);
+        setCreator(
+            creators.find((c: { value: string }) => c.value === urlCreator) || null
+        );
+        setPriceRange(urlPriceRange);
+
+        // Only trigger filter if URL params exist and differ from Redux
+        const urlFilters = {
+            category: urlCategory,
+            creator: urlCreator,
+            priceRange: urlPriceRange
+        };
+        const filtersMatch =
+            filters.category === urlFilters.category &&
+            filters.creator === urlFilters.creator &&
+            Array.isArray(filters.priceRange) &&
+            filters.priceRange[0] === urlFilters.priceRange[0] &&
+            filters.priceRange[1] === urlFilters.priceRange[1];
+        const hasAnyUrlFilter = urlCategory || urlCreator || urlMinPrice || urlMaxPrice;
+        if (hasAnyUrlFilter && !filtersMatch) {
+            dispatch(updateFilters({ ...filters, ...urlFilters }));
+            dispatch(fetchProducts({
+                ...filters,
+                ...urlFilters,
+                minPrice: urlPriceRange[0],
+                maxPrice: urlPriceRange[1],
+                page: 1,
+            }));
+        }
+        // eslint-disable-next-line
+    }, [location.search, creators]);
+
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
+        // Update URL query params only on filter button click
+        const params = new URLSearchParams(location.search);
+        if (category) params.set('category', category); else params.delete('category');
+        if (creatorId) params.set('creator', creatorId); else params.delete('creator');
+        if (priceRange[0] !== 0) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
+        if (priceRange[1] !== 1000) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+
         dispatch(updateFilters({ ...filters, category, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
