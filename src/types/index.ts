@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  role: RoleType; // הוסף שדה זה
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
@@ -13,7 +14,7 @@ export interface Creator {
   id: string;
   name: string;
   avatar?: string;
-  followers: number; // Can be a number or an array of followers
+  followers: number | User[]; // Can be a number or an array of followers
 }
 
 // 3. Product (depends on Creator)
@@ -47,7 +48,17 @@ export interface Order {
   updatedAt: Date;
 }
 
-// 5. Payment (depends on Order)
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+
+
 export interface Payment {
   id: string;
   orderId: string;
@@ -56,7 +67,19 @@ export interface Payment {
   status: 'pending' | 'completed' | 'failed';
   transactionId?: string;
   createdAt: Date;
-}
+} 
+
+// FormData for registration/login forms
+export type RoleType = 'customer' | 'manufacturer' | 'creator' | 'admin';
+
+export type RegisterFormData = {
+  fullName: string;
+  email: string;
+  password: string;
+  role: RoleType;
+};
+
+
 
 // 6. Address (used by Order)
 export interface Address {
@@ -67,9 +90,3 @@ export interface Address {
   country: string;
 }
 
-// FormData for registration/login forms
-export interface RegisterFormData {
-  fullName: string;
-  email: string;
-  password: string;
-}

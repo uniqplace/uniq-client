@@ -1,4 +1,3 @@
-// Product utility functions for badge color classes
 
 export type ProductStatus = 'active' | 'sold' | 'inactive';
 export type ProductCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor';
@@ -17,7 +16,9 @@ const conditionColors: Record<ProductCondition, string> = {
 };
 export function getStatusColor(status: ProductStatus): string {
   return statusColors[status] ?? DEFAULT;
+
 }
 export function getConditionColor(condition: ProductCondition): string {
   return conditionColors[condition] ?? DEFAULT;
+
 }

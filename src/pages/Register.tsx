@@ -13,6 +13,9 @@ import { classNames } from 'primereact/utils';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../features/marketplace/slices/userSlice';
 import Cookies from 'js-cookie';
+import { Dropdown } from 'primereact/dropdown';
+import type { RegisterFormData } from '../types/index';
+import { roleOptions } from '../constants/roles';
 
 const schema = yup.object().shape({
   fullName: yup
@@ -31,6 +34,11 @@ const schema = yup.object().shape({
     .matches(/[a-z]/, 'At least one lowercase letter')
     .matches(/[A-Z]/, 'At least one uppercase letter')
     .matches(/\d/, 'At least one number'),
+
+  role: yup
+    .string()
+    .oneOf(['customer', 'manufacturer', 'creator', 'admin'], 'Role is required')
+    .required('Role is required'),
 });
 
 const Register: React.FC = () => {
@@ -43,42 +51,47 @@ const Register: React.FC = () => {
     handleSubmit,
     control,
     formState: { errors, isSubmitting }
-  } = useForm({
+  } = useForm<RegisterFormData>({
+
     resolver: yupResolver(schema),
     defaultValues: {
       fullName: '',
       email: '',
-      password: ''
+      password: '',
+      role: 'customer',
     }
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       const res = await axios.post('api/auth/register', {
         name: data.fullName,
         email: data.email,
-        password: data.password
+        password: data.password,
+        role: data.role,
       });
+
+
 
       if (res.data.success && res.data.user) {
         const user = res.data.user;
-
-
         Cookies.set('token', res.data.token, { expires: 7 });
 
-
         localStorage.setItem('user', JSON.stringify({
-          fullName: user.name,
+          id: user._id || user.id || null,
+          name: user.name,
           email: user.email,
-          avatar: user.avatar
-        }));
+          avatar: user.avatar,
+          role: user.role
 
+        }));
 
         dispatch(setUser({
           id: user._id || user.id || null,
           name: user.name,
           email: user.email,
-          avatar: user.avatar || null
+          avatar: user.avatar || null,
+          role: user.role || null
         }));
 
         toast.current?.show({
@@ -91,6 +104,7 @@ const Register: React.FC = () => {
         navigate('/');
       } else {
         throw new Error('User data missing or invalid in response');
+
       }
     } catch (error: any) {
       toast.current?.show({
@@ -165,10 +179,31 @@ const Register: React.FC = () => {
                   {...field}
                   className={classNames({ 'p-invalid': errors.password })}
                 />
+
                 {errors.password && <small className="text-red-500">{errors.password.message}</small>}
               </div>
             )}
           />
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <div>
+                <label htmlFor="role">Role</label>
+                <Dropdown
+                  id="role"
+                  {...field}
+                  options={roleOptions}
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select a role"
+                  className={errors.role ? 'p-invalid w-full' : 'w-full'}
+                />
+                {errors.role && <small className="text-red-500">{errors.role.message}</small>}
+              </div>
+            )}
+          />
+
           <Button
             type="submit"
             label="Create Account"

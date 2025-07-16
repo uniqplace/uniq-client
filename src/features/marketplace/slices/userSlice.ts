@@ -8,6 +8,7 @@ interface UserState {
   name: string | null;
   email: string | null;
   avatar?: string | null;
+  role: string | null; // הוסף שדה role
 }
 
 const initialState: UserState = {
@@ -15,6 +16,7 @@ const initialState: UserState = {
   name: null,
   email: null,
   avatar: null,
+  role: null, // הוסף גם כאן
 };
 
 const userSlice = createSlice({

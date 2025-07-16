@@ -5,32 +5,21 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { useDispatch } from 'react-redux';
-import { setUser } from '../features/marketplace/slices/userSlice';
 import Cookies from 'js-cookie';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   useEffect(() => {
   
     const savedEmail = localStorage.getItem('prefillEmail');
-    const savedName = localStorage.getItem('prefillName');
-    const savedPassword = localStorage.getItem('prefillPassword');
-
     if (savedEmail) setEmail(savedEmail);
-    if (savedName) setName(savedName);
-    if (savedPassword) setPassword(savedPassword);
-
-
     localStorage.removeItem('prefillEmail');
-    localStorage.removeItem('prefillName');
-    localStorage.removeItem('prefillPassword');
+    // נקה גם את הסיסמה מה-state
+    setPassword('');
   }, []);
 
   const handleLogin = async () => {
@@ -38,17 +27,12 @@ const Login = () => {
       const res = await axios.post('/api/auth/login', { email, password });
 
       if (res.data.success) {
-
         Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
-
-        dispatch(setUser({
-          id: res.data.user._id || res.data.user.id || null,
-          name: res.data.user.name,
-          email: res.data.user.email,
-          avatar: res.data.user.avatar || null
-        }));
-
+        // נקה את הערכים מה-state וה־localStorage
+        setEmail('');
+        setPassword('');
+        localStorage.removeItem('prefillEmail');
         navigate('/');
       }
     } catch (error: unknown) {
@@ -63,10 +47,16 @@ const Login = () => {
         detail: message,
         life: 4000,
       });
+      setEmail('');
+      setPassword('');
     }
   };
 
   const isInvalid = (val: string) => val.trim().length === 0;
+
+  // Email format validation (simple regex)
+  const isEmailValid = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   return (
     <div className="flex justify-center mt-10">
@@ -86,17 +76,6 @@ const Login = () => {
             />
           </div>
 
-          <div className="p-field mb-4">
-            <label htmlFor="name">Name</label>
-            <InputText
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={isInvalid(name) ? 'p-invalid' : ''}
-              placeholder="Enter your name"
-            />
-          </div>
-
           <div className="p-field mb-5">
             <label htmlFor="password">Password</label>
             <Password
@@ -113,7 +92,9 @@ const Login = () => {
           <Button
             label="Login"
             onClick={handleLogin}
-            disabled={isInvalid(email) || isInvalid(password)}
+            disabled={
+              isInvalid(email) || isInvalid(password) || !isEmailValid(email)
+            }
             className="w-full"
           />
         </div>
