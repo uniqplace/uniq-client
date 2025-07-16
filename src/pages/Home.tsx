@@ -1,49 +1,91 @@
-import { Button } from 'primereact/button'
-import { useDispatch } from 'react-redux'
-import type {  AppDispatch } from '../store'
-import { useState, useEffect } from 'react'
-import { Avatar } from 'primereact/avatar';
+import { useState } from 'react';
+import { Button } from 'primereact/button';
+import { useSelector, useDispatch } from 'react-redux'
+import type { RootState, AppDispatch } from '../store'
+import { Avatar } from 'primereact/avatar'
+import { setUser } from '../features/marketplace/slices/userSlice'
+
+import UpdateRole from '../components/shared/UpdateRole'
+import type { RoleType, User } from '../types/index';
+import { roleOptions } from '../constants/roles';
 
 function Home() {
-  const [count, setCount] = useState(0)
-  const dispatch = useDispatch<AppDispatch>()
 
+// import { useDispatch } from 'react-redux'
+// import type {  AppDispatch } from '../store'
+// import { useState, useEffect } from 'react'
+// import { Avatar } from 'primereact/avatar';
+
+// function Home() {
+//   const [count, setCount] = useState(0)
+//   const dispatch = useDispatch<AppDispatch>()
+
+
+
+  const dispatch = useDispatch<AppDispatch>();
+
+// import { useDispatch } from 'react-redux'
+// import type {  AppDispatch } from '../store'
+// import { useState, useEffect } from 'react'
+// import { Avatar } from 'primereact/avatar';
+
+// function Home() {
+//   const [count, setCount] = useState(0)
+//   const dispatch = useDispatch<AppDispatch>()
+
+
+  const user = useSelector((state: RootState) => state.user);
+
+  const [showRoleUpdate, setShowRoleUpdate] = useState(false);
   
-  const [userName, setUserName] = useState<string | null>(null)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const getInitialRole = (role: string | null | undefined): RoleType => {
+    const allowed: RoleType[] = ['customer', 'manufacturer', 'creator', 'admin'];
+    return allowed.find(r => r === role) ?? 'customer';
+  };
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setUserName(user.fullName || user.name || '');
-        setAvatarUrl(user.avatar || null);
-      } catch {
-        setUserName('');
-        setAvatarUrl(null);
-      }
-    }
-  }, [])
+  const handleRoleUpdated = (updatedUser: User) => {
+    const userWithRole = {
+      ...updatedUser,
+      role: updatedUser.role ?? 'customer', // או ערך ברירת מחדל מתאים
+    };
+
+    dispatch(setUser(userWithRole));
+    localStorage.setItem('user', JSON.stringify(userWithRole));
+    setShowRoleUpdate(false);
+  };
 
   return (
     <div>
-      {userName && (
+      {user.name && (
         <div style={{ display: 'flex', alignItems: 'center', position: 'absolute', top: 10, right: 10, gap: 8 }}>
           <h2 style={{ margin: 0 }}>
-            Hi {userName}!
+            Hi {user.name}!
           </h2>
           <Avatar
-            label={userName ? userName.charAt(0).toUpperCase() : 'V'}
+            label={user.name.charAt(0).toUpperCase()}
             size="large"
             style={{ backgroundColor: '#2196F3', color: '#ffffff', marginLeft: 8 }}
             shape="circle"
           />
+          <Button label="Update Role" onClick={() => setShowRoleUpdate(true)} className="ml-2" />
         </div>
       )}
+
+      {showRoleUpdate && (
+        <UpdateRole
+          currentRole={getInitialRole(user.role)}
+          onRoleUpdated={handleRoleUpdated}
+          onCancel={() => setShowRoleUpdate(false)}
+          roleOptions={roleOptions}
+        />
+      )}
+
       <h2>Home</h2>
-      <Button label={`Local Count is ${count}`} icon="pi pi-plus" onClick={() => setCount(count + 1)} className="mr-2" />
+      <p>Welcome to the home page!</p>
+      {/* <Button label="Increment" onClick={() => dispatch(increment())} />
+      <Button label="Decrement" onClick={() => dispatch(decrement())} /> */}
     </div>
-  )
+  );
 }
+
 export default Home;

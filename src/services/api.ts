@@ -4,7 +4,7 @@
 
 import type { Product } from '../types';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // Generic API response interface to match your backend response format
 interface ApiResponse<T> {
@@ -17,6 +17,7 @@ interface ApiResponse<T> {
 // Centralized API error handler
 function handleError(status: number, message?: string) {
   if (status === 401) {
+    // TODO: Implement user-facing error handling (e.g., redirect to login or show a toast)
     // e.g. redirect to login in the future
   }
   console.error(`API error ${status}: ${message}`);
@@ -24,14 +25,20 @@ function handleError(status: number, message?: string) {
 
 // Reusable GET helper
 async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
-  if (!response.ok) {
-    const errorText = await response.text();
-    handleError(response.status, errorText);
-    throw new Error(`Error ${response.status}: ${errorText}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      handleError(response.status, errorText);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+    const json = await response.json();
+    return json;
+  } catch (error: any) {
+    // Handle network errors (offline, CORS, etc.)
+    handleError(0, error?.message || 'Network error');
+    throw new Error(error?.message || 'Network error');
   }
-  const json = await response.json();
-  return json;
 }
 
 export const api = {
