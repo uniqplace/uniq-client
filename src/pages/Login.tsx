@@ -53,6 +53,9 @@ const Login = () => {
 
   const isInvalid = (val: string) => val.trim().length === 0;
 
+  // Email format validation (simple regex)
+  const isEmailValid = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   return (
     <div className="flex justify-center mt-10">
@@ -88,7 +91,9 @@ const Login = () => {
           <Button
             label="Login"
             onClick={handleLogin}
-            disabled={isInvalid(email) || isInvalid(password)}
+            disabled={
+              isInvalid(email) || isInvalid(password) || !isEmailValid(email)
+            }
             className="w-full"
           />
         </div>
