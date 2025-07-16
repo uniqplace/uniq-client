@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from 'primereact/button'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
@@ -7,7 +7,7 @@ import { Avatar } from 'primereact/avatar'
 import { setUser } from '../features/marketplace/slices/userSlice'
 import UpdateRole from '../components/shared/UpdateRole'
 import { roleOptions } from '../constants/roles';
-import type { RoleType } from '../types/index';
+import type { RoleType, User } from '../types/index';
 
 function Home() {
   const counter = useSelector((state: RootState) => state.counter.value);
@@ -21,7 +21,7 @@ function Home() {
     return allowed.find(r => r === role) ?? 'customer';
   };
 
-  const handleRoleUpdated = (updatedUser: any) => {
+  const handleRoleUpdated = (updatedUser: User) => {
     dispatch(setUser(updatedUser));
     localStorage.setItem('user', JSON.stringify(updatedUser));
     setShowRoleUpdate(false);
