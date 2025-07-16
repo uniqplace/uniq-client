@@ -15,6 +15,7 @@ interface ApiResponse<T> {
 // Centralized API error handler
 function handleError(status: number, message?: string) {
   if (status === 401) {
+    // TODO: Implement user-facing error handling (e.g., redirect to login or show a toast)
     // e.g. redirect to login in the future
   }
   console.error(`API error ${status}: ${message}`);
