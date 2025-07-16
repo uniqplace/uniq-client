@@ -32,7 +32,12 @@ const FiltersBar: React.FC = () => {
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
 
     // Calculate min and max price from products
-    const prices = products.map((p: any) => p.price).filter((p: number) => typeof p === 'number');
+    interface Product {
+        price: number;
+        // Add other known properties of a product here, if applicable
+    }
+
+    const prices = products.map((p: Product) => p.price).filter((p: number) => typeof p === 'number');
     const minProductPrice = prices.length ? Math.min(...prices) : 0;
     const maxProductPrice = prices.length ? Math.max(...prices) : 1000;
 
