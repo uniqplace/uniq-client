@@ -21,7 +21,7 @@ const categories = [
 
 const FiltersBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
-    const { filters, creators } = useSelector((state: RootState) => state.marketplace);
+    const { filters, creators, products } = useSelector((state: RootState) => state.marketplace);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -30,7 +30,21 @@ const FiltersBar: React.FC = () => {
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = React.useState(initialCreator);
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
-    const [priceRange, setPriceRange] = React.useState<[number, number]>(filters.priceRange || [0, 1000]);
+
+    // Calculate min and max price from products
+    const prices = products.map((p: any) => p.price).filter((p: number) => typeof p === 'number');
+    const minProductPrice = prices.length ? Math.min(...prices) : 0;
+    const maxProductPrice = prices.length ? Math.max(...prices) : 1000;
+
+    // State for price range, initialized from Redux or product price range
+    const [priceRange, setPriceRange] = React.useState<[number, number]>(
+        filters.priceRange && Array.isArray(filters.priceRange)
+            ? [
+                Math.max(minProductPrice, filters.priceRange[0]),
+                Math.min(maxProductPrice, filters.priceRange[1])
+            ]
+            : [minProductPrice, maxProductPrice]
+    );
     const pricePanelRef = useRef<OverlayPanel>(null);
 
     // On mount, read filters from URL and trigger filtering if needed
@@ -41,8 +55,8 @@ const FiltersBar: React.FC = () => {
         const urlMinPrice = params.get('minPrice');
         const urlMaxPrice = params.get('maxPrice');
         const urlPriceRange: [number, number] = [
-            urlMinPrice ? Number(urlMinPrice) : 0,
-            urlMaxPrice ? Number(urlMaxPrice) : 1000
+            urlMinPrice ? Number(urlMinPrice) : minProductPrice,
+            urlMaxPrice ? Number(urlMaxPrice) : maxProductPrice
         ];
         setCategory(urlCategory);
         setCreator(
@@ -73,8 +87,7 @@ const FiltersBar: React.FC = () => {
                 page: 1,
             }));
         }
-        // eslint-disable-next-line
-    }, [location.search, creators]);
+    }, [location.search, creators, minProductPrice, maxProductPrice]);
 
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
@@ -82,8 +95,8 @@ const FiltersBar: React.FC = () => {
         const params = new URLSearchParams(location.search);
         if (category) params.set('category', category); else params.delete('category');
         if (creatorId) params.set('creator', creatorId); else params.delete('creator');
-        if (priceRange[0] !== 0) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
-        if (priceRange[1] !== 1000) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
+        if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
+        if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
 
         dispatch(updateFilters({ ...filters, category, creator: creatorId, priceRange }));
@@ -156,7 +169,10 @@ const FiltersBar: React.FC = () => {
                             onChange={e => {
                                 if (Array.isArray(e.value)) setPriceRange(e.value as [number, number]);
                             }}
-                            range min={0} max={1000} step={10}
+                            range
+                            min={minProductPrice}
+                            max={maxProductPrice}
+                            step={10}
                             style={{ width: '200px' }}
                         />
                         <div className="flex gap-2 mt-2">
