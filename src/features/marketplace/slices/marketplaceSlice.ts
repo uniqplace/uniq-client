@@ -1,26 +1,29 @@
+// src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Product } from '../../../types';
 import { fetchProducts, fetchProduct } from '../thunks';
 
+interface Filters {
+  category: string;
+  priceRange: [number, number];
+  searchTerm: string;
+}
+
 interface MarketplaceState {
+  selectedProduct: Product | null;
   products: Product[];
   loading: boolean;
   error: string | null;
-  selectedProduct: Product | null;
-  productLoading: boolean;  // Separate loading state for single product
-  productError: string | null;  // Separate error state for single product
-  filters: {
-    category: string;
-    priceRange: [number, number];
-    searchTerm: string;
-  };
+  productLoading: boolean;
+  productError: string | null;
+  filters: Filters;
 }
 
 const initialState: MarketplaceState = {
+  selectedProduct: null,
   products: [],
   loading: false,
   error: null,
-  selectedProduct: null,
   productLoading: false,
   productError: null,
   filters: {
@@ -34,45 +37,37 @@ const marketplaceSlice = createSlice({
   name: 'marketplace',
   initialState,
   reducers: {
-    // Manual setters for when we have data from other sources
-    setProducts: (state, action: PayloadAction<Product[]>) => {
-      state.products = action.payload;
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-    setSelectedProduct: (state, action: PayloadAction<Product | null>) => {
+    setSelectedProduct(state, action: PayloadAction<Product | null>) {
       state.selectedProduct = action.payload;
     },
-    // Clear selected product when navigating away
-    clearSelectedProduct: (state) => {
+    clearSelectedProduct(state) {
       state.selectedProduct = null;
       state.productError = null;
     },
-    updateFilters: (state, action: PayloadAction<Partial<MarketplaceState['filters']>>) => {
+    updateFilters(state, action: PayloadAction<Partial<Filters>>) {
       state.filters = { ...state.filters, ...action.payload };
     },
-    addProduct: (state, action: PayloadAction<Product>) => {
+    clearFilters(state) {
+      state.filters = {
+        category: '',
+        priceRange: [0, 1000],
+        searchTerm: '',
+      };
+    },
+    addProduct(state, action: PayloadAction<Product>) {
       state.products.push(action.payload);
     },
-    updateProduct: (state, action: PayloadAction<Product>) => {
+    updateProduct(state, action: PayloadAction<Product>) {
       const index = state.products.findIndex(p => p._id === action.payload._id);
       if (index !== -1) {
         state.products[index] = action.payload;
-      } else {
-        console.warn(`Product with _id=${action.payload._id} not found in store.`);
       }
     },
-    removeProduct: (state, action: PayloadAction<string>) => {
+    removeProduct(state, action: PayloadAction<string>) {
       state.products = state.products.filter(p => p._id !== action.payload);
     },
   },
-  // Handle async action states
   extraReducers: (builder) => {
-    // Fetch products async actions
     builder
       .addCase(fetchProducts.pending, (state) => {
         state.loading = true;
@@ -85,9 +80,8 @@ const marketplaceSlice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      })
-    
-    // Fetch single product async actions
+      });
+
     builder
       .addCase(fetchProduct.pending, (state) => {
         state.productLoading = true;
@@ -105,13 +99,13 @@ const marketplaceSlice = createSlice({
 });
 
 export const {
-  setProducts,
   setSelectedProduct,
   clearSelectedProduct,
   updateFilters,
+  clearFilters,
   addProduct,
   updateProduct,
   removeProduct,
 } = marketplaceSlice.actions;
 
-export default marketplaceSlice.reducer; 
+export default marketplaceSlice.reducer;
