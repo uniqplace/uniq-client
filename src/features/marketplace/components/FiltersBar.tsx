@@ -65,7 +65,7 @@ const FiltersBar: React.FC = () => {
         ];
         setCategory(urlCategory);
         setCreator(
-            creators.find((c: { value: string }) => c.value === urlCreator) || null
+            creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlCreator) || null
         );
         setPriceRange(urlPriceRange);
 
