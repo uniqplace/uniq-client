@@ -1,4 +1,5 @@
 // Product utility functions for badge color classes
+
 export type ProductStatus = 'active' | 'sold' | 'inactive';
 export type ProductCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor';
 const DEFAULT = 'bg-gray-100 text-gray-800';
