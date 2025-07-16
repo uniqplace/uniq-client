@@ -13,7 +13,7 @@ export interface Creator {
   id: string;
   name: string;
   avatar?: string;
-  followers: number; // Can be a number or an array of followers
+  followers: number | User[]; // Can be a number or an array of followers
 }
 
 // 3. Product (depends on Creator)
