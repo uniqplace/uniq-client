@@ -23,14 +23,20 @@ function handleError(status: number, message?: string) {
 
 // Reusable GET helper
 async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
-  if (!response.ok) {
-    const errorText = await response.text();
-    handleError(response.status, errorText);
-    throw new Error(`Error ${response.status}: ${errorText}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      handleError(response.status, errorText);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+    const json = await response.json();
+    return json;
+  } catch (error: any) {
+    // Handle network errors (offline, CORS, etc.)
+    handleError(0, error?.message || 'Network error');
+    throw new Error(error?.message || 'Network error');
   }
-  const json = await response.json();
-  return json;
 }
 
 // API service object with all endpoint methods
