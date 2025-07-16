@@ -35,8 +35,6 @@ const Marketplace: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
-
-
   const onPageChange = (event: { page: number }) => {
     setPage(event.page + 1); // PrimeReact starts with 0
     dispatch(fetchProducts({
