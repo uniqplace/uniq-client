@@ -2,9 +2,10 @@
 // Shows avatar, name, and provides link to seller profile (placeholder for now)
 import React from 'react';
 import { Link } from 'react-router-dom';
-import type { Creator as BaseCreator } from '../../types';
+import type { Creator as BaseCreator, User } from '../../types';
+
 type Creator = BaseCreator & {
-  followers?: number;
+  followers?: number | User[];
 };
 
 // Helper function to get followers count

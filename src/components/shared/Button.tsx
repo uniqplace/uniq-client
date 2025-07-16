@@ -22,6 +22,7 @@ const Button: React.FC<SharedButtonProps> = ({
   };
 
 
+
 const getSizeClass = () => {
   switch (size) {
     case 'small': return 'p-button-sm';
@@ -29,6 +30,7 @@ const getSizeClass = () => {
     default: return ''; // Medium is default – no class needed
   }
 };
+
 
   return (
     <PrimeButton

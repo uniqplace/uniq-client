@@ -1,17 +1,26 @@
 import { useState } from 'react';
-import { Button } from 'primereact/button'
+import { Button } from 'primereact/button';
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
 import { Avatar } from 'primereact/avatar'
 import { setUser } from '../features/marketplace/slices/userSlice'
-import { increment, decrement } from '../store'
+
 import UpdateRole from '../components/shared/UpdateRole'
 import type { RoleType, User } from '../types/index';
 import { roleOptions } from '../constants/roles';
 
 function Home() {
 
-  const counter = useSelector((state: RootState) => state.counter.value);
+// import { useDispatch } from 'react-redux'
+// import type {  AppDispatch } from '../store'
+// import { useState, useEffect } from 'react'
+// import { Avatar } from 'primereact/avatar';
+
+// function Home() {
+//   const [count, setCount] = useState(0)
+//   const dispatch = useDispatch<AppDispatch>()
+
+
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -26,6 +35,7 @@ function Home() {
 
 
   const user = useSelector((state: RootState) => state.user);
+
   const [showRoleUpdate, setShowRoleUpdate] = useState(false);
   
   const getInitialRole = (role: string | null | undefined): RoleType => {
@@ -71,10 +81,9 @@ function Home() {
       )}
 
       <h2>Home</h2>
-
-      <Button label={`Redux Count is ${counter}`} icon="pi pi-plus" onClick={() => dispatch(increment())} className="mr-2" />
-      <Button label="-" icon="pi pi-minus" onClick={() => dispatch(decrement())} severity="danger" />
-
+      <p>Welcome to the home page!</p>
+      {/* <Button label="Increment" onClick={() => dispatch(increment())} />
+      <Button label="Decrement" onClick={() => dispatch(decrement())} /> */}
     </div>
   );
 }

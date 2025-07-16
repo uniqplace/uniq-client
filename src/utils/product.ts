@@ -16,7 +16,9 @@ const conditionColors: Record<ProductCondition, string> = {
 };
 export function getStatusColor(status: ProductStatus): string {
   return statusColors[status] ?? DEFAULT;
+
 }
 export function getConditionColor(condition: ProductCondition): string {
   return conditionColors[condition] ?? DEFAULT;
+
 }

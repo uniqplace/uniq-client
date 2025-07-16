@@ -19,6 +19,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
     );
   }
 
+
   const currentImage = images[currentImageIndex];
 
   // Extracted navigation handlers
@@ -29,6 +30,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
   const handleNextImage = () => {
     setCurrentImageIndex((prev) => Math.min(images.length - 1, prev + 1));
   };
+
 
 
   return (
@@ -85,18 +87,14 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
               <Button
                 variant="secondary"
                 size="small"
-
                 onClick={handlePrevImage}
-
                 disabled={currentImageIndex === 0}
                 icon="pi pi-chevron-left"
               />
               <Button
                 variant="secondary"
                 size="small"
-
                 onClick={handleNextImage}
-
                 disabled={currentImageIndex === images.length - 1}
                 icon="pi pi-chevron-right"
               />

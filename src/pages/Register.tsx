@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux';
 import { setUser } from '../features/marketplace/slices/userSlice';
 import Cookies from 'js-cookie';
 import { Dropdown } from 'primereact/dropdown';
-import type { RegisterFormData, RoleType } from '../types/index';
+import type { RegisterFormData } from '../types/index';
 import { roleOptions } from '../constants/roles';
 
 const schema = yup.object().shape({
@@ -73,6 +73,7 @@ const Register: React.FC = () => {
       });
 
 
+
       if (res.data.success && res.data.user) {
         const user = res.data.user;
         Cookies.set('token', res.data.token, { expires: 7 });
@@ -83,6 +84,7 @@ const Register: React.FC = () => {
           email: user.email,
           avatar: user.avatar,
           role: user.role
+
         }));
 
         dispatch(setUser({
@@ -102,8 +104,7 @@ const Register: React.FC = () => {
 
         navigate('/');
       } else {
-
-        throw new Error("User data missing in response");
+        throw new Error('User data missing or invalid in response');
 
       }
     } catch (error: any) {
