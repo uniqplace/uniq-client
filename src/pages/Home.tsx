@@ -1,24 +1,14 @@
 import { Button } from 'primereact/button'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
-import { useState } from 'react'
 import { increment, decrement } from '../store'
 import { Avatar } from 'primereact/avatar'
-import { Dropdown } from 'primereact/dropdown'
 import { setUser } from '../features/marketplace/slices/userSlice'
-import Cookies from 'js-cookie'
 import UpdateRole from '../components/shared/UpdateRole'
-import type { RoleType, User } from '../types/index';
-
-const roleOptions: { label: string; value: RoleType }[] = [
-  { label: 'Customer', value: 'customer' },
-  { label: 'Manufacturer', value: 'manufacturer' },
-  { label: 'Creator', value: 'creator' },
-  { label: 'Admin', value: 'admin' }, // אם צריך גם admin
-];
+import { roleOptions } from '../constants/roles';
+import type { RoleType } from '../types/index';
 
 function Home() {
-  const [count, setCount] = useState(0);
   const counter = useSelector((state: RootState) => state.counter.value);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -29,8 +19,6 @@ function Home() {
     const allowed: RoleType[] = ['customer', 'manufacturer', 'creator', 'admin'];
     return allowed.includes(role as RoleType) ? (role as RoleType) : 'customer';
   };
-
-  const [selectedRole, setSelectedRole] = useState<RoleType>(getInitialRole(user.role));
 
   const handleRoleUpdated = (updatedUser: any) => {
     dispatch(setUser(updatedUser));
@@ -65,7 +53,6 @@ function Home() {
       )}
 
       <h2>Home</h2>
-      <Button label={`Local Count is ${count}`} icon="pi pi-plus" onClick={() => setCount(count + 1)} className="mr-2" />
       <Button label={`Redux Count is ${counter}`} icon="pi pi-plus" onClick={() => dispatch(increment())} className="mr-2" />
       <Button label="-" icon="pi pi-minus" onClick={() => dispatch(decrement())} severity="danger" />
     </div>
