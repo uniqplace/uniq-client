@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,14 +6,29 @@ import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
 import { updateFilters } from '../slices/marketplaceSlice';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SearchBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
     const { filters } = useSelector((state: RootState) => state.marketplace);
+    const navigate = useNavigate();
+    const location = useLocation();
     const [searchTerm, setSearchTerm] = React.useState(filters.searchTerm || '');
+
+    // On mount, read searchTerm from URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlSearch = params.get('q') || '';
+        setSearchTerm(urlSearch);
+        dispatch(updateFilters({ ...filters, searchTerm: urlSearch })); // keep Redux in sync with URL
+    }, [location.search]);
 
     const handleSearch = () => {
         const trimmedSearch = searchTerm.trim();
+        // Update URL query param for search only on button click
+        const params = new URLSearchParams(location.search);
+        if (trimmedSearch) params.set('q', trimmedSearch); else params.delete('q');
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
         dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
         dispatch(fetchProducts({
             ...filters,
