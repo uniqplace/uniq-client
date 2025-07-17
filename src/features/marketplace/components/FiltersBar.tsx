@@ -32,7 +32,12 @@ const FiltersBar: React.FC = () => {
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
 
     // Calculate min and max price from products
-    const prices = products.map((p: any) => p.price).filter((p: number) => typeof p === 'number');
+    interface Product {
+        price: number;
+        // Add other known properties of a product here, if applicable
+    }
+
+    const prices = products.map((p: Product) => p.price).filter((p: number) => typeof p === 'number');
     const minProductPrice = prices.length ? Math.min(...prices) : 0;
     const maxProductPrice = prices.length ? Math.max(...prices) : 1000;
 
@@ -60,7 +65,7 @@ const FiltersBar: React.FC = () => {
         ];
         setCategory(urlCategory);
         setCreator(
-            creators.find((c: { value: string }) => c.value === urlCreator) || null
+            creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlCreator) || null
         );
         setPriceRange(urlPriceRange);
 
@@ -87,7 +92,7 @@ const FiltersBar: React.FC = () => {
                 page: 1,
             }));
         }
-    }, [location.search, creators, minProductPrice, maxProductPrice]);
+    }, [location.search, creators]);
 
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
