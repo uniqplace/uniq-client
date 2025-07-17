@@ -82,6 +82,7 @@ const Register: React.FC = () => {
         localStorage.setItem('user', JSON.stringify({
           id: user._id || user.id || null,
           name: user.name,
+          fullName: user.fullName || user.name, // הוסף שדה fullName
           email: user.email,
           avatar: user.avatar,
           role: user.role

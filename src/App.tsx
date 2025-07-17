@@ -1,21 +1,24 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { setUser } from './features/marketplace/slices/userSlice';
-import 'primereact/resources/themes/lara-light-blue/theme.css'
-import 'primereact/resources/primereact.min.css'
-import 'primeicons/primeicons.css'
-import './App.css'
-import Marketplace from './pages/Marketplace'
-import Orders from './pages/Orders'
-import ProductPage from './pages/ProductPage'
-import Register from './pages/Register'
-import Login from './pages/Login'
-import About from './pages/About'
-import Home from './pages/Home'
-import ProductUploadForm from './features/marketplace/components/ProductUploadForm'
-import Header from './components/shared/Header'
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
+import type { AppDispatch, RootState } from './store';
 
+import 'primereact/resources/themes/lara-light-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import './App.css';
+
+import Marketplace from './pages/Marketplace';
+import Orders from './pages/Orders';
+import ProductPage from './pages/ProductPage';
+import Register from './pages/Register';
+import Login from './pages/Login';
+import About from './pages/About';
+import Home from './pages/Home';
+import ProductUploadForm from './features/marketplace/components/ProductUploadForm';
+import Header from './components/shared/Header';
+import ProfilePage from './pages/ProfilePage';
 
 function UserProfile() {
   return (
@@ -27,19 +30,20 @@ function UserProfile() {
 }
 
 function App() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        dispatch(setUser(user));
-      } catch (err) {
-        console.error('Failed to parse user from localStorage:', err);
-      }
-    }
+    dispatch(fetchCurrentUser());
   }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg font-semibold">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -54,6 +58,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </div>
   );

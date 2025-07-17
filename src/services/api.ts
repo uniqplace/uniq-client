@@ -1,8 +1,8 @@
-
 // API Service Layer - handles all HTTP requests to the backend
 // This centralizes all API calls and makes them reusable across components
 
 import type { Product } from '../types';
+import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -41,6 +41,10 @@ async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
   }
 }
 
+export const logoutApi = async () => {
+  return axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
+};
+
 export const api = {
   // Fetch products with filters and pagination
   getProducts: async (params: {
@@ -72,4 +76,6 @@ export const api = {
   getCreatorsAndManufacturers: async (): Promise<ApiResponse<{ _id: string; name: string; avatar?: string }>> => {
     return await get<{ _id: string; name: string; avatar?: string }>(`/users/creators-and-manufacturers`);
   },
+
+  logoutApi,
 };

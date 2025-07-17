@@ -3,48 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { Menubar } from 'primereact/menubar';
 import UserGreeting from './UserGreeting';
 
+
 const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    {
-      label: 'Home',
-      icon: 'pi pi-home',
-      command: () => navigate('/')
-    },
-    {
-      label: 'Marketplace',
-      icon: 'pi pi-star',
-      command: () => navigate('/marketplace')
-    },
-    {
-      label: 'Orders',
-      icon: 'pi pi-shopping-cart',
-      command: () => navigate('/orders')
-    },
-    {
-      label: 'About',
-      icon: 'pi pi-info-circle',
-      command: () => navigate('/about')
-    },
-    {
-      label: 'Register',
-      icon: 'pi pi-user-plus',
-      command: () => navigate('/register')
-    },
-    {
-      label: 'Login',
-      icon: 'pi pi-sign-in',
-      command: () => navigate('/login')
-    },
-    {
-      label: 'Upload Product',
-      icon: 'pi pi-upload',
-      command: () => navigate('/uploadProduct')
-    }
+    { label: 'Home', icon: 'pi pi-home', command: () => navigate('/') },
+    { label: 'Marketplace', icon: 'pi pi-star', command: () => navigate('/marketplace') },
+    { label: 'Orders', icon: 'pi pi-shopping-cart', command: () => navigate('/orders') },
+    { label: 'About', icon: 'pi pi-info-circle', command: () => navigate('/about') },
+    { label: 'Register', icon: 'pi pi-user-plus', command: () => navigate('/register') },
+    { label: 'Login', icon: 'pi pi-sign-in', command: () => navigate('/login') },
+    { label: 'Upload Product', icon: 'pi pi-upload', command: () => navigate('/uploadProduct') },
   ];
 
-  // לוגו + ברכה
   const start = (
     <div
       className="flex items-center cursor-pointer font-bold text-xl text-blue-700"
@@ -55,10 +27,9 @@ const Header: React.FC = () => {
     </div>
   );
 
-  // ברכה + אבטר קטן
   const end = (
     <div className="flex items-center h-full pr-4">
-      <UserGreeting/>
+      <UserGreeting />
     </div>
   );
 

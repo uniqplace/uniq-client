@@ -6,7 +6,9 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: RoleType; // הוסף שדה זה
+  role: RoleType; 
+  bio?: string; // Optional field for user bio
+  createdAt?: Date;
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)

@@ -1,11 +1,8 @@
-import { Button } from 'primereact/button'
 import { useState } from 'react'
-import { Avatar } from 'primereact/avatar';
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
 import { setUser } from '../features/marketplace/slices/userSlice'
 import UpdateRole from '../components/shared/UpdateRole'
-import UserGreeting from '../components/shared/UserGreeting';
 import type { RoleType, User } from '../types/index';
 import { roleOptions } from '../constants/roles';
 
@@ -35,8 +32,6 @@ function Home() {
 
   return (
     <div>
-
-      <UserGreeting />
 
       {showRoleUpdate && (
         <UpdateRole

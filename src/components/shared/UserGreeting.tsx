@@ -1,56 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../../store';
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
-
+import { Menu } from 'primereact/menu';
+import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { clearUser } from '../../features/marketplace/slices/userSlice';
+import { logoutApi } from '../../services/api';
 
 const UserGreeting = () => {
-  const [userName, setUserName] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.user);
+  const menuRef = useRef<Menu>(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setUserName(user.fullName || user.name || '');
-        setAvatarUrl(user.avatar || null);
-      } catch {
-        setUserName('');
-        setAvatarUrl(null);
-      }
-    }
-  }, []);
+  if (!user || !user.name) return null;
 
-  if (!userName) return null;
+  const handleLogout = async () => {
+    await logoutApi();
+    dispatch(clearUser());
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    // מחק גם עוגיות אם צריך
+    navigate('/login');
+  };
+
+  const menuItems = [
+    { label: 'My Profile', icon: 'pi pi-user', command: () => navigate('/profile') },
+    { label: 'Logout', icon: 'pi pi-sign-out', command: handleLogout }
+  ];
 
   return (
-
     <>
-      {/* Tooltip Component */}
       <Tooltip target=".avatar-hover" content="My Account" position="bottom" />
-
+      <Menu model={menuItems} popup ref={menuRef} />
       <div
-        className="avatar-hover flex items-center justify-center cursor-pointer"
-        style={{ display: 'inline-block' }}
-        onClick={() => console.log('Open dropdown menu')}
+        className="avatar-hover flex flex-row-reverse items-center gap-2 cursor-pointer"
+        onClick={(e) => menuRef.current?.toggle(e)}
       >
-        <h2 style={{ margin: 0 }}>Hi {userName}!</h2>
         <Avatar
-          image={avatarUrl || ''}
-          label={!avatarUrl ? userName.charAt(0).toUpperCase() : ''}
+          image={user.avatar || undefined}
+          label={!user.avatar && user.name ? user.name.charAt(0).toUpperCase() : undefined}
           shape="circle"
-          size="large"
-          style={{
-            backgroundColor: !avatarUrl ? '#1d4ed8' : undefined,
-            color: '#fff',
-            fontSize: 18,
-          }}
+          size="normal"
+          style={{ backgroundColor: !user.avatar ? '#1d4ed8' : undefined, color: '#fff', fontSize: 18 }}
         />
+        <span className="text-base font-medium text-blue-700">Hi {user.name}!</span>
       </div>
     </>
-
   );
 };
 
 export default UserGreeting;
-
