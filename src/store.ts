@@ -1,10 +1,9 @@
-import { configureStore, createSlice } from '@reduxjs/toolkit'
 import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
 import userReducer from './features/marketplace/slices/userSlice'
+import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
-import marketplaceSliceReducer from "./features/marketplace/slices/marketplaceSlice";
 
 
 export const store = configureStore({
@@ -12,7 +11,7 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     payments: paymentsReducer,
     user: userReducer,
-    auth: authSliceReducer,
+     auth: authSliceReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
 
   },

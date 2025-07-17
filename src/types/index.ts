@@ -79,5 +79,22 @@ export type RegisterFormData = {
   role: RoleType;
 };
 
+// 5. Filters (for product listing)
+export interface Filters {
+  category?: string;
+  priceRange?: [number, number];
+  creator?: string; // הוסף שדה זה
+  // ...שדות נוספים
+}
 
+
+
+// 6. Address (used by Order)
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
 

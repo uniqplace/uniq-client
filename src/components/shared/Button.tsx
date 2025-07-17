@@ -21,8 +21,6 @@ const Button: React.FC<SharedButtonProps> = ({
     }
   };
 
-
-
 const getSizeClass = () => {
   switch (size) {
     case 'small': return 'p-button-sm';

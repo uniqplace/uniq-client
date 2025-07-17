@@ -1,4 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom'
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setUser } from './features/marketplace/slices/userSlice';
 import 'primereact/resources/themes/lara-light-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
@@ -14,8 +17,6 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import Header from './components/shared/Header'
 
 
-
-// Placeholder component for user profile page
 function UserProfile() {
   return (
     <div className="p-8 text-center">
@@ -26,6 +27,20 @@ function UserProfile() {
 }
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        dispatch(setUser(user));
+      } catch (err) {
+        console.error('Failed to parse user from localStorage:', err);
+      }
+    }
+  }, [dispatch]);
+
   return (
     <div>
       <Header />
@@ -41,7 +56,7 @@ function App() {
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
       </Routes>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

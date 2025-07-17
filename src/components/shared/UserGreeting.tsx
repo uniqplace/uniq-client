@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
 
+
 const UserGreeting = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -23,6 +24,7 @@ const UserGreeting = () => {
   if (!userName) return null;
 
   return (
+
     <>
       {/* Tooltip Component */}
       <Tooltip target=".avatar-hover" content="My Account" position="bottom" />
@@ -32,6 +34,7 @@ const UserGreeting = () => {
         style={{ display: 'inline-block' }}
         onClick={() => console.log('Open dropdown menu')}
       >
+        <h2 style={{ margin: 0 }}>Hi {userName}!</h2>
         <Avatar
           image={avatarUrl || ''}
           label={!avatarUrl ? userName.charAt(0).toUpperCase() : ''}
@@ -45,6 +48,7 @@ const UserGreeting = () => {
         />
       </div>
     </>
+
   );
 };
 

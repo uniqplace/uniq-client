@@ -8,6 +8,7 @@ interface Filters {
   category: string;
   priceRange: [number, number];
   searchTerm: string;
+  creator: string;
 }
 
 interface MarketplaceState {
