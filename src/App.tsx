@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import About from './pages/About'
 import Home from './pages/Home'
 import ProductUploadForm from './features/marketplace/components/ProductUploadForm'
+import Header from './components/shared/Header'
 
 
 
@@ -27,17 +28,7 @@ function UserProfile() {
 function App() {
   return (
     <div>
-      <nav className="p-4 bg-gray-100">
-        <div className="flex gap-4">
-          <Link to="/" className="text-blue-600 hover:text-blue-800">Home</Link>
-          <Link to="/marketplace" className="text-blue-600 hover:text-blue-800">Marketplace</Link>
-          <Link to="/orders" className="text-blue-600 hover:text-blue-800">Orders</Link>
-          <Link to="/about" className="text-blue-600 hover:text-blue-800">About</Link>
-          <Link to="/register" className="text-blue-600 hover:text-blue-800">Register</Link>
-          <Link to="/login" className="text-blue-600 hover:text-blue-800">Login</Link>
-          <Link to="/uploadProduct" className="text-blue-600 hover:text-blue-800">uploadProduct</Link>
-        </div>
-      </nav>
+      <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
