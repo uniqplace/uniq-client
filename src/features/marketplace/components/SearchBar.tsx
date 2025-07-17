@@ -20,6 +20,7 @@ const SearchBar: React.FC = () => {
         const params = new URLSearchParams(location.search);
         const urlSearch = params.get('q') || '';
         setSearchTerm(urlSearch);
+        dispatch(updateFilters({ ...filters, searchTerm: urlSearch })); // keep Redux in sync with URL
     }, [location.search]);
 
     const handleSearch = () => {

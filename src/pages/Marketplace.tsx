@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 // Use VITE_MARKETPLACE_PAGE_LIMIT from .env, fallback to 12 if not set
 import { useSelector, useDispatch } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import type { RootState } from '../store';
 import type { AppDispatch } from '../store';
@@ -14,34 +15,42 @@ import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/ma
 
 const Marketplace: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  // Fetch creators and manufacturers on mount
-  useEffect(() => {
-    dispatch(fetchCreatorsAndManufacturers());
-  }, []);
-  // Fetch first page of products on mount
-  React.useEffect(() => {
-    // Fetch products when component mounts only if url doesn't have filters
-    // This prevents unnecessary fetches when filters are already applied
-    const params = new URLSearchParams(window.location.search);
-    const hasFilters = params.has('category') || params.has('creator') || 
-    params.has('minPrice') || params.has('maxPrice') || params.has('q');
-    if (!hasFilters) {
-    dispatch(fetchProducts({
-      page: 1,
-    }));
-    }
-  }, []);
-  const { products, loading, error, totalPages } = useSelector((state: RootState) => state.marketplace);
-
-  const [page, setPage] = useState(1);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const initialPage = Number(params.get('page')) || 1;
+  const [page, setPage] = useState(initialPage);
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
 
+  // Always fetch creators, and fetch products with all filters from URL on location.search change
+  useEffect(() => {
+    dispatch(fetchCreatorsAndManufacturers());
+
+    const params = new URLSearchParams(location.search);
+    const pageParam = Number(params.get('page')) || 1;
+    setPage(pageParam);
+    dispatch(fetchProducts({
+      category: params.get('category') || '',
+      creator: params.get('creator') || '',
+      minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
+      maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
+      q: params.get('q') || '',
+      page: pageParam,
+    }));
+  }, [location.search]);
+
+  const { products, loading, error, totalPages } = useSelector((state: RootState) => state.marketplace);
 
   const onPageChange = (event: { page: number }) => {
-    setPage(event.page + 1); // PrimeReact starts with 0
-    dispatch(fetchProducts({
-      page: event.page + 1,
-    }));
+    const newPage = event.page + 1; // PrimeReact starts with 0
+    setPage(newPage);
+
+    // Update URL with new page
+    const params = new URLSearchParams(location.search);
+    params.set('page', newPage.toString());
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+
+    dispatch(fetchProducts({ page: newPage }));
   };
 
   if(loading) {
