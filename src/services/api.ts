@@ -72,4 +72,9 @@ export const api = {
   getCreatorsAndManufacturers: async (): Promise<ApiResponse<{ _id: string; name: string; avatar?: string }>> => {
     return await get<{ _id: string; name: string; avatar?: string }>(`/users/creators-and-manufacturers`);
   },
+
+  // Fetch all categories with counts
+  getCategoriesWithCounts: async (): Promise<ApiResponse<any[]>> => {
+    return await get<any[]>(`/categories/with-counts`);
+  },
 };
