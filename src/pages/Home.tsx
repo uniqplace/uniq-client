@@ -5,11 +5,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
 import { setUser } from '../features/marketplace/slices/userSlice'
 import UpdateRole from '../components/shared/UpdateRole'
+import UserGreeting from '../components/shared/UserGreeting';
 import type { RoleType, User } from '../types/index';
 import { roleOptions } from '../constants/roles';
 
 function Home() {
-
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -25,7 +25,7 @@ function Home() {
   const handleRoleUpdated = (updatedUser: User) => {
     const userWithRole = {
       ...updatedUser,
-      role: updatedUser.role ?? 'customer', // או ערך ברירת מחדל מתאים
+      role: updatedUser.role ?? 'customer', 
     };
 
     dispatch(setUser(userWithRole));
@@ -35,20 +35,8 @@ function Home() {
 
   return (
     <div>
-      {user.name && (
-        <div style={{ display: 'flex', alignItems: 'center', position: 'absolute', top: 10, right: 10, gap: 8 }}>
-          <h2 style={{ margin: 0 }}>
-            Hi {user.name}!
-          </h2>
-          <Avatar
-            label={user.name.charAt(0).toUpperCase()}
-            size="large"
-            style={{ backgroundColor: '#2196F3', color: '#ffffff', marginLeft: 8 }}
-            shape="circle"
-          />
-          <Button label="Update Role" onClick={() => setShowRoleUpdate(true)} className="ml-2" />
-        </div>
-      )}
+
+      <UserGreeting />
 
       {showRoleUpdate && (
         <UpdateRole
@@ -61,8 +49,6 @@ function Home() {
 
       <h2>Home</h2>
       <p>Welcome to the home page!</p>
-      {/* <Button label="Increment" onClick={() => dispatch(increment())} />
-      <Button label="Decrement" onClick={() => dispatch(decrement())} /> */}
     </div>
   );
 }

@@ -12,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
   
@@ -24,7 +25,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
 
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
