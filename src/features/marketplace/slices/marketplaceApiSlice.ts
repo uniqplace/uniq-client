@@ -29,6 +29,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
           params: cleanParams,
         };
       },
+      transformResponse: (response: { data: Product[] }) => response.data,
       providesTags: (result) =>
         result
           ? [

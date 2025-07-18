@@ -13,7 +13,7 @@ import Register from './pages/Register'
 import Login from './pages/Login'
 import About from './pages/About'
 import Home from './pages/Home'
-import ProductUploadForm from './features/marketplace/components/ProductUploadForm'
+import CreatorProductPage from './pages/CreatorProductPage';
 
 
 function UserProfile() {
@@ -50,7 +50,7 @@ function App() {
           <Link to="/about" className="text-blue-600 hover:text-blue-800">About</Link>
           <Link to="/register" className="text-blue-600 hover:text-blue-800">Register</Link>
           <Link to="/login" className="text-blue-600 hover:text-blue-800">Login</Link>
-          <Link to="/uploadProduct" className="text-blue-600 hover:text-blue-800">uploadProduct</Link>
+          <Link to="/creatorProductPage" className="text-blue-600 hover:text-blue-800">creatorProductPage</Link>
         </div>
       </nav>
       <Routes>
@@ -62,7 +62,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/uploadProduct" element={<ProductUploadForm />} />
+        <Route path="/creatorProductPage" element={<CreatorProductPage />} />
       </Routes>
     </div>
   );

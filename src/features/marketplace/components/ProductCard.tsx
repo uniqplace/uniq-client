@@ -41,7 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </button>
           {onAddToCart && (
             <button 
-          onClick={() => onAddToCart(product._id)}
+             onClick={() => onAddToCart(product._id)}
               className="p-button p-button-success"
             >
               Add to Cart
