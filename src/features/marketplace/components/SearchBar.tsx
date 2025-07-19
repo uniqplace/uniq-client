@@ -7,6 +7,7 @@ import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
+import type { CategoryFiltersType } from '../../../types';
 
 const SearchBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
@@ -30,9 +31,20 @@ const SearchBar: React.FC = () => {
         if (trimmedSearch) params.set('q', trimmedSearch); else params.delete('q');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
         dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
+        // Parse category from URL if exists
+        let urlCategory: CategoryFiltersType | undefined = undefined;
+        const categoryParam = params.get('category');
+        if (categoryParam) {
+            try {
+                urlCategory = JSON.parse(categoryParam);
+            } catch {
+                urlCategory = undefined;
+            }
+        }
         dispatch(fetchProducts({
             ...filters,
             q: trimmedSearch,
+            category: urlCategory,
             page: 1,
         }));
     };

@@ -67,7 +67,7 @@ export interface Payment {
   status: 'pending' | 'completed' | 'failed';
   transactionId?: string;
   createdAt: Date;
-} 
+}
 
 // FormData for registration/login forms
 export type RoleType = 'customer' | 'manufacturer' | 'creator' | 'admin';
@@ -105,4 +105,9 @@ export interface Category {
   type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
   __v?: number;
   count?: number;
+}
+
+// טיפוס לפילטרים של קטגוריות (לשימוש ב-URL ובקריאת השרת)
+export interface CategoryFiltersType {
+  [key: string]: string[];
 }

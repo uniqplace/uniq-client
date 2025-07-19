@@ -12,6 +12,7 @@ import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
 import { fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
+import type { CategoryFiltersType } from '../../../types';
 
 
 const FiltersBar: React.FC = () => {
@@ -27,7 +28,18 @@ const FiltersBar: React.FC = () => {
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
 
     // Category filters state
-    const [categoryFilters, setCategoryFilters] = React.useState<Record<string, string[]>>({});
+    const [categoryFilters, setCategoryFilters] = React.useState<CategoryFiltersType>(() => {
+        const params = new URLSearchParams(window.location.search);
+        const categoryParam = params.get('category');
+        if (categoryParam) {
+            try {
+                return JSON.parse(categoryParam);
+            } catch {
+                return {};
+            }
+        }
+        return {};
+    });
 
     // Calculate min and max price from products
     interface Product {
@@ -106,10 +118,21 @@ const FiltersBar: React.FC = () => {
             filters.priceRange[1] === urlFilters.priceRange[1];
         const hasAnyUrlFilter = urlCreator || urlMinPrice || urlMaxPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
+            // נשלוף את הקטגוריות מה-URL (אם יש)
+            let urlCategory: CategoryFiltersType | undefined = undefined;
+            const categoryParam = params.get('category');
+            if (categoryParam) {
+                try {
+                    urlCategory = JSON.parse(categoryParam);
+                } catch {
+                    urlCategory = undefined;
+                }
+            }
             dispatch(updateFilters({ ...filters, ...urlFilters }));
             dispatch(fetchProducts({
                 ...filters,
                 ...urlFilters,
+                category: urlCategory,
                 minPrice: urlPriceRange[0],
                 maxPrice: urlPriceRange[1],
                 page: 1,
@@ -135,25 +158,24 @@ const FiltersBar: React.FC = () => {
 
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
-        // Update URL query params only on filter button click
+        // שמירה ב-URL: category כ-JSON בלבד
         const params = new URLSearchParams(location.search);
-        // Add category filters to params
-        Object.entries(categoryFilters).forEach(([group, values]) => {
-            if (values && values.length > 0) {
-                params.set(group, values.join(','));
-            } else {
-                params.delete(group);
-            }
+        // מחיקת כל פרמטרי הקטגוריות הישנים
+        Object.keys(categoryFilters).forEach(group => {
+            params.delete(group);
         });
+        // שמירה של כל הקטגוריות בפרמטר category כ-JSON
+        params.set('category', JSON.stringify(categoryFilters));
         if (creatorId) params.set('creator', creatorId); else params.delete('creator');
         if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
         if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
 
+        // שליחה לשרת: כל הקטגוריות כאובייקט בפרמטר category
         dispatch(updateFilters({ ...filters, ...categoryFilters, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
-            ...categoryFilters,
+            category: categoryFilters,
             creator: creatorId,
             minPrice: priceRange[0],
             maxPrice: priceRange[1],

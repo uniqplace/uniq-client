@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/api';
+import type { CategoryFiltersType } from '../../../types';
 
 // Async thunk for fetching categories with counts
 export const fetchCategoriesWithCounts = createAsyncThunk(
@@ -32,7 +33,7 @@ export const fetchProducts = createAsyncThunk(
   'marketplace/fetchProducts',
   async (params: {
     q?: string;
-    category?: string;
+    category?: CategoryFiltersType;
     creator?: string;
     minPrice?: number;
     maxPrice?: number;
