@@ -98,3 +98,11 @@ export interface Address {
   country: string;
 }
 
+export interface Category {
+  _id: string;
+  id: string;
+  name: string;
+  type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
+  __v?: number;
+  count?: number;
+}

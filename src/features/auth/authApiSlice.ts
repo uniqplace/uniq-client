@@ -27,7 +27,7 @@ const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: registerUser,
       }),
-        async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           dispatch(setCredentials({ accessToken: data.accessToken, id: data.id, user: data.user }));
@@ -42,7 +42,7 @@ const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: loginData,
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           dispatch(setCredentials({ accessToken: data.accessToken, id: data.id, user: data.user }));
