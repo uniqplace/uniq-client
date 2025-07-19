@@ -27,6 +27,7 @@ interface MarketplaceState {
   totalPages: number;
   creators: Array<{ label: string; value: string; avatar?: string }>;
   categories: Category[];
+  maxPrice?: number; // Global max price seen so far
 }
 
 const initialState: MarketplaceState = {
@@ -45,6 +46,7 @@ const initialState: MarketplaceState = {
   totalPages: 1,
   creators: [{ label: 'All', value: '' }],
   categories: [],
+  maxPrice: Number.NEGATIVE_INFINITY,
 };
 
 const marketplaceSlice = createSlice({
@@ -83,6 +85,9 @@ const marketplaceSlice = createSlice({
     },
     setCreators: (state, action: PayloadAction<Array<{ label: string; value: string; avatar?: string }>>) => {
       state.creators = action.payload;
+    },
+    setMaxPrice: (state, action: PayloadAction<number>) => {
+      state.maxPrice = action.payload;
     },
   },
   extraReducers: (builder) => {

@@ -51,7 +51,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
     >
       <p className="text-gray-600 line-clamp-2">{product.description}</p>
       <div className="mt-2">
-        <span className="text-sm text-gray-500">Category: {product.category}</span>
+        {false && (
+          <span className="text-sm text-gray-500">Category: {product.category}</span>
+        )}
         <br />
         <span className="text-sm text-gray-500">Creator: {product.creator?.name}</span>
       </div>
