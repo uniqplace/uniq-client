@@ -12,25 +12,22 @@ import { SelectButton } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
-import { useAddProductMutation } from '../slices/marketplaceApiSlice';
+import { TreeSelect } from 'primereact/treeselect';
+import {
+  useAddProductMutation
+} from '../slices/marketplaceApiSlice';
+import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
 
 interface ProductFormData {
   title: string;
   description: string;
-  category: string;
+  category: Record<string, any>;
   price: number;
   tags: string[];
-  customizationOptions?: string;
   status: 'active' | 'sold' | 'inactive';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
 }
-
-const categories = [
-  { label: 'Art', value: 'art' },
-  { label: 'Jewelry', value: 'jewelry' },
-  { label: 'Home Decor', value: 'home_decor' },
-];
 
 const statusOptions = [
   { label: 'Active', value: 'active' },
@@ -49,10 +46,12 @@ const conditionOptions = [
 const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
   title: yup.string().required('Title is required').max(100),
   description: yup.string().required('Description is required').max(1000),
-  category: yup.string().required('Category is required'),
-  price: yup.number().typeError('Price must be a number').required('Price is required').min(0, 'Price must be positive'),
+  category: yup.object().test(
+    'at-least-one',
+    'At least one category is required',
+    (value) => value && Object.keys(value).length > 0
+  ).required('Category is required'), price: yup.number().typeError('Price must be a number').required('Price is required').min(0, 'Price must be positive'),
   tags: yup.array().of(yup.string().defined()).required(),
-  customizationOptions: yup.string().optional(),
   status: yup.string().oneOf(['active', 'sold', 'inactive']).required(),
   condition: yup.string().oneOf(['new', 'like_new', 'good', 'fair', 'poor']).required(),
   location: yup.string().required('Location is required'),
@@ -61,8 +60,9 @@ const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
 const ProductUploadForm: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [addProduct, { isLoading }] = useAddProductMutation();
+  const [addProduct, { isLoading: isAddingProduct }] = useAddProductMutation();
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const { data: categoriesTree = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesTreeQuery();
 
   const {
     control,
@@ -75,10 +75,9 @@ const ProductUploadForm: React.FC = () => {
     defaultValues: {
       title: '',
       description: '',
-      category: '',
+      category: {},
       price: 0,
       tags: [],
-      customizationOptions: '',
       status: 'active',
       condition: 'new',
       location: '',
@@ -99,16 +98,17 @@ const ProductUploadForm: React.FC = () => {
         formData.append(key, value);
       }
     });
-
     images.forEach((file) => formData.append('images', file));
-
+    const selectedCategories = Object.keys(data.category || {});
+    selectedCategories.forEach((catId) => formData.append('categories', catId));
     try {
       await addProduct(formData).unwrap();
       reset();
       setImages([]);
       setImageError(null);
       setUploadError(null);
-    } catch {
+    } catch (err) {
+      console.error("Failed to upload product:", err);
       setUploadError('Failed to upload product. Please try again.');
     }
   };
@@ -118,9 +118,31 @@ const ProductUploadForm: React.FC = () => {
     setImages(uploadedFiles);
     if (uploadedFiles.length > 0) setImageError(null);
   }, []);
-
+  function addSelectable(nodes: any[]): any[] {
+    return nodes.map(node => ({
+      ...node,
+      selectable: true,
+      children: node.children ? addSelectable(node.children) : undefined,
+    }));
+  }
   const renderError = (fieldName: keyof ProductFormData) =>
     errors[fieldName] ? <Message severity="error" text={errors[fieldName]?.message?.toString()} /> : null;
+
+  if (categoriesLoading) {
+    return (
+      <Card title="Upload New Product" className="p-4 w-full md:w-1/1 mx-auto">
+        <div>Loading categories...</div>
+      </Card>
+    );
+  }
+
+  if (categoriesError) {
+    return (
+      <Card title="Upload New Product" className="p-4 w-full md:w-1/1 mx-auto">
+        <Message severity="error" text="Error loading categories" />
+      </Card>
+    );
+  }
 
   return (
     <Card title="Upload New Product" className="p-4 w-full md:w-1/1 mx-auto">
@@ -140,7 +162,17 @@ const ProductUploadForm: React.FC = () => {
             name="category"
             control={control}
             render={({ field }) => (
-              <Dropdown {...field} options={categories} placeholder="Select Category" className={errors.category ? 'p-invalid w-full' : 'w-full'} />
+              <TreeSelect
+                {...field}
+                value={field.value}
+                onChange={(e) => field.onChange(e.value)}
+                options={addSelectable(categoriesTree)}
+                placeholder="Select Category"
+                className={errors.category ? 'p-invalid w-full' : 'w-full'}
+                filter
+                selectionMode="checkbox"
+                display="chip"
+              />
             )}
           />
           {renderError('category')}
@@ -186,15 +218,6 @@ const ProductUploadForm: React.FC = () => {
           />
           {imageError && <Message severity="error" text={imageError} />}
         </div>
-
-        <Controller
-          name="customizationOptions"
-          control={control}
-          render={({ field }) => (
-            <InputTextarea {...field} rows={2} placeholder="Customization Options (Optional)" className="w-full" />
-          )}
-        />
-
         <Controller
           name="status"
           control={control}
@@ -215,7 +238,7 @@ const ProductUploadForm: React.FC = () => {
           {renderError('location')}
         </div>
 
-        <Button type="submit" label="Submit Product" icon="pi pi-check" className="w-fit self-end" loading={isLoading} />
+        <Button type="submit" label="Submit Product" icon="pi pi-check" className="w-fit self-end" loading={isAddingProduct} />
         {uploadError && <Message severity="error" text={uploadError} />}
       </form>
     </Card>

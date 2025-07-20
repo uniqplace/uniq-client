@@ -7,10 +7,9 @@ import ProductCard from '../features/marketplace/components/ProductCard';
 import type { RootState } from '../store';
 import type { AppDispatch } from '../store';
 import { fetchProducts } from '../features/marketplace/thunks';
-import MarketplaceFilters from '../features/marketplace/components/MarketplaceFilters';
-import { Paginator } from 'primereact/paginator';
+import FiltersBar from '../features/marketplace/components/FiltersBar';import { Paginator } from 'primereact/paginator';
 import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/marketplaceThunks';
-
+import SearchBar from '../features/marketplace/components/SearchBar';
 
 
 const Marketplace: React.FC = () => {
@@ -29,8 +28,23 @@ const Marketplace: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
+    // Parse category from URL if exists
+    let urlCategory: string[] | undefined = undefined;
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      try {
+        const parsed = JSON.parse(categoryParam);
+        if (Array.isArray(parsed)) {
+          urlCategory = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        } else if (parsed && typeof parsed === 'object') {
+          urlCategory = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        }
+      } catch {
+        urlCategory = undefined;
+      }
+    }
     dispatch(fetchProducts({
-      category: params.get('category') || '',
+      category: urlCategory,
       creator: params.get('creator') || '',
       minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
       maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
@@ -75,40 +89,52 @@ const Marketplace: React.FC = () => {
     );
   }
 
+  // Import SearchBar here to use it above the grid
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+
   return (
     <>
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
-      {/* Search/Filter Form */}
-      <MarketplaceFilters />
-
-      {/* Products Grid */}
-      <section className="bg-gray-50 rounded-lg p-4 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-500 py-8">Products not found</div>
-          ) : (
-            products.map(product => (
-              <ProductCard
-                key={product._id}
-                product={product}
-              />
-            ))
-          )}
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
+        {/* Search Bar above grid and filters */}
+        <div className="mb-6">
+          <SearchBar />
         </div>
-      </section>
-      {/* Pagination */}
-      <div className="flex justify-center mt-8">
-        <Paginator
-          first={((page - 1) * limit)}
-          rows={limit}
-          totalRecords={totalPages ? totalPages * limit : 0}
-          onPageChange={onPageChange}
-          template="PrevPageLink PageLinks NextPageLink"
-        />
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar Filters */}
+          <div className="w-full md:w-64 flex-shrink-0">
+            <FiltersBar />
+          </div>
+          {/* Products Grid */}
+          <div className="flex-1">
+            <section className="bg-gray-50 rounded-lg p-4 mb-8">
+              <h2 className="text-xl font-semibold mb-4">Products</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.length === 0 ? (
+                  <div className="col-span-3 text-center text-gray-500 py-8">Products not found</div>
+                ) : (
+                  products.map(product => (
+                    <ProductCard
+                      key={product._id}
+                      product={product}
+                    />
+                  ))
+                )}
+              </div>
+            </section>
+            {/* Pagination */}
+            <div className="flex justify-center mt-8">
+              <Paginator
+                first={((page - 1) * limit)}
+                rows={limit}
+                totalRecords={totalPages ? totalPages * limit : 0}
+                onPageChange={onPageChange}
+                template="PrevPageLink PageLinks NextPageLink"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
     </>
   );
 };

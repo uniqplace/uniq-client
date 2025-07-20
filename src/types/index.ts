@@ -6,7 +6,9 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: RoleType; // הוסף שדה זה
+  role: RoleType; 
+  bio?: string; // Optional field for user bio
+  createdAt?: Date;
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
@@ -67,7 +69,7 @@ export interface Payment {
   status: 'pending' | 'completed' | 'failed';
   transactionId?: string;
   createdAt: Date;
-} 
+}
 
 // FormData for registration/login forms
 export type RoleType = 'customer' | 'manufacturer' | 'creator' | 'admin';
@@ -98,3 +100,29 @@ export interface Address {
   country: string;
 }
 
+export interface Category {
+  _id: string;
+  name: string;
+  type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
+  category: string; // לדוג' 'electronics', 'clothing', 'accessories' וכו'
+  count?: number;
+}
+
+export type CategoryFiltersType = string[];
+
+export interface ICategory {
+  _id: string;
+  name: string;  
+  createdAt?: string; 
+  updatedAt?: string; 
+}
+
+export interface ISubCategory {
+  _id: string;  
+  name: string;
+  type: 'audience' | 'itemType' | 'purpose' | string; 
+  category: string; 
+  count?: number; 
+  createdAt?: string; 
+  updatedAt?: string;
+}

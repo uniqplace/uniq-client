@@ -6,22 +6,25 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import Cookies from 'js-cookie';
+import { setUser } from '../features/marketplace/slices/userSlice';
+import { fetchCurrentUser } from '../features/marketplace/thunks/userThunk';
+import { useAppDispatch, useAppSelector } from '../hooks/hooks';
+import type { RootState } from '../store';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state: RootState) => state.user);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-  
-    const savedEmail = localStorage.getItem('prefillEmail');
-    if (savedEmail) setEmail(savedEmail);
-    localStorage.removeItem('prefillEmail');
-    // נקה גם את הסיסמה מה-state
+    if (user?.email) setEmail(user.email);
+    // אפשר גם למלא סיסמה ריקה
     setPassword('');
-  }, []);
+  }, [user]);
 
   const handleLogin = async () => {
     try {
@@ -30,6 +33,8 @@ const Login = () => {
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        dispatch(setUser(res.data.user));
+        dispatch(fetchCurrentUser()); // למשוך את היוזר החדש מהשרת
         // נקה את הערכים מה-state וה־localStorage
         setEmail('');
         setPassword('');
@@ -74,6 +79,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={isInvalid(email) ? 'p-invalid' : ''}
               placeholder="Enter your email"
+              readOnly={!!user?.email} // אם יש user, השדה לקריאה בלבד
             />
           </div>
 

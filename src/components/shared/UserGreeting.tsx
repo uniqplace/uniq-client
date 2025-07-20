@@ -1,38 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../../store';
 import { Avatar } from 'primereact/avatar';
+import { Tooltip } from 'primereact/tooltip';
+import { Menu } from 'primereact/menu';
+import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { clearUser } from '../../features/marketplace/slices/userSlice';
+import { api } from '../../services/api';
 
 const UserGreeting = () => {
-  const [userName, setUserName] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.user);
+  const menuRef = useRef<Menu>(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setUserName(user.fullName || user.name || '');
-        setAvatarUrl(user.avatar || null);
-      } catch {
-        setUserName('');
-        setAvatarUrl(null);
-      }
-    }
-  }, []);
+  if (!user || !user.name) return null;
 
-  if (!userName) return null;
+  const handleLogout = async () => {
+    await api.logoutApi();
+    dispatch(clearUser());
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    // מחק גם עוגיות אם צריך
+    navigate('/login');
+  };
+
+  const menuItems = [
+    { label: 'My Profile', icon: 'pi pi-user', command: () => navigate('/profile') },
+    { label: 'Logout', icon: 'pi pi-sign-out', command: handleLogout }
+  ];
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', position: 'absolute', top: 10, right: 10, gap: 8 }}>
-      <h2 style={{ margin: 0 }}>Hi {userName}!</h2>
-      <Avatar
-        label={userName.charAt(0).toUpperCase()}
-        size="large"
-        style={{ backgroundColor: '#2196F3', color: '#ffffff', marginLeft: 8 }}
-        shape="circle"
-      />
-    </div>
+    <>
+      <Tooltip target=".avatar-hover" content="My Account" position="bottom" />
+      <Menu model={menuItems} popup ref={menuRef} />
+      <div
+        className="avatar-hover flex flex-row-reverse items-center gap-2 cursor-pointer"
+        onClick={(e) => menuRef.current?.toggle(e)}
+      >
+        <Avatar
+          image={user.avatarUrl || undefined}
+          label={!user.avatarUrl && user.name ? user.name.charAt(0).toUpperCase() : undefined}
+          shape="circle"
+          size="normal"
+          style={{ backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined, color: '#fff', fontSize: 18 }}
+        />
+        <span className="text-base font-medium text-blue-700">Hi {user.name}!</span>
+      </div>
+    </>
   );
 };
 
 export default UserGreeting;
-
