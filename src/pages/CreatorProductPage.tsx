@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { useGetProductsQuery } from '../features/marketplace/slices/marketplaceApiSlice';
+import { useGetUserProductsQuery } from '../features/marketplace/slices/marketplaceApiSlice';
 import ProductUploadForm from '../features/marketplace/components/ProductUploadForm';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import { Dialog } from 'primereact/dialog';
+import SearchBar from '../features/marketplace/components/SearchBar';
+import type { Product } from '../types';
 
 const CreatorProductPage: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState('');
     const [showUploadForm, setShowUploadForm] = useState(false);
-    const { data: products, isLoading, error } = useGetProductsQuery({
-        searchTerm,
-    });
+    const { data: products, isLoading, error } = useGetUserProductsQuery();
+    const [editProduct, setEditProduct] = useState<Product | null>(null);
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
@@ -31,7 +30,19 @@ const CreatorProductPage: React.FC = () => {
                     <ProductUploadForm />
                 </Dialog>
             </div>
-
+            <Dialog
+                header="Edit Product"
+                visible={!!editProduct}
+                style={{ width: '50vw' }}
+                onHide={() => setEditProduct(null)}
+            >
+                {editProduct && (
+                    <ProductUploadForm
+                        product={{ ...editProduct, images: editProduct.images || []}}
+                        onSuccess={() => setEditProduct(null)}
+                    />
+                )}
+            </Dialog>
             {showUploadForm && (
                 <div className="mb-8">
                     <ProductUploadForm />
@@ -45,12 +56,7 @@ const CreatorProductPage: React.FC = () => {
             )}
 
             <div className="mb-4">
-                <InputText
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    placeholder="Search products..."
-                    className="w-full"
-                />
+                <SearchBar />
             </div>
 
             {isLoading ? (
@@ -63,6 +69,7 @@ const CreatorProductPage: React.FC = () => {
                         <ProductCard
                             key={product._id}
                             product={product}
+                            onUpdateMode={setEditProduct}
                         />
                     ))}
                 </div>

@@ -6,11 +6,13 @@ import type { Product } from '../../../types';
 interface ProductCardProps {
   product: Product;
   onAddToCart?: (productId: string) => void;
+  onUpdateMode?: (product: Product) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ 
   product, 
-  onAddToCart 
+  onAddToCart ,
+  onUpdateMode
 }) => {
   const navigate = useNavigate();
 
@@ -45,6 +47,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
               className="p-button p-button-success"
             >
               Add to Cart
+            </button>
+          )}
+           {onUpdateMode && (
+            <button
+              onClick={() => onUpdateMode(product)}
+              className="p-button p-button-warning"
+            >
+              Edit
             </button>
           )}
         </div>

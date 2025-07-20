@@ -33,15 +33,15 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
-              { type: 'Product', id: 'LIST' },
-            ]
+            ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
+            { type: 'Product', id: 'LIST' },
+          ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
 
     addProduct: builder.mutation<Product, FormData>({
       query: (formData) => ({
-        
+
         url: '/api/products',
         method: 'POST',
         body: formData,
@@ -49,12 +49,15 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
-    updateProduct: builder.mutation<Product, Partial<Product>>({
-      query: (updatedProduct) => ({
-        url: `/api/products/${updatedProduct._id}`,
-        method: 'PUT',
-        body: updatedProduct,
-      }),
+    updateProduct: builder.mutation<Product, any>({
+      query: (updatedProduct) => {
+        const isFormData = updatedProduct instanceof FormData;
+        return {
+          url: `/api/products/${isFormData ? updatedProduct.get('_id') : updatedProduct._id}`,
+          method: 'PUT',
+          body: updatedProduct,
+        };
+      },
       invalidatesTags: (result, error, { _id }) => [
         { type: 'Product', id: _id },
         { type: 'Product', id: 'LIST' },
@@ -76,6 +79,20 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/api/products/${id}`,
       providesTags: (result, error, id) => [{ type: 'Product', id }],
     }),
+    getUserProducts: builder.query<Product[], void>({
+      query: () => ({
+        url: '/api/products/user/me',
+        method: 'GET',
+      }),
+      transformResponse: (response: { data: Product[] }) => response.data,
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
+            { type: 'Product', id: 'LIST' },
+          ]
+          : [{ type: 'Product', id: 'LIST' }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -86,4 +103,5 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useGetProductByIdQuery,
+  useGetUserProductsQuery, // Add this line to export the new query
 } = marketplaceApiSlice;
