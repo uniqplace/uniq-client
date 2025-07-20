@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import debounce from 'lodash/debounce';
 import { AutoComplete } from 'primereact/autocomplete';
-import { Dropdown } from 'primereact/dropdown';
+import CategoryFilters from './CategoryFilters';
 import { Slider } from 'primereact/slider';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { Button } from 'primereact/button';
@@ -10,15 +10,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
+import { fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 
-
-const categories = [
-    { label: 'All', value: '' },
-    { label: 'Clothes', value: 'clothes' },
-    { label: 'Shoes', value: 'shoes' },
-    { label: 'Accessories', value: 'accessories' },
-];
 
 const FiltersBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
@@ -27,10 +21,12 @@ const FiltersBar: React.FC = () => {
     const location = useLocation();
 
     // State for filters, initialized from Redux
-    const [category, setCategory] = React.useState(filters.category || '');
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = React.useState(initialCreator);
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
+
+    // Category filters state
+    const [categoryFilters, setCategoryFilters] = React.useState<Record<string, string[]>>({});
 
     // Calculate min and max price from products
     interface Product {
@@ -55,8 +51,8 @@ const FiltersBar: React.FC = () => {
 
     // On mount, read filters from URL and trigger filtering if needed
     useEffect(() => {
+
         const params = new URLSearchParams(location.search);
-        const urlCategory = params.get('category') || '';
         const urlCreator = params.get('creator') || '';
         const urlMinPrice = params.get('minPrice');
         const urlMaxPrice = params.get('maxPrice');
@@ -64,7 +60,6 @@ const FiltersBar: React.FC = () => {
             urlMinPrice ? Number(urlMinPrice) : minProductPrice,
             urlMaxPrice ? Number(urlMaxPrice) : maxProductPrice
         ];
-        setCategory(urlCategory);
         setCreator(
             creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlCreator) || null
         );
@@ -72,17 +67,15 @@ const FiltersBar: React.FC = () => {
 
         // Only trigger filter if URL params exist and differ from Redux
         const urlFilters = {
-            category: urlCategory,
             creator: urlCreator,
             priceRange: urlPriceRange
         };
         const filtersMatch =
-            filters.category === urlFilters.category &&
             filters.creator === urlFilters.creator &&
             Array.isArray(filters.priceRange) &&
             filters.priceRange[0] === urlFilters.priceRange[0] &&
             filters.priceRange[1] === urlFilters.priceRange[1];
-        const hasAnyUrlFilter = urlCategory || urlCreator || urlMinPrice || urlMaxPrice;
+        const hasAnyUrlFilter = urlCreator || urlMinPrice || urlMaxPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
             dispatch(updateFilters({ ...filters, ...urlFilters }));
             dispatch(fetchProducts({
@@ -95,20 +88,33 @@ const FiltersBar: React.FC = () => {
         }
     }, [location.search, creators]);
 
+    useEffect(() => {
+        // Fetch categories on mount
+        dispatch(fetchCategoriesWithCounts());
+
+    },[])
+
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
         // Update URL query params only on filter button click
         const params = new URLSearchParams(location.search);
-        if (category) params.set('category', category); else params.delete('category');
+        // Add category filters to params
+        Object.entries(categoryFilters).forEach(([group, values]) => {
+            if (values && values.length > 0) {
+                params.set(group, values.join(','));
+            } else {
+                params.delete(group);
+            }
+        });
         if (creatorId) params.set('creator', creatorId); else params.delete('creator');
         if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
         if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
 
-        dispatch(updateFilters({ ...filters, category, creator: creatorId, priceRange }));
+        dispatch(updateFilters({ ...filters, ...categoryFilters, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
-            category,
+            ...categoryFilters,
             creator: creatorId,
             minPrice: priceRange[0],
             maxPrice: priceRange[1],
@@ -132,12 +138,13 @@ const FiltersBar: React.FC = () => {
     };
 
     return (
-        <div className="p-6 bg-white rounded shadow flex flex-col md:flex-row gap-6 items-center w-full mb-8">
-            <span className="p-float-label w-full md:w-48">
-                <Dropdown id="category" value={category} options={categories} onChange={(e: { value: string }) => setCategory(e.value)} />
-                <label htmlFor="category">Category</label>
-            </span>
-            <span className="p-float-label w-full md:w-48">
+        <aside className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8" style={{ minWidth: 220, maxWidth: 320 }}>
+            <Button label="Filter" icon="pi pi-filter" onClick={handleFilter} className="mb-4 p-button-outlined p-button-rounded filter-btn w-full" />
+            <CategoryFilters
+                selected={categoryFilters}
+                onChange={(group, values) => setCategoryFilters(prev => ({ ...prev, [group]: values }))}
+            />
+            <span className="p-float-label w-full">
                 <AutoComplete
                     id="creator"
                     value={creator}
@@ -156,10 +163,11 @@ const FiltersBar: React.FC = () => {
                     dropdown
                     forceSelection
                     placeholder="Select Creator"
+                    className="w-full"
                 />
                 <label htmlFor="creator">Creator</label>
             </span>
-            <span className="w-full md:w-56">
+            <span className="w-full">
                 <Button
                     label={`Price: $${priceRange[0]} - $${priceRange[1]}`}
                     icon="pi pi-chevron-down"
@@ -187,9 +195,7 @@ const FiltersBar: React.FC = () => {
                     </div>
                 </OverlayPanel>
             </span>
-            <Button label="Filter" icon="pi pi-filter" onClick={handleFilter} className="mt-4 md:mt-0 p-button-outlined p-button-rounded filter-btn" />
-        </div>
-
+        </aside>
     );
 };
 

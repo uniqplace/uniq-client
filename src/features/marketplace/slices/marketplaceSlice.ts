@@ -1,8 +1,8 @@
 // src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Product } from '../../../types';
+import type { Category, Product } from '../../../types';
 import { fetchProducts, fetchProduct } from '../thunks';
-import { fetchCreatorsAndManufacturers } from '../thunks/index';
+import { fetchCreatorsAndManufacturers, fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 
 interface Filters {
   category: string;
@@ -26,6 +26,7 @@ interface MarketplaceState {
   };
   totalPages: number;
   creators: Array<{ label: string; value: string; avatar?: string }>;
+  categories: Category[];
 }
 
 const initialState: MarketplaceState = {
@@ -43,6 +44,7 @@ const initialState: MarketplaceState = {
   },
   totalPages: 1,
   creators: [{ label: 'All', value: '' }],
+  categories: [],
 };
 
 const marketplaceSlice = createSlice({
@@ -92,7 +94,7 @@ const marketplaceSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         if (Array.isArray(action.payload?.data)) {
-          state.products = action.payload.data;          
+          state.products = action.payload.data;
           state.totalPages = action.payload.totalPages || 1;
         }
       })
@@ -100,9 +102,6 @@ const marketplaceSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-    // Fetch creators and manufacturers async actions
-    builder
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
         // action.payload.data should be an array of users { id, name, avatar }
         const users = Array.isArray(action.payload) ? action.payload : [];
@@ -112,10 +111,14 @@ const marketplaceSlice = createSlice({
           avatar: user.avatar
         }));
         state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
-      });
-
-    // Fetch single product async actions
-    builder
+      })
+      .addCase(fetchCategoriesWithCounts.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.categories = action.payload;
+        } else if (action.payload?.data) {
+          state.categories = action.payload.data;
+        }
+      })
       .addCase(fetchProduct.pending, (state) => {
         state.productLoading = true;
         state.productError = null;

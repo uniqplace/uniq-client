@@ -1,6 +1,18 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/api';
 
+// Async thunk for fetching categories with counts
+export const fetchCategoriesWithCounts = createAsyncThunk(
+  'marketplace/fetchCategoriesWithCounts',
+  async (_, { rejectWithValue }) =>
+    asyncThunkHelper(
+      () => api.getCategoriesWithCounts(),
+      rejectWithValue,
+      'Failed to fetch categories with counts',
+      (res) => res
+    )
+);
+
 // Shared async thunk helper for API calls
 async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: any) => any, fallbackMsg: string, postProcess?: (data: any) => T): Promise<T | ReturnType<typeof rejectWithValue>> {
   try {
