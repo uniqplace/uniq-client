@@ -5,13 +5,16 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { updateUser } from '../features/marketplace/slices/userSlice';
-import { useNavigate } from 'react-router-dom'; // ← הוסף ייבוא
+import { useNavigate } from 'react-router-dom';
+import UpdateRole from '../components/shared/UpdateRole'; // ← ייבוא הקומפוננטה
+import { roleOptions } from '../constants/roles'; // ← ייבוא האופציות
+import { Dropdown } from 'primereact/dropdown';
 
 const ProfilePage = () => {
   const user = useAppSelector((state) => state.user);
   const loading = useAppSelector((state) => state.user.loading);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate(); // ← הוסף
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: user.name || '',
@@ -22,11 +25,13 @@ const ProfilePage = () => {
         : user.avatar && user.avatar.trim() !== ''
           ? user.avatar
           : null,
+    role: user.role || '', // ← הוסף שדה role
   });
 
   const [editMode, setEditMode] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const [showRoleUpdate, setShowRoleUpdate] = useState(false); // ← סטייט חדש
 
   useEffect(() => {
     setFormData({
@@ -38,6 +43,7 @@ const ProfilePage = () => {
           : user.avatar && user.avatar.trim() !== ''
             ? user.avatar
             : null,
+      role: user.role || '', // ← הוסף שדה role
     });
     setAvatarError(false);
   }, [user]);
@@ -72,6 +78,7 @@ const ProfilePage = () => {
         name: formData.name,
         bio: formData.bio,
         avatarUrl: formData.avatarUrl,
+        role: formData.role, // ← הוסף role
       }),
     );
 
@@ -81,6 +88,7 @@ const ProfilePage = () => {
         name: actionResult.payload.name || '',
         bio: actionResult.payload.bio || '',
         avatarUrl: actionResult.payload.avatarUrl || null,
+        role: actionResult.payload.role || '',
       });
       setEditMode(false);
     } else {
@@ -98,9 +106,16 @@ const ProfilePage = () => {
           : user.avatar && user.avatar.trim() !== ''
             ? user.avatar
             : null,
+      role: user.role || '', // ← הוסף שורה זו
     });
     setEditMode(false);
     setAvatarError(false);
+  };
+
+  // פונקציה לעדכון רול
+  const handleRoleUpdated = (updatedUser: any) => {
+    dispatch(updateUser(updatedUser));
+    setShowRoleUpdate(false);
   };
 
   if (loading) {
@@ -139,14 +154,45 @@ const ProfilePage = () => {
         <>
           <h2 className="text-2xl font-bold">{formData.name}</h2>
           <p><b>Email:</b> {user.email}</p>
-          <p><b>Role:</b> {user.role}</p>
+          <div className="flex items-center gap-2">
+            <b>Role:</b>
+            <span>{user.role}</span>
+          </div>
           <p><b>Bio:</b> {formData.bio || 'No bio provided'}</p>
           <Button label="Edit Profile" icon="pi pi-pencil" onClick={() => setEditMode(true)} />
         </>
       ) : (
         <>
-          <InputText name="name" value={formData.name} onChange={handleChange} placeholder="Name" className="w-full mb-2" />
-          <InputTextarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Your Bio" rows={3} className="w-full mb-2" />
+          <InputText
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Name"
+            className="w-full mb-2"
+          />
+          <InputTextarea
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="Your Bio"
+            rows={3}
+            className="w-full mb-2"
+          />
+          {/* Dropdown for role selection */}
+          <div className="w-full mb-2">
+            <label htmlFor="role" className="block mb-1 font-bold">Role</label>
+            <Dropdown
+              id="role"
+              name="role"
+              value={formData.role}
+              options={roleOptions}
+              optionLabel="label"
+              optionValue="value"
+              onChange={(e) => setFormData({ ...formData, role: e.value })}
+              placeholder="Select Role"
+              className="w-full"
+            />
+          </div>
           <InputText
             name="avatarUrl"
             value={formData.avatarUrl || ''}
