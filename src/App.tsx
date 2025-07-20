@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
@@ -33,6 +33,7 @@ function UserProfile() {
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((state: RootState) => state.user);
   const loading = user.loading;
   const [wasLoading, setWasLoading] = useState(false);
@@ -46,11 +47,17 @@ function App() {
   }, [loading]);
 
   useEffect(() => {
-    if (wasLoading && !loading && (!user?.id || !user?.email)) {
+    if (
+      wasLoading &&
+      !loading &&
+      (!user?.id || !user?.email) &&
+      location.pathname !== '/login' &&
+      location.pathname !== '/register'
+    ) {
       console.log('Redirecting to login', { user, loading });
       navigate('/login');
     }
-  }, [user?.id, user?.email, loading, wasLoading, navigate]);
+  }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
 
   useEffect(() => {
     console.log('user state:', user);
@@ -64,7 +71,6 @@ function App() {
     <div>
       <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/orders" element={<Orders />} />
@@ -72,6 +78,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
