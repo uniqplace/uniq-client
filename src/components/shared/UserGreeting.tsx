@@ -6,7 +6,7 @@ import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clearUser } from '../../features/marketplace/slices/userSlice';
-import { logoutApi } from '../../services/api';
+import { api } from '../../services/api';
 
 const UserGreeting = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -17,7 +17,7 @@ const UserGreeting = () => {
   if (!user || !user.name) return null;
 
   const handleLogout = async () => {
-    await logoutApi();
+    await api.logoutApi();
     dispatch(clearUser());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -39,11 +39,11 @@ const UserGreeting = () => {
         onClick={(e) => menuRef.current?.toggle(e)}
       >
         <Avatar
-          image={user.avatar || undefined}
-          label={!user.avatar && user.name ? user.name.charAt(0).toUpperCase() : undefined}
+          image={user.avatarUrl || undefined}
+          label={!user.avatarUrl && user.name ? user.name.charAt(0).toUpperCase() : undefined}
           shape="circle"
           size="normal"
-          style={{ backgroundColor: !user.avatar ? '#1d4ed8' : undefined, color: '#fff', fontSize: 18 }}
+          style={{ backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined, color: '#fff', fontSize: 18 }}
         />
         <span className="text-base font-medium text-blue-700">Hi {user.name}!</span>
       </div>

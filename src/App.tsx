@@ -1,5 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
 import type { AppDispatch, RootState } from './store';
@@ -8,6 +8,7 @@ import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import './App.css';
+import './index.css';
 
 import Marketplace from './pages/Marketplace';
 import Orders from './pages/Orders';
@@ -31,18 +32,32 @@ function UserProfile() {
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.user);
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user);
+  const loading = user.loading;
+  const [wasLoading, setWasLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (loading) setWasLoading(true);
+  }, [loading]);
+
+  useEffect(() => {
+    if (wasLoading && !loading && (!user?.id || !user?.email)) {
+      console.log('Redirecting to login', { user, loading });
+      navigate('/login');
+    }
+  }, [user?.id, user?.email, loading, wasLoading, navigate]);
+
+  useEffect(() => {
+    console.log('user state:', user);
+  }, [user]);
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-lg font-semibold">Loading...</div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (

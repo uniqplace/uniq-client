@@ -20,8 +20,8 @@ const initialState: UserState = {
   email: null,
   avatar: null,
   avatarUrl: null,
-  role: null,
   bio: null,
+  role: null,
   loading: false,
   error: null,
 };
