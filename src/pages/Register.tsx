@@ -10,12 +10,13 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
 import { classNames } from 'primereact/utils';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../features/marketplace/slices/userSlice';
 import Cookies from 'js-cookie';
 import { Dropdown } from 'primereact/dropdown';
 import type { RegisterFormData } from '../types/index';
 import { roleOptions } from '../constants/roles';
+import type{ RootState } from '../store';
 
 const schema = yup.object().shape({
   fullName: yup
@@ -45,6 +46,7 @@ const Register: React.FC = () => {
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user);
 
   const {
     register,
@@ -142,6 +144,13 @@ const Register: React.FC = () => {
       }
     }
   }, [dispatch]);
+
+  useEffect(() => {
+    if (user?.id && user?.email) {
+      // אם המשתמש כבר מחובר, העבר אותו ל-login
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   return (
     <div className="flex justify-center mt-10">
