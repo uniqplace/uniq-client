@@ -2,7 +2,7 @@
 // API Service Layer - handles all HTTP requests to the backend
 // This centralizes all API calls and makes them reusable across components
 
-import type { Category, CategoryFiltersType, Product } from '../types';
+import type { Category, Product } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api';
 
@@ -45,7 +45,7 @@ export const api = {
   // Fetch products with filters and pagination
   getProducts: async (params: {
     q?: string;
-    category?: CategoryFiltersType;
+    category?: string[];
     creator?: string;
     minPrice?: number;
     maxPrice?: number;
@@ -75,6 +75,6 @@ export const api = {
 
   // Fetch all categories
   getCategoriesWithCounts: async (): Promise<ApiResponse<Category[]>> => {
-    return await get<Category[]>(`/categories`);
+    return await get<Category[]>(`/subcategories`);
   },
 };

@@ -29,11 +29,16 @@ const Marketplace: React.FC = () => {
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
     // Parse category from URL if exists
-    let urlCategory: import('../types').CategoryFiltersType | undefined = undefined;
+    let urlCategory: string[] | undefined = undefined;
     const categoryParam = params.get('category');
     if (categoryParam) {
       try {
-        urlCategory = JSON.parse(categoryParam);
+        const parsed = JSON.parse(categoryParam);
+        if (Array.isArray(parsed)) {
+          urlCategory = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        } else if (parsed && typeof parsed === 'object') {
+          urlCategory = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        }
       } catch {
         urlCategory = undefined;
       }

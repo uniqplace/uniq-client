@@ -59,7 +59,8 @@ const SearchBar: React.FC = () => {
                         id="search"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pr-8"
+                        className="w-full pr-8 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        style={{ height: '40px', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                         onKeyDown={e => {
                             if (e.key === 'Enter') handleSearch();
                         }}
@@ -83,7 +84,7 @@ const SearchBar: React.FC = () => {
                             />
                         </span>
                     )}
-                    <label htmlFor="search">Search</label>
+                    <label htmlFor="search">Search product, brand etc...</label>
                 </span>
                 <Button
                     label="Search"

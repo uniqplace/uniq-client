@@ -100,14 +100,11 @@ export interface Address {
 
 export interface Category {
   _id: string;
-  id: string;
   name: string;
   type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
-  __v?: number;
+  category: string; // לדוג' 'electronics', 'clothing', 'accessories' וכו'
   count?: number;
 }
 
 // טיפוס לפילטרים של קטגוריות (לשימוש ב-URL ובקריאת השרת)
-export interface CategoryFiltersType {
-  [key: string]: string[];
-}
+export type CategoryFiltersType = string[];

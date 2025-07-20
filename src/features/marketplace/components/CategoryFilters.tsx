@@ -11,8 +11,8 @@ const CATEGORY_TYPE_MAP: Record<string, { label: string }> = {
 };
 
 interface CategoryFiltersProps {
-  selected: Record<string, string[]>;
-  onChange: (groupName: string, values: string[]) => void;
+  selected: string[];
+  onChange: (values: string[]) => void;
 }
 
 const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange }) => {
@@ -58,10 +58,11 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
             </Divider>
             <div className="flex flex-col gap-2">
               {group.options.map((option) => {
-                const checked = selected[group.name]?.includes(option.value) || false;
+                const categoryName = option.label.replace(/ \(\d+\)$/, '');
+                const checked = selected.includes(categoryName);
                 return (
                   <label
-                    key={option.value}
+                    key={option.label}
                     className={`flex items-center gap-2 cursor-pointer ${checked ? 'font-semibold text-blue-700' : ''}`}
                     role="checkbox"
                     aria-checked={checked}
@@ -70,15 +71,14 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                       inputId={`${group.name}-${option.value}`}
                       checked={checked}
                       onChange={e => {
-                        const checked = e.checked;
-                        const prev = selected[group.name] || [];
+                        const isChecked = e.checked;
                         let next: string[];
-                        if (checked) {
-                          next = [...prev, option.value];
+                        if (isChecked) {
+                          next = [...selected, categoryName];
                         } else {
-                          next = prev.filter(v => v !== option.value);
+                          next = selected.filter(v => v !== categoryName);
                         }
-                        onChange(group.name, next);
+                        onChange(next);
                       }}
                     />
                     <span>{option.label}</span>

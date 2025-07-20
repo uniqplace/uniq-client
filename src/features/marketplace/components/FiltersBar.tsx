@@ -12,47 +12,43 @@ import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
 import { fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
-import type { CategoryFiltersType } from '../../../types';
+import type { CategoryFiltersType, Product } from '../../../types';
 
 
 const FiltersBar: React.FC = () => {
+    // Ref for AutoComplete input
     const dispatch: AppDispatch = useDispatch();
     const { filters, creators, products, maxPrice: globalMaxPrice } = useSelector((state: RootState) => state.marketplace);
-    // const [visible, setVisible] = useState(true); // No longer needed
     const navigate = useNavigate();
     const location = useLocation();
-
     // State for filters, initialized from Redux
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = React.useState(initialCreator);
+    const [searchValue, setSearchValue] = React.useState<string | null>(null);
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
-
-    // Category filters state
-    const [categoryFilters, setCategoryFilters] = React.useState<CategoryFiltersType>(() => {
+    // Category filters state: flat array of category names
+    const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
         const categoryParam = params.get('category');
         if (categoryParam) {
             try {
-                return JSON.parse(categoryParam);
+                const parsed = JSON.parse(categoryParam);
+                if (Array.isArray(parsed)) {
+                    return parsed;
+                } else if (parsed && typeof parsed === 'object') {
+                    // If old grouped object, flatten to array of names
+                    return Object.values(parsed).flat().filter(Boolean);
+                }
             } catch {
-                return {};
+                return [];
             }
         }
-        return {};
+        return [];
     });
-
-    // Calculate min and max price from products
-    interface Product {
-        price: number;
-        // Add other known properties of a product here, if applicable
-    }
-
-    const prices = products.map((p: Product) => p.price).filter((p: number) => typeof p === 'number');
     const minProductPrice = 0;
-    const pageMaxPrice = prices.length ? Math.max(...prices) : 1000;
+    const pageMaxPrice = products.length ? Math.max(...products.map((p: Product) => p.price)) : 1000;
     // Use the highest maxPrice seen so far (from Redux)
     const maxProductPrice = globalMaxPrice && globalMaxPrice > pageMaxPrice ? globalMaxPrice : pageMaxPrice;
-
     // Update global maxPrice in Redux if a higher price is found
     React.useEffect(() => {
         if (pageMaxPrice > (globalMaxPrice || 0)) {
@@ -62,11 +58,10 @@ const FiltersBar: React.FC = () => {
 
     // State for price range, initialized from Redux or product price range
     const [priceRange, setPriceRange] = React.useState<[number, number]>(() => {
-        // אם המשתמש לא שינה ידנית את priceRange[1] (כלומר הוא היה 1000 או NEGATIVE_INFINITY), נאתחל למקסימום האמיתי
         if (
             filters.priceRange && Array.isArray(filters.priceRange) &&
-            filters.priceRange[1] !== 1000 &&
-            filters.priceRange[1] !== Number.NEGATIVE_INFINITY
+            (filters.priceRange[1] === 1000 ||
+                filters.priceRange[1] === Number.NEGATIVE_INFINITY)
         ) {
             return [
                 Math.max(minProductPrice, filters.priceRange[0]),
@@ -75,8 +70,7 @@ const FiltersBar: React.FC = () => {
         }
         return [minProductPrice, maxProductPrice];
     });
-
-    // בכל שינוי של maxProductPrice או products, אם יש מוצרים והמחיר היה דיפולט, נעדכן אותו
+    const pricePanelRef = useRef<OverlayPanel>(null);
     useEffect(() => {
         if (products && products.length > 0) {
             setPriceRange(prev => {
@@ -88,11 +82,9 @@ const FiltersBar: React.FC = () => {
             });
         }
     }, [maxProductPrice, products]);
-    const pricePanelRef = useRef<OverlayPanel>(null);
 
     // On mount, read filters from URL and trigger filtering if needed
     useEffect(() => {
-
         const params = new URLSearchParams(location.search);
         const urlCreator = params.get('creator') || '';
         const urlMinPrice = params.get('minPrice');
@@ -139,65 +131,54 @@ const FiltersBar: React.FC = () => {
             }));
         }
     }, [location.search, creators]);
-
     useEffect(() => {
         // Fetch categories on mount
         dispatch(fetchCategoriesWithCounts());
-
-    },[])
-
-
+    }, []);
     // בדיקה אם יש פילטרים פעילים
     const hasActiveFilters = () => {
-        if (creator) return true;
-        if (Object.values(categoryFilters).some(arr => arr && arr.length > 0)) return true;
-        if (priceRange[0] !== minProductPrice) return true;
-        if (priceRange[1] !== maxProductPrice) return true;
-        return false;
+        return (
+            creator ||
+            Object.values(categoryFilters).some(arr => arr && arr.length > 0) ||
+            priceRange[0] !== minProductPrice ||
+            priceRange[1] !== maxProductPrice
+        );
     };
-
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
-        // שמירה ב-URL: category כ-JSON בלבד
         const params = new URLSearchParams(location.search);
-        // מחיקת כל פרמטרי הקטגוריות הישנים
-        Object.keys(categoryFilters).forEach(group => {
-            params.delete(group);
-        });
-        // שמירה של כל הקטגוריות בפרמטר category כ-JSON
-        params.set('category', JSON.stringify(categoryFilters));
+        // סינון ערכים לא תקינים מהמערך
+        const filteredCategories = categoryFilters.filter(
+            (v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined' && v !== null
+        );
+        // שמירה של כל הקטגוריות בפרמטר category כ-JSON (מערך שמות בלבד)
+        params.set('category', JSON.stringify(filteredCategories));
         if (creatorId) params.set('creator', creatorId); else params.delete('creator');
         if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
         if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-
-        // שליחה לשרת: כל הקטגוריות כאובייקט בפרמטר category
-        dispatch(updateFilters({ ...filters, ...categoryFilters, creator: creatorId, priceRange }));
+        // שליחה לשרת: מערך של שמות כל הקטגוריות שנבחרו
+        dispatch(updateFilters({ ...filters, category: filteredCategories, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
-            category: categoryFilters,
+            category: filteredCategories,
             creator: creatorId,
             minPrice: priceRange[0],
             maxPrice: priceRange[1],
             page: 1,
         }));
     };
-
-
     // Debounced search for creators
-    const debouncedSearch = useRef(
-        debounce((query: string) => {
-            const lowered = query.toLowerCase();
+    const searchCreator = useRef(
+        debounce((event: { query: string }) => {
             setFilteredCreators(
-                creators.filter((c: { label: string }) => c.label.toLowerCase().includes(lowered))
+                creators.filter((c: { label: string }) =>
+                    c.label.toLowerCase().includes(event.query.toLowerCase())
+                )
             );
-        }, 300)
+            setSearchValue(event.query);
+        }, 100)
     ).current;
-
-    const searchCreator = (event: { query: string }) => {
-        debouncedSearch(event.query);
-    };
-
 
 
     return (
@@ -223,7 +204,6 @@ const FiltersBar: React.FC = () => {
                         className="mb-2 p-button-text p-button-sm w-full"
                         disabled={!hasActiveFilters()}
                         onClick={() => {
-                            // Remove all filter params from URL only
                             const params = new URLSearchParams(location.search);
                             params.delete('creator');
                             params.delete('category');
@@ -234,15 +214,21 @@ const FiltersBar: React.FC = () => {
                     />
                     <CategoryFilters
                         selected={categoryFilters}
-                        onChange={(group, values) => setCategoryFilters(prev => ({ ...prev, [group]: values }))}
+                        onChange={setCategoryFilters}
                     />
                     <span className="p-float-label w-full">
                         <AutoComplete
                             id="creator"
-                            value={creator}
+                            value={searchValue !== null ? searchValue : (creator ? creator.label : '')}
                             suggestions={filteredCreators || []}
                             completeMethod={searchCreator}
-                            onChange={(e) => setCreator(e.value)}
+                            onChange={(e) => {
+                                setCreator(e.value);
+                                // Use setTimeout to ensure value is updated after selection
+                                setTimeout(() => setSearchValue(null), 0);
+                            }}
+                            onFocus={() => setSearchValue('')}
+                            onBlur={() => setSearchValue(null)}
                             field="label"
                             itemTemplate={(option) => option ? (
                                 <div className="flex items-center gap-2">

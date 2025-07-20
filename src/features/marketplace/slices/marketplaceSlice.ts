@@ -5,7 +5,7 @@ import { fetchProducts, fetchProduct } from '../thunks';
 import { fetchCreatorsAndManufacturers, fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 
 interface Filters {
-  category: string;
+  category: string[];
   priceRange: [number, number];
   searchTerm: string;
   creator: string;
@@ -19,7 +19,7 @@ interface MarketplaceState {
   productLoading: boolean;  // Separate loading state for single product
   productError: string | null;  // Separate error state for single product
   filters: {
-    category: string;
+    category: string[];
     creator: string;
     priceRange: [number, number];
     searchTerm: string;
@@ -39,7 +39,7 @@ const initialState: MarketplaceState = {
   productError: null,
   filters: {
     creator: '',
-    category: '',
+    category: [],
     priceRange: [0, 1000],
     searchTerm: '',
   },
@@ -65,7 +65,7 @@ const marketplaceSlice = createSlice({
     },
     clearFilters(state) {
       state.filters = {
-        category: '',
+        category: [],
         priceRange: [0, 1000],
         searchTerm: '',
         creator: '',
