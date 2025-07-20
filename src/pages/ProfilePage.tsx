@@ -5,11 +5,13 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { updateUser } from '../features/marketplace/slices/userSlice';
+import { useNavigate } from 'react-router-dom'; // ← הוסף ייבוא
 
 const ProfilePage = () => {
   const user = useAppSelector((state) => state.user);
   const loading = useAppSelector((state) => state.user.loading);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate(); // ← הוסף
 
   const [formData, setFormData] = useState({
     name: user.name || '',
@@ -106,11 +108,21 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded shadow flex flex-col gap-4 items-center">
+    <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded shadow flex flex-col gap-4 items-center relative">
+      {/* אייקון איקס בפינה */}
+      <button
+        className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+        onClick={() => navigate('/')}
+        title="סגור וחזור לדף הבית"
+        style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer' }}
+      >
+        <i className="pi pi-times" />
+      </button>
+
       <div className="w-32 h-32 rounded-full overflow-hidden border border-gray-300 shadow-sm">
         {formData.avatarUrl && !avatarError ? (
           <img
-            src={formData.avatarUrl}
+            src={formData.avatarUrl || undefined}
             alt={formData.name || 'Avatar'}
             className="w-full h-full object-cover"
             onError={() => setAvatarError(true)}

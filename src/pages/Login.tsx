@@ -14,6 +14,7 @@ import type { RootState } from '../store';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -27,6 +28,7 @@ const Login = () => {
   }, [user]);
 
   const handleLogin = async () => {
+    setErrorMessage('');
     try {
       const res = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
 
@@ -34,26 +36,37 @@ const Login = () => {
         Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
         dispatch(setUser(res.data.user));
-        dispatch(fetchCurrentUser()); // למשוך את היוזר החדש מהשרת
-        // נקה את הערכים מה-state וה־localStorage
+        dispatch(fetchCurrentUser());
         setEmail('');
         setPassword('');
         localStorage.removeItem('prefillEmail');
         navigate('/');
       }
     } catch (error: unknown) {
-      const message =
-        axios.isAxiosError(error) && error.response?.data?.message
-          ? error.response.data.message
-          : 'Login failed';
-
+      let message = 'Login failed. Please try again.';
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        const msg = error.response.data.message.toLowerCase();
+        if (
+          msg.includes('password') ||
+          msg.includes('credential')
+        ) {
+          message = 'הסיסמה שהזנת שגויה. נסה שוב או אפס סיסמה.';
+        } else if (
+          msg.includes('user') ||
+          msg.includes('email')
+        ) {
+          message = 'לא נמצא משתמש עם האימייל הזה. בדוק את הכתובת או הירשם.';
+        } else {
+          message = error.response.data.message;
+        }
+      }
+      setErrorMessage(message);
       toast.current?.show({
         severity: 'error',
         summary: 'Login Failed',
         detail: message,
         life: 4000,
       });
-      setEmail('');
       setPassword('');
     }
   };
@@ -79,7 +92,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={isInvalid(email) ? 'p-invalid' : ''}
               placeholder="Enter your email"
-              readOnly={!!user?.email} // אם יש user, השדה לקריאה בלבד
+              readOnly={!!user?.email}
             />
           </div>
 
@@ -95,6 +108,10 @@ const Login = () => {
               placeholder="Enter your password"
             />
           </div>
+
+          {errorMessage && (
+            <div className="text-red-600 text-center mb-3">{errorMessage}</div>
+          )}
 
           <Button
             label="Login"
