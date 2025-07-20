@@ -21,14 +21,7 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 
-function UserProfile() {
-  return (
-    <div className="p-8 text-center">
-      <h2 className="text-2xl font-bold mb-4">User Profile</h2>
-      <p className="text-gray-600">User profile page coming soon...</p>
-    </div>
-  );
-}
+
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
