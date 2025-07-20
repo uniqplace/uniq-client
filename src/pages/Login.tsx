@@ -6,12 +6,16 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import Cookies from 'js-cookie';
+import { setUser } from '../features/marketplace/slices/userSlice';
+import { fetchCurrentUser } from '../features/marketplace/thunks/userThunk';
+import { useAppDispatch } from '../hooks/hooks';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
@@ -30,6 +34,8 @@ const Login = () => {
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        dispatch(setUser(res.data.user));
+        dispatch(fetchCurrentUser()); // למשוך את היוזר החדש מהשרת
         // נקה את הערכים מה-state וה־localStorage
         setEmail('');
         setPassword('');
