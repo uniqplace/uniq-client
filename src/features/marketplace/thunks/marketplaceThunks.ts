@@ -32,7 +32,7 @@ export const fetchProducts = createAsyncThunk(
   'marketplace/fetchProducts',
   async (params: {
     q?: string;
-    category?: string;
+    category?: string[];
     creator?: string;
     minPrice?: number;
     maxPrice?: number;

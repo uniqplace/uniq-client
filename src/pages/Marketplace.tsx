@@ -28,8 +28,23 @@ const Marketplace: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
+    // Parse category from URL if exists
+    let urlCategory: string[] | undefined = undefined;
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      try {
+        const parsed = JSON.parse(categoryParam);
+        if (Array.isArray(parsed)) {
+          urlCategory = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        } else if (parsed && typeof parsed === 'object') {
+          urlCategory = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        }
+      } catch {
+        urlCategory = undefined;
+      }
+    }
     dispatch(fetchProducts({
-      category: params.get('category') || '',
+      category: urlCategory,
       creator: params.get('creator') || '',
       minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
       maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,

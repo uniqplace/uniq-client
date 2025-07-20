@@ -1,18 +1,18 @@
 import React from 'react';
+import { Divider } from 'primereact/divider';
 import { Checkbox } from 'primereact/checkbox';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
 
-// Map category type to icon/label
-const CATEGORY_TYPE_MAP: Record<string, { icon: string; label: string }> = {
-  audience: { icon: '👶', label: 'קהל יעד:' },
-  itemType: { icon: '🧥', label: 'סוג פריט:' },
-  purpose: { icon: '🎯', label: 'מטרה:' },
+const CATEGORY_TYPE_MAP: Record<string, { label: string }> = {
+  audience: { label: 'Audience:' },
+  itemType: { label: 'Item Type:' },
+  purpose: { label: 'Purpose:' },
 };
 
 interface CategoryFiltersProps {
-  selected: Record<string, string[]>;
-  onChange: (groupName: string, values: string[]) => void;
+  selected: string[];
+  onChange: (values: string[]) => void;
 }
 
 const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange }) => {
@@ -21,12 +21,11 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
 
   // Group categories by type
   const groups = React.useMemo(() => {
-    const grouped: Record<string, { icon: string; label: string; name: string; options: { label: string; value: string }[] }> = {};
+    const grouped: Record<string, { label: string; name: string; options: { label: string; value: string }[] }> = {};
     categories.forEach((cat: any) => {
       const type = cat.type || 'other';
       if (!grouped[type]) {
         grouped[type] = {
-          icon: CATEGORY_TYPE_MAP[type]?.icon || '📦',
           label: CATEGORY_TYPE_MAP[type]?.label || type,
           name: type,
           options: [],
@@ -44,16 +43,26 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
       {groups.map((group) => (
         group.options.length > 0 && (
           <div key={group.name}>
-            <div className="font-bold mb-2 flex items-center gap-2">
-              <span>{group.icon}</span>
-              <span>{group.label}</span>
-            </div>
+            <Divider align="left" type="solid" className="!mt-0 !mb-3" style={{ borderTop: '2px solid #e0e7ef', borderBottom: 'none' }}>
+              <span
+                style={{
+                  fontWeight: 600,
+                  fontSize: '1.13rem',
+                  color: '#1e293b',
+                  letterSpacing: '0.01em',
+                  padding: '0 0.5em',
+                }}
+              >
+                {group.label}
+              </span>
+            </Divider>
             <div className="flex flex-col gap-2">
               {group.options.map((option) => {
-                const checked = selected[group.name]?.includes(option.value) || false;
+                const categoryName = option.label.replace(/ \(\d+\)$/, '');
+                const checked = selected.includes(categoryName);
                 return (
                   <label
-                    key={option.value}
+                    key={option.label}
                     className={`flex items-center gap-2 cursor-pointer ${checked ? 'font-semibold text-blue-700' : ''}`}
                     role="checkbox"
                     aria-checked={checked}
@@ -62,15 +71,14 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                       inputId={`${group.name}-${option.value}`}
                       checked={checked}
                       onChange={e => {
-                        const checked = e.checked;
-                        const prev = selected[group.name] || [];
+                        const isChecked = e.checked;
                         let next: string[];
-                        if (checked) {
-                          next = [...prev, option.value];
+                        if (isChecked) {
+                          next = [...selected, categoryName];
                         } else {
-                          next = prev.filter(v => v !== option.value);
+                          next = selected.filter(v => v !== categoryName);
                         }
-                        onChange(group.name, next);
+                        onChange(next);
                       }}
                     />
                     <span>{option.label}</span>
