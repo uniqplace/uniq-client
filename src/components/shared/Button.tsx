@@ -1,20 +1,15 @@
 import React from 'react';
 import { Button as PrimeButton } from 'primereact/button';
 import type { ButtonProps } from 'primereact/button';
-
 interface SharedButtonProps extends Omit<ButtonProps, 'size'> {
   variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning';
   size?: 'small' | 'medium' | 'large';
 }
-
-
-
-const Button: React.FC<SharedButtonProps> = ({ 
-
-  variant = 'primary', 
+const Button: React.FC<SharedButtonProps> = ({
+  variant = 'primary',
   size = 'medium',
   className = '',
-  ...props 
+  ...props
 }) => {
   const getVariantClass = () => {
     switch (variant) {
@@ -26,14 +21,13 @@ const Button: React.FC<SharedButtonProps> = ({
     }
   };
 
-  const getSizeClass = () => {
-    switch (size) {
-      case 'small': return 'p-button-sm';
-      case 'large': return 'p-button-lg';
-      case 'medium': return ''; // Default medium size doesn't need extra class
-      default: return '';
-    }
-  };
+const getSizeClass = () => {
+  switch (size) {
+    case 'small': return 'p-button-sm';
+    case 'large': return 'p-button-lg';
+    default: return ''; // Medium is default – no class needed
+  }
+};
 
 
   return (
@@ -43,5 +37,4 @@ const Button: React.FC<SharedButtonProps> = ({
     />
   );
 };
-
-export default Button; 
+export default Button;

@@ -1,21 +1,15 @@
 // ImageGallery Component - displays product images with main image and thumbnail navigation
 // Features: main large image, clickable thumbnails, zoom modal functionality
-
 import React, { useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from '../shared';
-
 interface ImageGalleryProps {
   images: string[];
   productTitle: string;
 }
-
 const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => {
-  // State to track which image is currently displayed as main
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // State to control zoom modal visibility
   const [showZoomModal, setShowZoomModal] = useState(false);
-
   // Handle case when no images are provided
   if (!images || images.length === 0) {
     return (
@@ -25,8 +19,19 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
     );
   }
 
-  // Get current main image
+
   const currentImage = images[currentImageIndex];
+
+  // Extracted navigation handlers
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => Math.min(images.length - 1, prev + 1));
+  };
+
+
 
   return (
     <div className="flex flex-col space-y-4">
@@ -43,7 +48,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
           <i className="pi pi-search-plus"></i>
         </div>
       </div>
-
       {/* Thumbnail images grid - only show if multiple images */}
       {images.length > 1 && (
         <div className="grid grid-cols-4 gap-2">
@@ -62,7 +66,6 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
           ))}
         </div>
       )}
-
       {/* Zoom Modal - shows enlarged image */}
       <Dialog
         visible={showZoomModal}
@@ -84,14 +87,14 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => setCurrentImageIndex(Math.max(0, currentImageIndex - 1))}
+                onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
                 icon="pi pi-chevron-left"
               />
               <Button
                 variant="secondary"
                 size="small"
-                onClick={() => setCurrentImageIndex(Math.min(images.length - 1, currentImageIndex + 1))}
+                onClick={handleNextImage}
                 disabled={currentImageIndex === images.length - 1}
                 icon="pi pi-chevron-right"
               />
@@ -102,5 +105,4 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
     </div>
   );
 };
-
 export default ImageGallery;

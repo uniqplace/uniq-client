@@ -5,49 +5,64 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
+import Cookies from 'js-cookie';
+import { setUser } from '../features/marketplace/slices/userSlice';
+import { fetchCurrentUser } from '../features/marketplace/thunks/userThunk';
+import { useAppDispatch, useAppSelector } from '../hooks/hooks';
+import type { RootState } from '../store';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state: RootState) => state.user);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem('prefillEmail');
-    const savedName = localStorage.getItem('prefillName');
-    if (savedEmail) setEmail(savedEmail);
-    if (savedName) setName(savedName);
-
-    localStorage.removeItem('prefillEmail');
-    localStorage.removeItem('prefillName');
-  }, []);
+    if (user?.email) setEmail(user.email);
+    // אפשר גם למלא סיסמה ריקה
+    setPassword('');
+  }, [user]);
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
 
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
+        Cookies.set('token', res.data.token, { expires: 7 });
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        dispatch(setUser(res.data.user));
+        dispatch(fetchCurrentUser()); // למשוך את היוזר החדש מהשרת
+        // נקה את הערכים מה-state וה־localStorage
+        setEmail('');
+        setPassword('');
+        localStorage.removeItem('prefillEmail');
         navigate('/');
       }
     } catch (error: unknown) {
-        const message =
-      axios.isAxiosError(error) && error.response?.data?.message
-      ? error.response.data.message
-      : 'Login failed';
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : 'Login failed';
 
-  toast.current?.show({
-    severity: 'error',
-    summary: 'Login Failed',
-    detail: message,
-    life: 4000,
-  });
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: message,
+        life: 4000,
+      });
+      setEmail('');
+      setPassword('');
     }
   };
 
   const isInvalid = (val: string) => val.trim().length === 0;
+
+  // Email format validation (simple regex)
+  const isEmailValid = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   return (
     <div className="flex justify-center mt-10">
@@ -64,17 +79,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={isInvalid(email) ? 'p-invalid' : ''}
               placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="p-field mb-4">
-            <label htmlFor="name">Name</label>
-            <InputText
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={isInvalid(name) ? 'p-invalid' : ''}
-              placeholder="Enter your name"
+              readOnly={!!user?.email} // אם יש user, השדה לקריאה בלבד
             />
           </div>
 
@@ -94,7 +99,9 @@ const Login = () => {
           <Button
             label="Login"
             onClick={handleLogin}
-            disabled={isInvalid(email) || isInvalid(password)}
+            disabled={
+              isInvalid(email) || isInvalid(password) || !isEmailValid(email)
+            }
             className="w-full"
           />
         </div>

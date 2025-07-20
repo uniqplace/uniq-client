@@ -1,50 +1,141 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+
+import React, { useEffect, useState } from 'react';
+// Use VITE_MARKETPLACE_PAGE_LIMIT from .env, fallback to 12 if not set
+import { useSelector, useDispatch } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import type { RootState } from '../store';
-import type { Product } from '../types';
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
 import { fetchProducts } from '../features/marketplace/thunks';
+import FiltersBar from '../features/marketplace/components/FiltersBar';import { Paginator } from 'primereact/paginator';
+import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/marketplaceThunks';
+import SearchBar from '../features/marketplace/components/SearchBar';
 
 
 const Marketplace: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { products, loading, error } = useSelector((state: RootState) => state.marketplace);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const initialPage = Number(params.get('page')) || 1;
+  const [page, setPage] = useState(initialPage);
+  const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
 
-  // Fetch products on mount
+  // Always fetch creators, and fetch products with all filters from URL on location.search change
   useEffect(() => {
-    dispatch(fetchProducts());
-    
-  }, [dispatch]);
+    dispatch(fetchCreatorsAndManufacturers());
 
-  const handleAddToCart = (productId: string) => {
-    // TODO: Implement cart functionality
-    console.log('Add to cart:', productId);
+    const params = new URLSearchParams(location.search);
+    const pageParam = Number(params.get('page')) || 1;
+    setPage(pageParam);
+    // Parse category from URL if exists
+    let urlCategory: string[] | undefined = undefined;
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      try {
+        const parsed = JSON.parse(categoryParam);
+        if (Array.isArray(parsed)) {
+          urlCategory = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        } else if (parsed && typeof parsed === 'object') {
+          urlCategory = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        }
+      } catch {
+        urlCategory = undefined;
+      }
+    }
+    dispatch(fetchProducts({
+      category: urlCategory,
+      creator: params.get('creator') || '',
+      minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
+      maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
+      q: params.get('q') || '',
+      page: pageParam,
+    }));
+  }, [location.search]);
+
+  const { products, loading, error, totalPages } = useSelector((state: RootState) => state.marketplace);
+
+  const onPageChange = (event: { page: number }) => {
+    const newPage = event.page + 1; // PrimeReact starts with 0
+    setPage(newPage);
+
+    // Update URL with new page
+    const params = new URLSearchParams(location.search);
+    params.set('page', newPage.toString());
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+
+    dispatch(fetchProducts({ page: newPage }));
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if(loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-spinner pi-spin text-4xl text-blue-500 mb-4"></i>
+          <p className="text-gray-600">Loading marketplace...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if(error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+          <p className="text-gray-600">Error loading marketplace: {error}</p>
+        </div>
+      </div>
+    );
   }
+
+  // Import SearchBar here to use it above the grid
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {products.map((product: Product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-            onAddToCart={handleAddToCart}
-          />
-        ))}
+    <>
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
+        {/* Search Bar above grid and filters */}
+        <div className="mb-6">
+          <SearchBar />
+        </div>
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar Filters */}
+          <div className="w-full md:w-64 flex-shrink-0">
+            <FiltersBar />
+          </div>
+          {/* Products Grid */}
+          <div className="flex-1">
+            <section className="bg-gray-50 rounded-lg p-4 mb-8">
+              <h2 className="text-xl font-semibold mb-4">Products</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.length === 0 ? (
+                  <div className="col-span-3 text-center text-gray-500 py-8">Products not found</div>
+                ) : (
+                  products.map(product => (
+                    <ProductCard
+                      key={product._id}
+                      product={product}
+                    />
+                  ))
+                )}
+              </div>
+            </section>
+            {/* Pagination */}
+            <div className="flex justify-center mt-8">
+              <Paginator
+                first={((page - 1) * limit)}
+                rows={limit}
+                totalRecords={totalPages ? totalPages * limit : 0}
+                onPageChange={onPageChange}
+                template="PrevPageLink PageLinks NextPageLink"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

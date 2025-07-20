@@ -1,30 +1,26 @@
 // CreatorCard Component - displays seller/creator information
 // Shows avatar, name, and provides link to seller profile (placeholder for now)
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-// Extend Creator type to allow followers property for this component
-import type { Creator as BaseCreator } from '../../types';
+import type { Creator as BaseCreator, User } from '../../types';
 
 type Creator = BaseCreator & {
-  followers?: number;
+  followers?: number | User[];
 };
 
+// Helper function to get followers count
+const getFollowersCount = (followers: unknown): number => {
+  if (typeof followers === 'number') return followers;
+  if (Array.isArray(followers)) return followers.length;
+  return 1;
+};
 interface CreatorCardProps {
   creator: Creator;
 }
-
 const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
-  // Default avatar when none provided
-  const defaultAvatar = creator.avatar||'https://via.placeholder.com/64x64?text=User';
-
-  // Support both number and array for followers, always return a number
-  const followersCount =
-    typeof creator.followers === 'number'
-      ? creator.followers
-      : Array.isArray(creator.followers)
-        ? (creator.followers as any[]).length
-        : 1;
+  const defaultAvatar = creator.avatar || 'https://via.placeholder.com/64x64?text=User';
+  // Use the helper function to get followers count
+  const followersCount = getFollowersCount(creator.followers);
 
   return (
     <div className="flex items-center gap-2">
@@ -49,5 +45,4 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
     </div>
   );
 };
-
 export default CreatorCard;

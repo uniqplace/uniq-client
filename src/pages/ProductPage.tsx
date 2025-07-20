@@ -2,18 +2,21 @@
 // Displays complete product information including images, details, seller info, and buy button
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, ImageGallery, Payment, CreatorCard } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
+import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
+import type { Product } from '../types';
 
 
 
 const ProductPage: React.FC = () => {
-  // Get product ID from URL parameters
+  const location = useLocation();
+  const product = (location.state as { product?: Product })?.product;
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -26,8 +29,13 @@ const ProductPage: React.FC = () => {
   // Local state for payment modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Fetch product data when component mounts or ID changes
+  // If product is present in location.state, set it as selectedProduct and skip fetch
   useEffect(() => {
+    if (product) {
+      dispatch(clearSelectedProduct());
+      dispatch({ type: 'marketplace/setSelectedProduct', payload: product });
+      return;
+    }
     if (id) {
       dispatch(fetchProduct(id));
     }
@@ -35,7 +43,7 @@ const ProductPage: React.FC = () => {
     return () => {
       dispatch(clearSelectedProduct());
     };
-  }, [id, dispatch]);
+  }, [id, dispatch, product]);
 
   // Handle Buy Now button click
   const handleBuyNow = () => {
@@ -44,7 +52,7 @@ const ProductPage: React.FC = () => {
 
   // Handle back to marketplace navigation
   const handleBackToMarketplace = () => {
-    navigate('/marketplace');
+    navigate(-1);
   };
 
   // Render loading state
@@ -61,6 +69,10 @@ const ProductPage: React.FC = () => {
 
   // Render error state
   if (productError) {
+    // Show toast in dev environment for debugging
+    if (import.meta.env.MODE === 'development') {
+      console.error('Product error:', productError);
+    }
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -76,7 +88,8 @@ const ProductPage: React.FC = () => {
   }
 
   // Render empty state if no product
-  if (!selectedProduct) {
+  const currentProduct = product || selectedProduct;
+  if (!currentProduct) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -89,8 +102,7 @@ const ProductPage: React.FC = () => {
     );
   }
 
-
-  const formattedPrice = `$${selectedProduct.price.toFixed(2)}`;
+  const formattedPrice = `$${currentProduct.price.toFixed(2)}`;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -103,9 +115,9 @@ const ProductPage: React.FC = () => {
           label="Back to Marketplace"
         />
         {/* Seller profile at top right */}
-        {selectedProduct.creator ? (
+        {currentProduct.creator ? (
           <div className="w-full lg:w-auto">
-            <CreatorCard creator={selectedProduct.creator} />
+            <CreatorCard creator={currentProduct.creator} />
           </div>
         ) : null}
       </div>
@@ -115,8 +127,8 @@ const ProductPage: React.FC = () => {
         {/* Left side - Image Gallery */}
         <div>
           <ImageGallery 
-            images={selectedProduct.images} 
-            productTitle={selectedProduct.title} 
+            images={currentProduct.images} 
+            productTitle={currentProduct.title} 
           />
         </div>
 
@@ -125,14 +137,14 @@ const ProductPage: React.FC = () => {
           {/* Title and Price */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {selectedProduct.title}
+              {currentProduct.title}
             </h1>
             <div className="flex items-center space-x-4 mb-4">
               <span className="text-3xl font-bold text-green-600">
                 {formattedPrice}
               </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedProduct.status)}`}>
-                {selectedProduct.status.toUpperCase()}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentProduct.status)}`}>
+                {currentProduct.status ? currentProduct.status.toUpperCase() : ''}
               </span>
             </div>
           </div>
@@ -140,39 +152,39 @@ const ProductPage: React.FC = () => {
           {/* Product Description */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Description</h3>
-            <p className="text-gray-700 leading-relaxed">{selectedProduct.description}</p>
+            <p className="text-gray-700 leading-relaxed">{currentProduct.description}</p>
           </div>
 
           {/* Product Details Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium text-gray-900">Condition</h4>
-              <span className={`inline-block px-2 py-1 rounded text-sm ${getConditionColor(selectedProduct.condition)}`}>
-                {selectedProduct.condition.replace('_', ' ')}
+              <span className={`inline-block px-2 py-1 rounded text-sm ${getConditionColor(currentProduct.condition)}`}>
+                {currentProduct.condition.replace('_', ' ')}
               </span>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Category</h4>
-              <p className="text-gray-700">{selectedProduct.category}</p>
+              <p className="text-gray-700">{currentProduct.category}</p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Location</h4>
-              <p className="text-gray-700">{selectedProduct.location}</p>
+              <p className="text-gray-700">{currentProduct.location}</p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Posted</h4>
               <p className="text-gray-700">
-                {new Date(selectedProduct.createdAt).toLocaleDateString()}
+                {formatDate(currentProduct.createdAt)}
               </p>
             </div>
           </div>
 
           {/* Tags */}
-          {selectedProduct.tags && selectedProduct.tags.length > 0 && (
+          {currentProduct.tags && currentProduct.tags.length > 0 && (
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Tags</h4>
               <div className="flex flex-wrap gap-2">
-                {selectedProduct.tags.map((tag, index) => (
+                {currentProduct.tags.map((tag: string, index: number) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
@@ -190,11 +202,11 @@ const ProductPage: React.FC = () => {
               variant="primary"
               size="large"
               onClick={handleBuyNow}
-              disabled={selectedProduct.status !== 'active'}
+              disabled={currentProduct.status !== 'active'}
               className="w-full"
               icon="pi pi-shopping-cart"
             >
-              {selectedProduct.status === 'active' 
+              {currentProduct.status === 'active' 
                 ? `Buy Now - ${formattedPrice}`
                 : 'Not Available'
               }
@@ -207,12 +219,11 @@ const ProductPage: React.FC = () => {
       <Payment
         isVisible={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}
-        productTitle={selectedProduct.title}
-        price={selectedProduct.price}
+        productTitle={currentProduct.title}
+        price={currentProduct.price}
       />
     </div>
   );
-// ...existing code up to the first return block...
 };
 
 export default ProductPage;

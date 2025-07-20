@@ -6,6 +6,9 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  role: RoleType; 
+  bio?: string; // Optional field for user bio
+  createdAt?: Date;
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
@@ -13,7 +16,7 @@ export interface Creator {
   id: string;
   name: string;
   avatar?: string;
-  followers: number; // Can be a number or an array of followers
+  followers: number | User[]; // Can be a number or an array of followers
 }
 
 // 3. Product (depends on Creator)
@@ -47,7 +50,17 @@ export interface Order {
   updatedAt: Date;
 }
 
-// 5. Payment (depends on Order)
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+
+
 export interface Payment {
   id: string;
   orderId: string;
@@ -58,6 +71,26 @@ export interface Payment {
   createdAt: Date;
 }
 
+// FormData for registration/login forms
+export type RoleType = 'customer' | 'manufacturer' | 'creator' | 'admin';
+
+export type RegisterFormData = {
+  fullName: string;
+  email: string;
+  password: string;
+  role: RoleType;
+};
+
+// 5. Filters (for product listing)
+export interface Filters {
+  category?: string;
+  priceRange?: [number, number];
+  creator?: string; // הוסף שדה זה
+  // ...שדות נוספים
+}
+
+
+
 // 6. Address (used by Order)
 export interface Address {
   street: string;
@@ -66,3 +99,14 @@ export interface Address {
   zipCode: string;
   country: string;
 }
+
+export interface Category {
+  _id: string;
+  name: string;
+  type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
+  category: string; // לדוג' 'electronics', 'clothing', 'accessories' וכו'
+  count?: number;
+}
+
+// טיפוס לפילטרים של קטגוריות (לשימוש ב-URL ובקריאת השרת)
+export type CategoryFiltersType = string[];

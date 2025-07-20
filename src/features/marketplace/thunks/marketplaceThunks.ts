@@ -1,13 +1,25 @@
-// Marketplace Thunks - all async actions for marketplace feature
-// This file contains Redux Toolkit async thunks for API calls
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/api';
+
+// Async thunk for fetching categories with counts
+export const fetchCategoriesWithCounts = createAsyncThunk(
+  'marketplace/fetchCategoriesWithCounts',
+  async (_, { rejectWithValue }) =>
+    asyncThunkHelper(
+      () => api.getCategoriesWithCounts(),
+      rejectWithValue,
+      'Failed to fetch categories with counts',
+      (res) => res
+    )
+);
 
 // Shared async thunk helper for API calls
 async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: any) => any, fallbackMsg: string, postProcess?: (data: any) => T): Promise<T | ReturnType<typeof rejectWithValue>> {
   try {
     const response = await fn();
+    if(response.data === undefined) {
+      return response as T; // Handle cases where response is not in expected format
+    }
     const data = response.data;
     return postProcess ? postProcess(data) : data;
   } catch (error) {
@@ -15,43 +27,45 @@ async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: 
   }
 }
 
-// Async thunk for fetching all products - used in marketplace listing
+// Async thunk for fetching products
 export const fetchProducts = createAsyncThunk(
   'marketplace/fetchProducts',
-  async (_, { rejectWithValue }) =>
-    asyncThunkHelper(() => api.getProducts(), rejectWithValue, 'Failed to fetch products')
+  async (params: {
+    q?: string;
+    category?: string[];
+    creator?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+  } = {}, { rejectWithValue }) => {
+    try {
+      const response = await api.getProducts(params);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch products');
+    }
+  }
 );
 
-// Async thunk for fetching single product by ID - used in product detail page
+// Async thunk for fetching single product by ID
 export const fetchProduct = createAsyncThunk(
   'marketplace/fetchProduct',
   async (productId: string, { rejectWithValue }) =>
-    asyncThunkHelper(() => api.getProduct(productId), rejectWithValue, 'Failed to fetch product')
-);
-
-// Future thunk for fetching products by category
-export const fetchProductsByCategory = createAsyncThunk(
-  'marketplace/fetchProductsByCategory',
-  async (category: string, { rejectWithValue }) =>
     asyncThunkHelper(
-      () => api.getProducts(),
+      () => api.getProduct(productId),
       rejectWithValue,
-      'Failed to fetch products by category',
-      (data) => data.filter((product: any) => product.category === category)
+      'Failed to fetch product'
     )
 );
 
-// Future thunk for searching products
-export const searchProducts = createAsyncThunk(
-  'marketplace/searchProducts',
-  async (searchTerm: string, { rejectWithValue }) =>
+// Async thunk for fetching creators and manufacturers
+export const fetchCreatorsAndManufacturers = createAsyncThunk(
+  'marketplace/fetchCreatorsAndManufacturers',
+  async (_, { rejectWithValue }) =>
     asyncThunkHelper(
-      () => api.getProducts(),
+      () => api.getCreatorsAndManufacturers(),
       rejectWithValue,
-      'Failed to search products',
-      (data) => data.filter((product: any) =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      'Failed to fetch creators and manufacturers',
+      (res) => res
     )
 );
