@@ -43,16 +43,6 @@ const CreatorProductPage: React.FC = () => {
                     />
                 </div>
             )}
-
-            <div className="mb-4">
-                <InputText
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    placeholder="Search products..."
-                    className="w-full"
-                />
-            </div>
-
             {isLoading ? (
                 <p>Loading products...</p>
             ) : error ? (

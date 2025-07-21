@@ -20,6 +20,7 @@ import Home from './pages/Home';
 import ProductUploadForm from './features/marketplace/components/ProductUploadForm';
 import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
+import CreatorProductPage from './pages/CreatorProductPage';
 
 function UserProfile() {
   return (
@@ -81,6 +82,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
       </Routes>
     </div>
   );

@@ -14,7 +14,7 @@ const Header: React.FC = () => {
     { label: 'About', icon: 'pi pi-info-circle', command: () => navigate('/about') },
     { label: 'Register', icon: 'pi pi-user-plus', command: () => navigate('/register') },
     { label: 'Login', icon: 'pi pi-sign-in', command: () => navigate('/login') },
-    { label: 'Upload Product', icon: 'pi pi-upload', command: () => navigate('/uploadProduct') },
+    { label: 'CreatorProductPage', icon: 'pi pi-star', command: () => navigate('/CreatorProductPage') },
   ];
 
   const start = (
