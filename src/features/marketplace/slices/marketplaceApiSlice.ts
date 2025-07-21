@@ -4,7 +4,7 @@ import type { Product } from '../../../types';
 
 // Query params for fetching products
 export interface GetProductsQueryParams {
-  category?: string;
+  categories?: string[]; // Array of category IDs
   minPrice?: number;
   maxPrice?: number;
   searchTerm?: string;
@@ -14,19 +14,9 @@ export interface GetProductsQueryParams {
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], GetProductsQueryParams>({
-      query: (params) => {
-        const cleanParams = Object.fromEntries(
-          Object.entries({
-            category: params.category,
-            minPrice: params.minPrice,
-            maxPrice: params.maxPrice,
-            q: params.searchTerm,
-          }).filter(([_, value]) => value !== undefined)
-        );
-
+      query: () => {
         return {
           url: '/api/products',
-          params: cleanParams,
         };
       },
       transformResponse: (response: { data: Product[] }) => response.data,

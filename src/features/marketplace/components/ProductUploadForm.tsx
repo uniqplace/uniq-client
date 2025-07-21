@@ -1,7 +1,4 @@
-// ===================
-// features/marketplace/ProductUploadForm.tsx
-// ===================
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -16,18 +13,25 @@ import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
 import { TreeSelect } from 'primereact/treeselect';
 import ImageUpload from '../../../components/shared/ImageUpload';
-import { useAddProductMutation } from '../slices/marketplaceApiSlice';
+import { useAddProductMutation, useUpdateProductMutation } from '../slices/marketplaceApiSlice';
 import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
+import type { Product } from '../../../types';
+import { useDeleteImagesMutation } from '../../../api/apiSlice';
 
 interface ProductFormData {
   title: string;
   description: string;
-  category: Record<string, any>;
+  categories: { [key: string]: true }; // TreeSelect value: object of selected subCategory ids
   price: number;
   tags: string[];
   status: 'active' | 'sold' | 'inactive';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
+}
+
+interface ProductUploadFormProps {
+  product?: Product;
+  onClose?: () => void;
 }
 
 const statusOptions = [
@@ -47,7 +51,7 @@ const conditionOptions = [
 const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
   title: yup.string().required().max(100),
   description: yup.string().required().max(1000),
-  category: yup.object().test(
+  categories: yup.object().test(
     'at-least-one',
     'At least one category is required',
     (value) => value && Object.keys(value).length > 0
@@ -59,83 +63,126 @@ const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
   location: yup.string().required(),
 });
 
-const ProductUploadForm: React.FC = () => {
+function getDefaultCategories(product?: Product): { [key: string]: true } {
+  if (!product || !Array.isArray(product.categories)) return {};
+  return Object.fromEntries(
+    product.categories.map((cat: any) => [typeof cat === 'string' ? cat : cat._id, true])
+  );
+}
+
+
+const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose }) => {
   const [images, setImages] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>(product?.images ?? []);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [addProduct, { isLoading }] = useAddProductMutation();
-  const { data: categoriesTree = [], isLoading: loadingCategories, error: categoriesError } = useGetCategoriesTreeQuery();
+  const { data: categoriesTree, isLoading: loadingCategories, error: categoriesError } = useGetCategoriesTreeQuery();
+  const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [deleteImages] = useDeleteImagesMutation();
 
   const {
     control,
     register,
     reset,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      title: '',
-      description: '',
-      category: {},
-      price: 0,
-      tags: [],
-      status: 'active',
-      condition: 'new',
-      location: '',
-    },
+    defaultValues: product
+      ? {
+        title: product.title,
+        description: product.description,
+        categories: getDefaultCategories(product),
+        price: product.price,
+        tags: product.tags,
+        status: product.status,
+        condition: product.condition,
+        location: product.location,
+      }
+      : {
+        title: '',
+        description: '',
+        categories: {},
+        price: 0,
+        tags: [],
+        status: 'active',
+        condition: 'new',
+        location: '',
+      },
   });
 
+  useEffect(() => {
+    if (product) {
+      
+      reset({
+        title: product.title,
+        description: product.description,
+        categories: getDefaultCategories(product),
+        price: product.price,
+        tags: product.tags,
+        status: product.status,
+        condition: product.condition,
+        location: product.location,
+      });
+      setImageUrls(product.images ?? []);
+      setImages([]);
+    }
+  }, [product,categoriesTree, reset]);
+
+  const handleRemoveImageUrl = async (url: string) => {
+    try {
+      await deleteImages([url]);
+      setImageUrls((prev) => prev.filter((img) => img !== url));
+    } catch {
+      setImageError('Failed to delete image from server');
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
-    
-    const selectedCategoryKey = Object.keys(data.category || {})[0] || '';
     if (imageUrls.length === 0) {
-      setImageError('You must upload images before submitting the product');
+      setImageError('You must upload at least one image');
       return;
     }
 
     try {
-      const selectedCategories = Object.keys(data.category || {});
-      const onlyUrls = imageUrls.filter(url => typeof url === 'string' && url.startsWith('http'));
-      const productData = {
+      const selectedCategories = Object.keys(data.categories || {}).map(key => key.replace(/^sub_/, '')); const productData = {
         ...data,
-        category: selectedCategoryKey,
-        images: onlyUrls,
         categories: selectedCategories,
+        images: imageUrls,
       };
-      await addProduct(productData).unwrap();
+
+      if (product) {
+        await updateProduct({ _id: product._id, ...productData }).unwrap();
+      } else {
+        await addProduct(productData).unwrap();
+      }
+
       reset();
       setImages([]);
       setImageUrls([]);
       setImageError(null);
       setUploadError(null);
+      if (onClose) onClose();
     } catch {
-      setUploadError('Failed to upload product. Please try again.');
+      setUploadError('Failed to save product. Please try again.');
     }
   };
 
   const renderError = (fieldName: keyof ProductFormData) =>
     errors[fieldName] ? <Message severity="error" text={errors[fieldName]?.message?.toString()} /> : null;
 
-  function addSelectable(nodes: any[]): any[] {
-    return nodes.map(node => ({
-      ...node,
-      selectable: true,
-      children: node.children ? addSelectable(node.children) : undefined,
-    }));
-  }
-
   if (loadingCategories) {
-    return <Card title="Upload New Product"><div>Loading categories...</div></Card>;
+    return <Card title={product ? "Edit Product" : "Upload New Product"}><div>Loading categories...</div></Card>;
   }
 
   if (categoriesError) {
-    return <Card title="Upload New Product"><Message severity="error" text="Error loading categories" /></Card>;
+    return <Card title={product ? "Edit Product" : "Upload New Product"}><Message severity="error" text="Error loading categories" /></Card>;
   }
 
   return (
-    <Card title="Upload New Product" className="p-4 w-full">
+    <Card title={product ? "Edit Product" : "Upload New Product"} className="p-4 w-full">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <InputText {...register('title')} placeholder="Title" className={errors.title ? 'p-invalid w-full' : 'w-full'} />
         {renderError('title')}
@@ -144,23 +191,23 @@ const ProductUploadForm: React.FC = () => {
         {renderError('description')}
 
         <Controller
-          name="category"
+          name="categories"
           control={control}
           render={({ field }) => (
             <TreeSelect
               {...field}
               value={field.value}
               onChange={(e) => field.onChange(e.value)}
-              options={addSelectable(categoriesTree)}
-              placeholder="Select Category"
-              className={errors.category ? 'p-invalid w-full' : 'w-full'}
+              options={categoriesTree}
+              placeholder="Select Categories"
+              className={errors.categories ? 'p-invalid w-full' : 'w-full'}
               filter
               selectionMode="checkbox"
               display="chip"
             />
           )}
         />
-        {renderError('category')}
+        {renderError('categories')}
 
         <Controller
           name="price"
@@ -187,12 +234,30 @@ const ProductUploadForm: React.FC = () => {
           )}
         />
 
+        {imageUrls.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
+            {imageUrls.map((url, idx) => (
+              <div key={url} style={{ position: 'relative' }}>
+                <img src={url} alt={`product-img-${idx}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
+                <Button
+                  type="button"
+                  icon="pi pi-times"
+                  className="p-button-rounded p-button-danger p-button-sm"
+                  style={{ position: 'absolute', top: 2, right: 2 }}
+                  onClick={() => handleRemoveImageUrl(url)}
+                  tooltip="Remove"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         <ImageUpload
           images={images}
           setImages={setImages}
           imageError={imageError}
           setImageError={setImageError}
-          onUploaded={setImageUrls}
+          onUploaded={(urls) => setImageUrls((prev) => [...prev, ...urls])}
           imageUrls={imageUrls}
         />
 
@@ -219,7 +284,12 @@ const ProductUploadForm: React.FC = () => {
         <InputText {...register('location')} placeholder="Location" className={errors.location ? 'p-invalid w-full' : 'w-full'} />
         {renderError('location')}
 
-        <Button type="submit" label="Submit Product" icon="pi pi-check" className="w-fit self-end" loading={isLoading} />
+        <div className="flex gap-2 justify-end">
+          <Button type="submit" label={product ? "Save Changes" : "Submit Product"} icon="pi pi-check" loading={isAdding || isUpdating} />
+          {onClose && (
+            <Button type="button" label="Cancel" icon="pi pi-times" className="p-button-secondary" onClick={onClose} />
+          )}
+        </div>
         {uploadError && <Message severity="error" text={uploadError} />}
       </form>
     </Card>

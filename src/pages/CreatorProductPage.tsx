@@ -2,16 +2,12 @@ import React, { useState } from 'react';
 import { useGetProductsQuery } from '../features/marketplace/slices/marketplaceApiSlice';
 import ProductUploadForm from '../features/marketplace/components/ProductUploadForm';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import { Dialog } from 'primereact/dialog';
 
 const CreatorProductPage: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState('');
     const [showUploadForm, setShowUploadForm] = useState(false);
-    const { data: products, isLoading, error } = useGetProductsQuery({
-        searchTerm,
-    });
+    const { data: products, isLoading, error } = useGetProductsQuery({});
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
@@ -53,6 +49,7 @@ const CreatorProductPage: React.FC = () => {
                         <ProductCard
                             key={product._id}
                             product={product}
+                            editable={true}
                         />
                     ))}
                 </div>

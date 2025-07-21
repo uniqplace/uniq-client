@@ -26,8 +26,8 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  category: string;
-  creator: Creator;  // Changed from sellerId to seller object
+  categories: string[];
+  creator: Creator; 
   status: 'active' | 'sold' | 'inactive';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
@@ -85,8 +85,7 @@ export type RegisterFormData = {
 export interface Filters {
   category?: string;
   priceRange?: [number, number];
-  creator?: string; // הוסף שדה זה
-  // ...שדות נוספים
+  creator?: string;
 }
 
 

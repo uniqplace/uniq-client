@@ -10,7 +10,7 @@ interface ImageUploadProps {
   imageError?: string | null;
   setImageError?: (msg: string | null) => void;
   onUploaded?: (urls: string[]) => void;
-  imageUrls?: string[]; // הוסף prop זה!
+  imageUrls?: string[];
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -19,7 +19,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   imageError,
   setImageError,
   onUploaded,
-  imageUrls = [], // ברירת מחדל למערך ריק
+  imageUrls = []
 }) => {
   const [uploadImages, { isLoading }] = useUploadImagesMutation();
   const [deleteImages, { isLoading: isDeleting }] = useDeleteImagesMutation();
@@ -31,6 +31,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     try {
       const urls = await uploadImages(formData).unwrap();
       if (onUploaded) onUploaded(urls);
+      setImages([]);
     } catch {
       if (setImageError) setImageError('Image upload failed');
     }
