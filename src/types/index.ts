@@ -9,9 +9,6 @@ export interface User {
   role: RoleType; 
   bio?: string; // Optional field for user bio
   createdAt?: Date;
-  role: RoleType; 
-  bio?: string; // Optional field for user bio
-  createdAt?: Date;
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
@@ -109,6 +106,4 @@ export interface Category {
   category: string; 
   count?: number;
 }
-}
-
 export type CategoryFiltersType = string[];
