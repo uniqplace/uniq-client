@@ -39,9 +39,8 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
           : [{ type: 'Product', id: 'LIST' }],
     }),
 
-    addProduct: builder.mutation<Product, FormData>({
+    addProduct: builder.mutation<Product,Partial<Product>>({
       query: (formData) => ({
-        
         url: '/api/products',
         method: 'POST',
         body: formData,

@@ -103,7 +103,7 @@ export interface Address {
 export interface Category {
   _id: string;
   name: string;
-  type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
+  type: string; 
   category: string; // לדוג' 'electronics', 'clothing', 'accessories' וכו'
   count?: number;
 }

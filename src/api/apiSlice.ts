@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { RootState } from '../store';
 
 const apiSlice = createApi({
   reducerPath: 'api',
@@ -20,6 +19,22 @@ const apiSlice = createApi({
     },
   }),
   tagTypes: ['Product','Category','SubCategory'],
-  endpoints: () => ({}),
+  endpoints: (builder) => ({
+    uploadImages: builder.mutation<string[], FormData>({
+      query: (formData) => ({
+        url: '/api/upload',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+      deleteImages: builder.mutation<any, string[]>({
+      query: (imageUrls) => ({
+        url: '/api/upload',
+        method: 'DELETE',
+        body: imageUrls,
+      }),
+    }),
+  }),
 });
 export default apiSlice;
+export const { useUploadImagesMutation , useDeleteImagesMutation} = apiSlice;
