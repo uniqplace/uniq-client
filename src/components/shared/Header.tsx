@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Menubar } from 'primereact/menubar';
 import UserGreeting from './UserGreeting';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../../store'; // עדכן נתיב אם צריך
+import type { RootState } from '../../store'; 
 
 
 const Header: React.FC = () => {
@@ -15,7 +15,6 @@ const Header: React.FC = () => {
     { label: 'Marketplace', icon: 'pi pi-star', command: () => navigate('/marketplace') },
     { label: 'Orders', icon: 'pi pi-shopping-cart', command: () => navigate('/orders') },
     { label: 'About', icon: 'pi pi-info-circle', command: () => navigate('/about') },
-    // הצג Register ו-Login רק אם אין משתמש מחובר
     ...(!user?.id ? [
       { label: 'Register', icon: 'pi pi-user-plus', command: () => navigate('/register') },
       { label: 'Login', icon: 'pi pi-sign-in', command: () => navigate('/login') },

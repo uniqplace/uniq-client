@@ -23,7 +23,6 @@ const Login = () => {
 
   useEffect(() => {
     if (user?.email) setEmail(user.email);
-    // אפשר גם למלא סיסמה ריקה
     setPassword('');
   }, [user]);
 
@@ -50,12 +49,17 @@ const Login = () => {
           msg.includes('password') ||
           msg.includes('credential')
         ) {
-          message = 'הסיסמה שהזנת שגויה. נסה שוב או אפס סיסמה.';
+          message = 'Email or password is incorrect. Please try again.';
+        } else if (
+          msg.includes('user already exists') ||
+          msg.includes('email already exists')
+        ) {
+          message = 'This email is already registered. Please login or use a different email.';
         } else if (
           msg.includes('user') ||
           msg.includes('email')
         ) {
-          message = 'לא נמצא משתמש עם האימייל הזה. בדוק את הכתובת או הירשם.';
+          message = 'Email or password is incorrect. Please try again.';
         } else {
           message = error.response.data.message;
         }
@@ -73,7 +77,6 @@ const Login = () => {
 
   const isInvalid = (val: string) => val.trim().length === 0;
 
-  // Email format validation (simple regex)
   const isEmailValid = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

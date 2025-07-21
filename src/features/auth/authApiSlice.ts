@@ -1,6 +1,5 @@
-// src/features/auth/authApiSlice.ts
 import apiSlice from '../../api/apiSlice';
-import { type User } from '../../types/index'; // ודא שנתיב הייבוא נכון
+import { type User } from '../../types/index'; 
 import { setCredentials } from './authSlice';
 
 interface AuthResponse {

@@ -84,7 +84,7 @@ const Register: React.FC = () => {
         localStorage.setItem('user', JSON.stringify({
           id: user._id || user.id || null,
           name: user.name,
-          fullName: user.fullName || user.name, // הוסף שדה fullName
+          fullName: user.fullName || user.name, 
           email: user.email,
           avatar: user.avatar,
           role: user.role
@@ -120,17 +120,6 @@ const Register: React.FC = () => {
     }
   };
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem('user');
-  //   Cookies.remove('token');
-  //   dispatch(setUser({
-  //     id: null,
-  //     name: '',
-  //     email: '',
-  //     avatar: null
-  //   }));
-  //   navigate('/login');
-  // };
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -147,7 +136,6 @@ const Register: React.FC = () => {
 
   useEffect(() => {
     if (user?.id && user?.email) {
-      // אם המשתמש כבר מחובר, העבר אותו ל-login
       navigate('/login');
     }
   }, [user, navigate]);
