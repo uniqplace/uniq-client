@@ -21,7 +21,6 @@ const UserGreeting = () => {
     dispatch(clearUser());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    // מחק גם עוגיות אם צריך
     navigate('/login');
   };
 

@@ -3,13 +3,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
 import type { AppDispatch, RootState } from './store';
-
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import './App.css';
 import './index.css';
-
 import Marketplace from './pages/Marketplace';
 import Orders from './pages/Orders';
 import ProductPage from './pages/ProductPage';

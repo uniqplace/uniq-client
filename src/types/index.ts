@@ -85,7 +85,7 @@ export type RegisterFormData = {
 export interface Filters {
   category?: string;
   priceRange?: [number, number];
-  creator?: string;
+  creator?: string; 
 }
 
 
@@ -102,9 +102,10 @@ export interface Address {
 export interface Category {
   _id: string;
   name: string;
-  type: string;
-  category: string;
+  type: string; 
+  category: string; 
   count?: number;
+}
 }
 
 export type CategoryFiltersType = string[];
