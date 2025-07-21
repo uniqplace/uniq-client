@@ -16,22 +16,19 @@ const SearchBar: React.FC = () => {
     const location = useLocation();
     const [searchTerm, setSearchTerm] = useState(filters.searchTerm || '');
 
-    // On mount, read searchTerm from URL
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const urlSearch = params.get('q') || '';
         setSearchTerm(urlSearch);
-        dispatch(updateFilters({ ...filters, searchTerm: urlSearch })); // keep Redux in sync with URL
+        dispatch(updateFilters({ ...filters, searchTerm: urlSearch }));
     }, [location.search]);
 
     const handleSearch = () => {
         const trimmedSearch = searchTerm.trim();
-        // Update URL query param for search only on button click
         const params = new URLSearchParams(location.search);
         if (trimmedSearch) params.set('q', trimmedSearch); else params.delete('q');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
         dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
-        // Parse category from URL if exists
         let urlCategory: CategoryFiltersType | undefined = undefined;
         const categoryParam = params.get('category');
         if (categoryParam) {
@@ -65,7 +62,6 @@ const SearchBar: React.FC = () => {
                             if (e.key === 'Enter') handleSearch();
                         }}
                     />
-                    {/* Clear X button */}
                     {searchTerm && (
                         <span title="Clear search">
                             <Button
@@ -75,7 +71,6 @@ const SearchBar: React.FC = () => {
                                 style={{ padding: 0, minWidth: 0, width: 24, height: 24 }}
                                 onClick={() => {
                                     setSearchTerm('');
-                                    // Remove search param from URL only
                                     const params = new URLSearchParams(location.search);
                                     params.delete('q');
                                     navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
@@ -94,7 +89,6 @@ const SearchBar: React.FC = () => {
                     disabled={!searchTerm.trim() || loading}
                 />
             </div>
-            {/* Responsive style for bigger buttons on mobile */}
             <style>{`
                 @media (max-width: 600px) {
                     .searchbar-x-btn {

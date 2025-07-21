@@ -1,6 +1,3 @@
-// ProductPage Component - main product detail page
-// Displays complete product information including images, details, seller info, and buy button
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -21,15 +18,12 @@ const ProductPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
-  // Get product data and loading states from Redux store
   const { selectedProduct, productLoading, productError } = useSelector(
     (state: RootState) => state.marketplace
   );
 
-  // Local state for payment modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // If product is present in location.state, set it as selectedProduct and skip fetch
   useEffect(() => {
     if (product) {
       dispatch(clearSelectedProduct());
@@ -39,23 +33,19 @@ const ProductPage: React.FC = () => {
     if (id) {
       dispatch(fetchProduct(id));
     }
-    // Cleanup function - clear selected product when leaving page
     return () => {
       dispatch(clearSelectedProduct());
     };
   }, [id, dispatch, product]);
 
-  // Handle Buy Now button click
   const handleBuyNow = () => {
     setShowPaymentModal(true);
   };
 
-  // Handle back to marketplace navigation
   const handleBackToMarketplace = () => {
     navigate(-1);
   };
 
-  // Render loading state
   if (productLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -67,9 +57,7 @@ const ProductPage: React.FC = () => {
     );
   }
 
-  // Render error state
   if (productError) {
-    // Show toast in dev environment for debugging
     if (import.meta.env.MODE === 'development') {
       console.error('Product error:', productError);
     }
@@ -87,7 +75,6 @@ const ProductPage: React.FC = () => {
     );
   }
 
-  // Render empty state if no product
   const currentProduct = product || selectedProduct;
   if (!currentProduct) {
     return (
@@ -106,7 +93,6 @@ const ProductPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Top row: Back button and Seller profile */}
       <div className="flex flex-col lg:flex-row justify-between items-start mb-6 gap-4">
         <Button
           variant="secondary"
@@ -114,7 +100,6 @@ const ProductPage: React.FC = () => {
           icon="pi pi-arrow-left"
           label="Back to Marketplace"
         />
-        {/* Seller profile at top right */}
         {currentProduct.creator ? (
           <div className="w-full lg:w-auto">
             <CreatorCard creator={currentProduct.creator} />
@@ -122,9 +107,7 @@ const ProductPage: React.FC = () => {
         ) : null}
       </div>
 
-      {/* Main product content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left side - Image Gallery */}
         <div>
           <ImageGallery 
             images={currentProduct.images} 
@@ -132,9 +115,7 @@ const ProductPage: React.FC = () => {
           />
         </div>
 
-        {/* Right side - Product Details */}
         <div className="space-y-6">
-          {/* Title and Price */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {currentProduct.title}
@@ -149,13 +130,11 @@ const ProductPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Product Description */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Description</h3>
             <p className="text-gray-700 leading-relaxed">{currentProduct.description}</p>
           </div>
 
-          {/* Product Details Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium text-gray-900">Condition</h4>
@@ -179,7 +158,6 @@ const ProductPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Tags */}
           {currentProduct.tags && currentProduct.tags.length > 0 && (
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Tags</h4>
@@ -196,7 +174,6 @@ const ProductPage: React.FC = () => {
             </div>
           )}
 
-          {/* Buy Now Button */}
           <div className="pt-4">
             <Button
               variant="primary"
@@ -215,7 +192,6 @@ const ProductPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Payment Modal */}
       <Payment
         isVisible={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}

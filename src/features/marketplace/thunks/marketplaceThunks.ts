@@ -1,7 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/api';
 
-// Async thunk for fetching categories with counts
 export const fetchCategoriesWithCounts = createAsyncThunk(
   'marketplace/fetchCategoriesWithCounts',
   async (_, { rejectWithValue }) =>
@@ -13,12 +12,11 @@ export const fetchCategoriesWithCounts = createAsyncThunk(
     )
 );
 
-// Shared async thunk helper for API calls
 async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: any) => any, fallbackMsg: string, postProcess?: (data: any) => T): Promise<T | ReturnType<typeof rejectWithValue>> {
   try {
     const response = await fn();
     if(response.data === undefined) {
-      return response as T; // Handle cases where response is not in expected format
+      return response as T;
     }
     const data = response.data;
     return postProcess ? postProcess(data) : data;
@@ -27,7 +25,6 @@ async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: 
   }
 }
 
-// Async thunk for fetching products
 export const fetchProducts = createAsyncThunk(
   'marketplace/fetchProducts',
   async (params: {
@@ -47,7 +44,6 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
-// Async thunk for fetching single product by ID
 export const fetchProduct = createAsyncThunk(
   'marketplace/fetchProduct',
   async (productId: string, { rejectWithValue }) =>
@@ -58,7 +54,6 @@ export const fetchProduct = createAsyncThunk(
     )
 );
 
-// Async thunk for fetching creators and manufacturers
 export const fetchCreatorsAndManufacturers = createAsyncThunk(
   'marketplace/fetchCreatorsAndManufacturers',
   async (_, { rejectWithValue }) =>
