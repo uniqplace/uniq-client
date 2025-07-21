@@ -16,8 +16,8 @@ interface MarketplaceState {
   products: Product[];
   loading: boolean;
   error: string | null;
-  productLoading: boolean;  // Separate loading state for single product
-  productError: string | null;  // Separate error state for single product
+  productLoading: boolean;
+  productError: string | null;
   filters: {
     category: string[];
     creator: string;
@@ -27,7 +27,7 @@ interface MarketplaceState {
   totalPages: number;
   creators: Array<{ label: string; value: string; avatar?: string }>;
   categories: Category[];
-  maxPrice?: number; // Global max price seen so far
+  maxPrice?: number;
 }
 
 const initialState: MarketplaceState = {
@@ -108,7 +108,6 @@ const marketplaceSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
-        // action.payload.data should be an array of users { id, name, avatar }
         const users = Array.isArray(action.payload) ? action.payload : [];
         const creatorOptions = users.map((user: { _id: string; name: string; avatar?: string }) => ({
           label: user.name,

@@ -85,8 +85,7 @@ export type RegisterFormData = {
 export interface Filters {
   category?: string;
   priceRange?: [number, number];
-  creator?: string; // הוסף שדה זה
-  // ...שדות נוספים
+  creator?: string;
 }
 
 
@@ -103,10 +102,9 @@ export interface Address {
 export interface Category {
   _id: string;
   name: string;
-  type: string; // לדוג' 'itemType', 'audience', 'purpose' וכו'
-  category: string; // לדוג' 'electronics', 'clothing', 'accessories' וכו'
+  type: string;
+  category: string;
   count?: number;
 }
 
-// טיפוס לפילטרים של קטגוריות (לשימוש ב-URL ובקריאת השרת)
 export type CategoryFiltersType = string[];

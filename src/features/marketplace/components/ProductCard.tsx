@@ -14,7 +14,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  // Navigate to product detail page when View Details is clicked
   const handleViewDetails = () => {
     navigate(`/product/${product._id}`, { state: { product } });
   };
