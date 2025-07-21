@@ -9,6 +9,9 @@ export interface User {
   role: RoleType; 
   bio?: string; // Optional field for user bio
   createdAt?: Date;
+  role: RoleType; 
+  bio?: string; // Optional field for user bio
+  createdAt?: Date;
 }
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
@@ -103,25 +106,9 @@ export interface Category {
   _id: string;
   name: string;
   type: string; 
-  category: string; // לדוג' 'electronics', 'clothing', 'accessories' וכו'
+  category: string; 
   count?: number;
+}
 }
 
 export type CategoryFiltersType = string[];
-
-export interface ICategory {
-  _id: string;
-  name: string;  
-  createdAt?: string; 
-  updatedAt?: string; 
-}
-
-export interface ISubCategory {
-  _id: string;  
-  name: string;
-  type: 'audience' | 'itemType' | 'purpose' | string; 
-  category: string; 
-  count?: number; 
-  createdAt?: string; 
-  updatedAt?: string;
-}

@@ -1,10 +1,13 @@
 // src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Category, Product } from '../../../types';
+import type { Category, Product } from '../../../types';
 import { fetchProducts, fetchProduct } from '../thunks';
+import { fetchCreatorsAndManufacturers, fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 import { fetchCreatorsAndManufacturers, fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
 
 interface Filters {
+  category: string[];
   category: string[];
   priceRange: [number, number];
   searchTerm: string;
@@ -16,9 +19,10 @@ interface MarketplaceState {
   products: Product[];
   loading: boolean;
   error: string | null;
-  productLoading: boolean;  // Separate loading state for single product
-  productError: string | null;  // Separate error state for single product
+  productLoading: boolean;
+  productError: string | null;
   filters: {
+    category: string[];
     category: string[];
     creator: string;
     priceRange: [number, number];
@@ -40,11 +44,14 @@ const initialState: MarketplaceState = {
   filters: {
     creator: '',
     category: [],
+    category: [],
     priceRange: [0, 1000],
     searchTerm: '',
   },
   totalPages: 1,
   creators: [{ label: 'All', value: '' }],
+  categories: [],
+  maxPrice: Number.NEGATIVE_INFINITY,
   categories: [],
   maxPrice: Number.NEGATIVE_INFINITY,
 };
@@ -65,6 +72,7 @@ const marketplaceSlice = createSlice({
     },
     clearFilters(state) {
       state.filters = {
+        category: [],
         category: [],
         priceRange: [0, 1000],
         searchTerm: '',
@@ -89,6 +97,9 @@ const marketplaceSlice = createSlice({
     setMaxPrice: (state, action: PayloadAction<number>) => {
       state.maxPrice = action.payload;
     },
+    setMaxPrice: (state, action: PayloadAction<number>) => {
+      state.maxPrice = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -100,6 +111,7 @@ const marketplaceSlice = createSlice({
         state.loading = false;
         if (Array.isArray(action.payload?.data)) {
           state.products = action.payload.data;
+          state.products = action.payload.data;
           state.totalPages = action.payload.totalPages || 1;
         }
       })
@@ -108,7 +120,6 @@ const marketplaceSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
-        // action.payload.data should be an array of users { id, name, avatar }
         const users = Array.isArray(action.payload) ? action.payload : [];
         const creatorOptions = users.map((user: { _id: string; name: string; avatar?: string }) => ({
           label: user.name,
@@ -116,6 +127,14 @@ const marketplaceSlice = createSlice({
           avatar: user.avatar
         }));
         state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
+      })
+      .addCase(fetchCategoriesWithCounts.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.categories = action.payload;
+        } else if (action.payload?.data) {
+          state.categories = action.payload.data;
+        }
+      })
       })
       .addCase(fetchCategoriesWithCounts.fulfilled, (state, action) => {
         if (action.payload) {

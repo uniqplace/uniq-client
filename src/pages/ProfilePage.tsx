@@ -5,11 +5,15 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { updateUser } from '../features/marketplace/slices/userSlice';
+import { useNavigate } from 'react-router-dom';
+import { roleOptions } from '../constants/roles'; 
+import { Dropdown } from 'primereact/dropdown';
 
 const ProfilePage = () => {
   const user = useAppSelector((state) => state.user);
   const loading = useAppSelector((state) => state.user.loading);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: user.name || '',
@@ -20,6 +24,7 @@ const ProfilePage = () => {
         : user.avatar && user.avatar.trim() !== ''
           ? user.avatar
           : null,
+    role: user.role || '',
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -36,6 +41,7 @@ const ProfilePage = () => {
           : user.avatar && user.avatar.trim() !== ''
             ? user.avatar
             : null,
+      role: user.role || '', 
     });
     setAvatarError(false);
   }, [user]);
@@ -70,6 +76,7 @@ const ProfilePage = () => {
         name: formData.name,
         bio: formData.bio,
         avatarUrl: formData.avatarUrl,
+        role: formData.role, 
       }),
     );
 
@@ -79,6 +86,7 @@ const ProfilePage = () => {
         name: actionResult.payload.name || '',
         bio: actionResult.payload.bio || '',
         avatarUrl: actionResult.payload.avatarUrl || null,
+        role: actionResult.payload.role || '',
       });
       setEditMode(false);
     } else {
@@ -96,6 +104,7 @@ const ProfilePage = () => {
           : user.avatar && user.avatar.trim() !== ''
             ? user.avatar
             : null,
+      role: user.role || '',
     });
     setEditMode(false);
     setAvatarError(false);
@@ -106,11 +115,20 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded shadow flex flex-col gap-4 items-center">
+    <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded shadow flex flex-col gap-4 items-center relative">
+      <button
+        className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+        onClick={() => navigate('/')}
+        title="Close and return to home page"
+        style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer' }}
+      >
+        <i className="pi pi-times" />
+      </button>
+
       <div className="w-32 h-32 rounded-full overflow-hidden border border-gray-300 shadow-sm">
         {formData.avatarUrl && !avatarError ? (
           <img
-            src={formData.avatarUrl}
+            src={formData.avatarUrl || undefined}
             alt={formData.name || 'Avatar'}
             className="w-full h-full object-cover"
             onError={() => setAvatarError(true)}
@@ -127,14 +145,44 @@ const ProfilePage = () => {
         <>
           <h2 className="text-2xl font-bold">{formData.name}</h2>
           <p><b>Email:</b> {user.email}</p>
-          <p><b>Role:</b> {user.role}</p>
+          <div className="flex items-center gap-2">
+            <b>Role:</b>
+            <span>{user.role}</span>
+          </div>
           <p><b>Bio:</b> {formData.bio || 'No bio provided'}</p>
           <Button label="Edit Profile" icon="pi pi-pencil" onClick={() => setEditMode(true)} />
         </>
       ) : (
         <>
-          <InputText name="name" value={formData.name} onChange={handleChange} placeholder="Name" className="w-full mb-2" />
-          <InputTextarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Your Bio" rows={3} className="w-full mb-2" />
+          <InputText
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Name"
+            className="w-full mb-2"
+          />
+          <InputTextarea
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="Your Bio"
+            rows={3}
+            className="w-full mb-2"
+          />
+          <div className="w-full mb-2">
+            <label htmlFor="role" className="block mb-1 font-bold">Role</label>
+            <Dropdown
+              id="role"
+              name="role"
+              value={formData.role}
+              options={roleOptions}
+              optionLabel="label"
+              optionValue="value"
+              onChange={(e) => setFormData({ ...formData, role: e.value })}
+              placeholder="Select Role"
+              className="w-full"
+            />
+          </div>
           <InputText
             name="avatarUrl"
             value={formData.avatarUrl || ''}

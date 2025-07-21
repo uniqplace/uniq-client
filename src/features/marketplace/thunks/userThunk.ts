@@ -7,9 +7,9 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE}/api/users/me`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/api/users/getDetails`, { credentials: 'include' }); // ← עדכון לנתיב החדש
       if (!res.ok) throw new Error('Not authenticated');
-      return await res.json(); 
+      return await res.json();
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -31,16 +31,15 @@ export const updateUserProfile = createAsyncThunk(
 
       if (!res.ok) throw new Error(data.message || 'Failed to update');
 
-      return data.user; // ← מחזיר רק את המשתמש המעודכן!
+      return data.user;
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
   }
 );
 
-// thunk להעלאת תמונת אבטר
 export const updateUserAvatar = createAsyncThunk<
-  string, // סוג התוצאה - ה־avatarUrl החדש
+  string,
   { file: File; userId: string },
   { rejectValue: string }
 >(
@@ -54,7 +53,7 @@ export const updateUserAvatar = createAsyncThunk<
         return rejectWithValue('No file provided');
       }
 
-      const res = await fetch(`${API_BASE}/api/users/${userId}/avatar`, {
+      const res = await fetch(`${API_BASE}/api/avatar/${userId}`, {
         method: 'PUT',
         body: formData,
         credentials: 'include',
@@ -67,9 +66,9 @@ export const updateUserAvatar = createAsyncThunk<
 
       const data = await res.json();
       console.log('Response from backend:', data);
-      return data.avatarUrl; // מחזיר את ה־URL
+      return data.avatarUrl;
     } catch (error) {
-      return rejectWithValue('Network error');
+      return rejectWithValue('Failed to upload avatar');
     }
   }
 );

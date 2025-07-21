@@ -26,9 +26,6 @@ const initialState: UserState = {
   error: null,
 };
 
-
-
-
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -46,21 +43,18 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchCurrentUser
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        Object.assign(state, action.payload); // ✅ עדכון מלא
+        Object.assign(state, action.payload); 
         state.loading = false;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string || 'Failed to fetch user';
       })
-
-      // updateUserProfile
       .addCase(updateUserProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
