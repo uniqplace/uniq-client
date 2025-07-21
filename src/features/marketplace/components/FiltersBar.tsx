@@ -16,17 +16,14 @@ import type { CategoryFiltersType, Product } from '../../../types';
 
 
 const FiltersBar: React.FC = () => {
-    // Ref for AutoComplete input
     const dispatch: AppDispatch = useDispatch();
     const { filters, creators, products, maxPrice: globalMaxPrice } = useSelector((state: RootState) => state.marketplace);
     const navigate = useNavigate();
     const location = useLocation();
-    // State for filters, initialized from Redux
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = React.useState(initialCreator);
     const [searchValue, setSearchValue] = React.useState<string | null>(null);
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
-    // Category filters state: flat array of category names
     const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
         const categoryParam = params.get('category');
@@ -36,7 +33,6 @@ const FiltersBar: React.FC = () => {
                 if (Array.isArray(parsed)) {
                     return parsed;
                 } else if (parsed && typeof parsed === 'object') {
-                    // If old grouped object, flatten to array of names
                     return Object.values(parsed).flat().filter(Boolean);
                 }
             } catch {
@@ -47,16 +43,13 @@ const FiltersBar: React.FC = () => {
     });
     const minProductPrice = 0;
     const pageMaxPrice = products.length ? Math.max(...products.map((p: Product) => p.price)) : 1000;
-    // Use the highest maxPrice seen so far (from Redux)
     const maxProductPrice = globalMaxPrice && globalMaxPrice > pageMaxPrice ? globalMaxPrice : pageMaxPrice;
-    // Update global maxPrice in Redux if a higher price is found
     React.useEffect(() => {
         if (pageMaxPrice > (globalMaxPrice || 0)) {
             dispatch({ type: 'marketplace/setMaxPrice', payload: pageMaxPrice });
         }
     }, [pageMaxPrice, globalMaxPrice, dispatch]);
 
-    // State for price range, initialized from Redux or product price range
     const [priceRange, setPriceRange] = React.useState<[number, number]>(() => {
         if (
             filters.priceRange && Array.isArray(filters.priceRange) &&
@@ -83,7 +76,6 @@ const FiltersBar: React.FC = () => {
         }
     }, [maxProductPrice, products]);
 
-    // On mount, read filters from URL and trigger filtering if needed
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const urlCreator = params.get('creator') || '';
@@ -98,7 +90,6 @@ const FiltersBar: React.FC = () => {
         );
         setPriceRange(urlPriceRange);
 
-        // Only trigger filter if URL params exist and differ from Redux
         const urlFilters = {
             creator: urlCreator,
             priceRange: urlPriceRange
@@ -110,7 +101,6 @@ const FiltersBar: React.FC = () => {
             filters.priceRange[1] === urlFilters.priceRange[1];
         const hasAnyUrlFilter = urlCreator || urlMinPrice || urlMaxPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
-            // נשלוף את הקטגוריות מה-URL (אם יש)
             let urlCategory: CategoryFiltersType | undefined = undefined;
             const categoryParam = params.get('category');
             if (categoryParam) {
@@ -132,10 +122,8 @@ const FiltersBar: React.FC = () => {
         }
     }, [location.search, creators]);
     useEffect(() => {
-        // Fetch categories on mount
         dispatch(fetchCategoriesWithCounts());
     }, []);
-    // בדיקה אם יש פילטרים פעילים
     const hasActiveFilters = () => {
         return (
             creator ||
@@ -147,17 +135,14 @@ const FiltersBar: React.FC = () => {
     const handleFilter = () => {
         const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
         const params = new URLSearchParams(location.search);
-        // סינון ערכים לא תקינים מהמערך
         const filteredCategories = categoryFilters.filter(
             (v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined' && v !== null
         );
-        // שמירה של כל הקטגוריות בפרמטר category כ-JSON (מערך שמות בלבד)
         params.set('category', JSON.stringify(filteredCategories));
         if (creatorId) params.set('creator', creatorId); else params.delete('creator');
         if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
         if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        // שליחה לשרת: מערך של שמות כל הקטגוריות שנבחרו
         dispatch(updateFilters({ ...filters, category: filteredCategories, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
@@ -168,7 +153,6 @@ const FiltersBar: React.FC = () => {
             page: 1,
         }));
     };
-    // Debounced search for creators
     const searchCreator = useRef(
         debounce((event: { query: string }) => {
             setFilteredCreators(
@@ -197,7 +181,6 @@ const FiltersBar: React.FC = () => {
                     }}
                 >
                     <Button label="Filter" icon="pi pi-filter" onClick={handleFilter} className="mb-4 p-button-outlined p-button-rounded filter-btn w-full" />
-                    {/* Reset filters button */}
                     <Button
                         label="Reset"
                         icon="pi pi-refresh"
@@ -224,7 +207,6 @@ const FiltersBar: React.FC = () => {
                             completeMethod={searchCreator}
                             onChange={(e) => {
                                 setCreator(e.value);
-                                // Use setTimeout to ensure value is updated after selection
                                 setTimeout(() => setSearchValue(null), 0);
                             }}
                             onFocus={() => setSearchValue('')}

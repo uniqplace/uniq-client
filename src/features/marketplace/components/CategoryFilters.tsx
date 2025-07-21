@@ -16,10 +16,8 @@ interface CategoryFiltersProps {
 }
 
 const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange }) => {
-  // Get categories from Redux slice
   const categories = useSelector((state: RootState) => state.marketplace.categories);
 
-  // Group categories by type
   const groups = React.useMemo(() => {
     const grouped: Record<string, { label: string; name: string; options: { label: string; value: string }[] }> = {};
     categories.forEach((cat: any) => {
@@ -31,7 +29,6 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
           options: [],
         };
       }
-      // Show count if available and > 0, otherwise just name
       const label = cat.count !== undefined ? `${cat.name} (${cat.count})` : cat.name;
       grouped[type].options.push({ label, value: cat.id });
     });

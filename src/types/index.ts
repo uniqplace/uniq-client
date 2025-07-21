@@ -86,7 +86,6 @@ export interface Filters {
   category?: string;
   priceRange?: [number, number];
   creator?: string; 
-
 }
 
 
@@ -107,6 +106,6 @@ export interface Category {
   category: string; 
   count?: number;
 }
-
+}
 
 export type CategoryFiltersType = string[];
