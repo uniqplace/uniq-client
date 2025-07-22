@@ -1,4 +1,5 @@
 import apiSlice from '../../../api/apiSlice';
+import type { Category } from '../../../types';
 
 export interface CategoryTreeNode {
   key: string;
@@ -6,12 +7,20 @@ export interface CategoryTreeNode {
   children?: CategoryTreeNode[];
 }
 
+export interface CategoryResponse {
+  data:Category[],
+  success: boolean;
+}
+
 export const categoriesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCategoriesTree: builder.query<CategoryTreeNode[], void>({
       query: () => '/api/subCategories/tree', // הנתיב לראוט שלך בשרת
     }),
+    getAllCategories: builder.query<CategoryResponse, void>({
+      query: () => '/api/categories',
+    }),
   }),
 });
 
-export const { useGetCategoriesTreeQuery } = categoriesApiSlice;
+export const { useGetCategoriesTreeQuery, useGetAllCategoriesQuery } = categoriesApiSlice;

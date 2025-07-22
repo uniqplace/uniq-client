@@ -3,54 +3,113 @@ import { Dropdown } from 'primereact/dropdown';
 import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
+import { useDispatch } from 'react-redux';
+import { setManufacturerPreferences } from '../slices/deploySlice';
+import { useSaveBidRequestMutation } from '../slices/deployApiSlice';
+import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
+import { useGetLocationsQuery } from '../slices/locationApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Message } from 'primereact/message';
+import type { Category } from '../../../types';
 
-// Placeholder data, will be replaced with real data later
-const categoryOptions = [
-  { label: 'T-Shirts', value: 'tshirts' },
-  { label: 'Hoodies', value: 'hoodies' },
-  { label: 'Jeans', value: 'jeans' },
-];
-const locationOptions = [
-  { label: 'Tel Aviv', value: 'tel-aviv' },
-  { label: 'Jerusalem', value: 'jerusalem' },
-  { label: 'Haifa', value: 'haifa' },
-];
-
-const priceRangeMin = 10;
+const priceRangeMin = 0;
 const priceRangeMax = 1000;
-const timeRangeMin = 1; // days
-const timeRangeMax = 30; // days
+const deliveryOptions = [
+  ...Array.from({ length: 29 }, (_, i) => ({
+    label: `${i + 1} day${i === 0 ? '' : 's'}`,
+    value: i + 1,
+  })),
+  ...Array.from({ length: 6 }, (_, i) => {
+    const month = i + 1;
+    const days = month * 30;
+    return {
+      label: `${month} month${month > 1 ? 's' : ''}`,
+      value: days,
+    };
+  }),
+];
+
+
 
 const ManufacturerPreferencesStep: React.FC = () => {
-  // In the future: get requestId from redux
-  // const requestId = useSelector((state: RootState) => state.deploy.requestId);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [locationPreference, setLocationPreference] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: priceRangeMin, max: priceRangeMax });
+  const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>('7 days');
+  const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>('pickup');
+  const dispatch = useDispatch();
+  const [saveBidRequest] = useSaveBidRequestMutation();
 
-  const [category, setCategory] = useState<string | null>(null);
-  const [location, setLocation] = useState<string | null>(null);
-  const [priceRange, setPriceRange] = useState<[number, number]>([priceRangeMin, priceRangeMax]);
-  const [availability, setAvailability] = useState<number>(7);
-  const [deliveryPref, setDeliveryPref] = useState<'delivery' | 'pickup'>('delivery');
+  const { data: allCategories, isLoading: loadingCategories, error: categoriesError } = useGetAllCategoriesQuery();
+  const { data: locationsData, isLoading: loadingLocations, error: locationsError } = useGetLocationsQuery(undefined);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const categoryOptions = allCategories ? allCategories.data.map((category: Category) => ({ label: category.name, value: category._id })) : [];
+
+  const locationOptions = locationsData
+    ? [...locationsData.map((loc: any) => ({ label: loc.name, value: loc.id })), { label: 'General', value: 'general' }]
+    : [];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: handle form submission (dispatch, API, etc.)
-    // For now, just log
-    console.log({ category, location, priceRange, availability, deliveryPref });
+    const preferences = {
+      productId: 'exampleProductId', // Replace with actual productId
+      categoryId,
+      locationPreference,
+      priceRange: { min: priceRange.min, max: priceRange.max },
+      deliveryTimeframe,
+      deliveryMethod,
+    };
+
+    dispatch(setManufacturerPreferences(preferences));
+
+    try {
+      const response = await saveBidRequest(preferences).unwrap();
+      console.log('Bid request created successfully:', response);
+    } catch (error) {
+      console.error('Error creating bid request:', error);
+    }
   };
 
+  const handlePriceRangeChange = (e: { value: [number, number] }) => {
+    setPriceRange({ min: e.value[0], max: e.value[1] });
+  };
+
+  const handleDeliveryTimeframeChange = (event: { value: number | [number, number] }) => {
+    const index = Array.isArray(event.value) ? event.value[0] : event.value;
+    const selected = deliveryOptions[index];
+    if (selected) {
+      setDeliveryTimeframe(selected.label);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+      if (submitButton && !submitButton.disabled) {
+        submitButton.click();
+      }
+    }
+  };
+
+  const isFormValid = categoryId && locationPreference && priceRange.min && priceRange.max && deliveryTimeframe && deliveryMethod;
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-5 max-w-md mx-auto bg-white rounded shadow">
+    <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-5 max-w-lg mx-auto bg-white rounded shadow" onKeyPress={handleKeyPress}>
       <h2 className="text-xl font-semibold mb-2">Select Bid Preferences</h2>
+
+      {loadingCategories && <ProgressSpinner style={{ width: '50px', height: '50px' }} />}
+      {categoriesError && <Message severity="error" text="Error loading categories" />}
 
       <div>
         <label htmlFor="category" className="block mb-1 font-medium">Category</label>
         <Dropdown
           id="category"
-          value={category}
+          value={categoryId}
           options={categoryOptions}
-          onChange={e => setCategory(e.value)}
+          onChange={e => setCategoryId(e.value)}
           placeholder="Select a category"
           className="w-full"
+          disabled={loadingCategories || !!categoriesError}
         />
       </div>
 
@@ -58,19 +117,20 @@ const ManufacturerPreferencesStep: React.FC = () => {
         <label htmlFor="location" className="block mb-1 font-medium">Location</label>
         <Dropdown
           id="location"
-          value={location}
+          value={locationPreference}
           options={locationOptions}
-          onChange={e => setLocation(e.value)}
+          onChange={e => setLocationPreference(e.value)}
           placeholder="Select a location"
           className="w-full"
+          disabled={loadingLocations || !!locationsError}
         />
       </div>
 
       <div>
-        <label className="block mb-1 font-medium">Price Range (₪)</label>
+        <label className="block mb-1 font-medium">Price Range ($)</label>
         <Slider
-          value={priceRange}
-          onChange={e => setPriceRange(e.value as [number, number])}
+          value={[priceRange.min, priceRange.max]}
+          onChange={(e) => handlePriceRangeChange({ value: e.value as [number, number] })}
           range
           min={priceRangeMin}
           max={priceRangeMax}
@@ -78,39 +138,41 @@ const ManufacturerPreferencesStep: React.FC = () => {
           className="w-full"
         />
         <div className="flex justify-between text-sm mt-1">
-          <span>{priceRange[0]}</span>
-          <span>{priceRange[1]}</span>
+          <span>{priceRange.min}</span>
+          <span>{priceRange.max}</span>
         </div>
       </div>
 
       <div>
-        <label className="block mb-1 font-medium">Availability Time (days)</label>
+        <label className="block mb-1 font-medium">Delivery Timeframe</label>
         <Slider
-          value={availability}
-          onChange={e => setAvailability(e.value as number)}
-          min={timeRangeMin}
-          max={timeRangeMax}
+          value={deliveryOptions.findIndex(opt => opt.label === deliveryTimeframe)}
+          onChange={handleDeliveryTimeframeChange}
+          min={0}
+          max={deliveryOptions.length - 1}
           step={1}
           className="w-full"
         />
-        <div className="text-sm mt-1">{availability} days</div>
+        <div className="text-sm mt-1">{deliveryTimeframe}</div>
+
       </div>
 
+
       <div>
-        <label htmlFor="deliveryPref" className="block mb-1 font-medium">Delivery Preference</label>
+        <label htmlFor="deliveryMethod" className="block mb-1 font-medium">Delivery Method</label>
         <SelectButton
-          id="deliveryPref"
-          value={deliveryPref}
+          id="deliveryMethod"
+          value={deliveryMethod}
           options={[
-            { label: 'Delivery', value: 'delivery' },
             { label: 'Pickup', value: 'pickup' },
+            { label: 'Shipping', value: 'shipping' },
           ]}
-          onChange={e => setDeliveryPref(e.value)}
+          onChange={e => setDeliveryMethod(e.value)}
           className="w-full"
         />
       </div>
 
-      <Button type="submit" label="Continue" className="mt-4 w-full" />
+      <Button type="submit" label="Continue" className="mt-4 w-full" disabled={!isFormValid} />
     </form>
   );
 };
