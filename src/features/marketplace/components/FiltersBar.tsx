@@ -16,6 +16,7 @@ import type { CategoryFiltersType, Product } from '../../../types';
 
 
 const FiltersBar: React.FC = () => {
+    // Ref for AutoComplete input
     const dispatch: AppDispatch = useDispatch();
     const { filters, creators, products, maxPrice: globalMaxPrice } = useSelector((state: RootState) => state.marketplace);
     const navigate = useNavigate();

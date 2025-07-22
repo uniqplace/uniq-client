@@ -19,7 +19,7 @@ const Header: React.FC = () => {
       { label: 'Register', icon: 'pi pi-user-plus', command: () => navigate('/register') },
       { label: 'Login', icon: 'pi pi-sign-in', command: () => navigate('/login') },
     ] : []),
-    { label: 'Upload Product', icon: 'pi pi-upload', command: () => navigate('/uploadProduct') },
+    { label: 'CreatorMarketplace', icon: 'pi pi-star', command: () => navigate('/CreatorProductPage') },
   ];
 
   const start = (
