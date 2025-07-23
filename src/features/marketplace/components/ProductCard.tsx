@@ -1,63 +1,87 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card } from '../../../components/shared';
+import { Dialog } from 'primereact/dialog';
+import ProductUploadForm from './ProductUploadForm';
 import type { Product } from '../../../types';
 
 interface ProductCardProps {
   product: Product;
   onAddToCart?: (productId: string) => void;
+  editable?: boolean; // חדש!
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ 
-  product, 
-  onAddToCart 
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onAddToCart,
+  editable = false
 }) => {
   const navigate = useNavigate();
+  const [showEdit, setShowEdit] = useState(false);
 
   const handleViewDetails = () => {
     navigate(`/product/${product._id}`, { state: { product } });
   };
+
+  const handleEdit = () => setShowEdit(true);
+  const handleCloseEdit = () => setShowEdit(false);
+
   return (
-    <Card
-      title={product.title}
-      subtitle={`$${product.price.toFixed(2)}`}
-      className="product-card"
-      header={
-        <img 
-          src={product.images[0]} 
-          alt={product.title}
-          className="w-full h-48 object-cover"
-        />
-      }
-      footer={
-        <div className="flex gap-2">
-          <button 
-            onClick={handleViewDetails}
-            className="p-button p-button-outlined"
-          >
-            View Details
-          </button>
-          {onAddToCart && (
-            <button 
-          onClick={() => onAddToCart(product._id)}
-              className="p-button p-button-success"
+    <>
+      <Card
+        title={product.title}
+        subtitle={`$${product.price.toFixed(2)}`}
+        className="product-card"
+        header={
+          <img
+            src={product.images[0] || 'https://via.placeholder.com/150'}
+            alt={product.title}
+            className="w-full h-48 object-cover"
+          />
+        }
+        footer={
+          <div className="flex gap-2">
+            <button
+              onClick={handleViewDetails}
+              className="p-button p-button-outlined"
             >
-              Add to Cart
+              View Details
             </button>
-          )}
+            {onAddToCart && (
+              <button
+                onClick={() => onAddToCart(product._id)}
+                className="p-button p-button-success"
+              >
+                Add to Cart
+              </button>
+            )}
+            {editable && (
+              <button
+                onClick={handleEdit}
+                className="p-button p-button-warning"
+              >
+                Edit
+              </button>
+            )}
+          </div>
+        }
+      >
+        <p className="text-gray-600 line-clamp-2">{product.description}</p>
+        <div className="mt-2">
+          <span className="text-sm text-gray-500">Creator: {product.creator?.name}</span>
         </div>
-      }
-    >
-      <p className="text-gray-600 line-clamp-2">{product.description}</p>
-      <div className="mt-2">
-        {false && (
-          <span className="text-sm text-gray-500">Category: {product.category}</span>
-        )}
-        <br />
-        <span className="text-sm text-gray-500">Creator: {product.creator?.name}</span>
-      </div>
-    </Card>
+      </Card>
+      <Dialog
+        header="Edit Product"
+        visible={showEdit}
+        style={{ width: '50vw', maxWidth: 600 }}
+        onHide={handleCloseEdit}
+        modal
+      >
+        <ProductUploadForm product={product} onClose={handleCloseEdit} />
+      </Dialog>
+    </>
   );
 };
 
-export default ProductCard; 
+export default ProductCard;

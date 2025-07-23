@@ -85,6 +85,9 @@ const Marketplace: React.FC = () => {
     );
   }
 
+  // Import SearchBar here to use it above the grid
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+
   return (
     <>
       <div className="p-4">

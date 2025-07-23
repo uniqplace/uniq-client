@@ -4,10 +4,10 @@ import type { RootState } from '../store';
 const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:5000',
+    baseUrl: 'http://localhost:5002',
     credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
-      const state = getState() as Partial<RootState>;
+     const state = getState() as Partial<RootState>;
       const token = state?.auth?.token;
       if (!state?.auth) {
         console.warn('Warning: auth slice is missing from the root state!');
@@ -18,7 +18,23 @@ const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Product'],
-  endpoints: () => ({}),
+  tagTypes: ['Product','Category','SubCategory'],
+  endpoints: (builder) => ({
+    uploadImages: builder.mutation<string[], FormData>({
+      query: (formData) => ({
+        url: '/api/upload',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+      deleteImages: builder.mutation<any, string[]>({
+      query: (imageUrls) => ({
+        url: '/api/upload',
+        method: 'DELETE',
+        body: imageUrls,
+      }),
+    }),
+  }),
 });
 export default apiSlice;
+export const { useUploadImagesMutation , useDeleteImagesMutation} = apiSlice;

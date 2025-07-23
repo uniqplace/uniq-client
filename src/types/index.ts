@@ -26,8 +26,8 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  category: string;
-  creator: Creator;  // Changed from sellerId to seller object
+  categories: string[];
+  creator: Creator; 
   status: 'active' | 'sold' | 'inactive';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
@@ -85,7 +85,7 @@ export type RegisterFormData = {
 export interface Filters {
   category?: string;
   priceRange?: [number, number];
-  creator?: string; 
+  creator?: string;
 }
 
 
@@ -99,7 +99,7 @@ export interface Address {
   country: string;
 }
 
-export interface Category {
+export interface SubCategory {
   _id: string;
   name: string;
   type: string; 
@@ -107,4 +107,8 @@ export interface Category {
   count?: number;
 }
 
+export interface Category {
+  _id: string;
+  name: string;
+}
 export type CategoryFiltersType = string[];
