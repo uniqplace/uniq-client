@@ -24,7 +24,7 @@ interface ProductFormData {
   categories: { [key: string]: true }; // TreeSelect value: object of selected subCategory ids
   price: number;
   tags: string[];
-  status: 'active' | 'sold' | 'inactive';
+  status: 'draft' | 'published' | 'hidden';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
 }
@@ -35,9 +35,9 @@ interface ProductUploadFormProps {
 }
 
 const statusOptions = [
-  { label: 'Active', value: 'active' },
-  { label: 'Sold', value: 'sold' },
-  { label: 'Inactive', value: 'inactive' },
+  { label: 'Draft', value: 'draft' },
+  { label: 'Published', value: 'published' },
+  { label: 'Hidden', value: 'hidden' },
 ];
 
 const conditionOptions = [
@@ -58,15 +58,15 @@ const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
   ).required(),
   price: yup.number().typeError('Price must be a number').required().min(0),
   tags: yup.array().of(yup.string().defined()).required(),
-  status: yup.string().oneOf(['active', 'sold', 'inactive']).required(),
+  status: yup.string().oneOf(['draft', 'published', 'hidden']).required(),
   condition: yup.string().oneOf(['new', 'like_new', 'good', 'fair', 'poor']).required(),
   location: yup.string().required(),
 });
 
 function getDefaultCategories(product?: Product): { [key: string]: true } {
-  if (!product || !Array.isArray(product.categories)) return {};
+  if (!product || !Array.isArray(product.subCategories)) return {};
   return Object.fromEntries(
-    product.categories.map((cat: any) => [typeof cat === 'string' ? cat : cat._id, true])
+    product.subCategories.map((cat: any) => [typeof cat === 'string' ? cat : cat._id, true])
   );
 }
 
@@ -86,36 +86,34 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
     register,
     reset,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: yupResolver(schema),
     defaultValues: product
       ? {
-        title: product.title,
-        description: product.description,
-        categories: getDefaultCategories(product),
-        price: product.price,
-        tags: product.tags,
-        status: product.status,
-        condition: product.condition,
-        location: product.location,
-      }
+          title: product.title,
+          description: product.description,
+          categories: getDefaultCategories(product),
+          price: product.price,
+          tags: product.tags,
+          status: product.status,
+          condition: product.condition,
+          location: product.location,
+        }
       : {
-        title: '',
-        description: '',
-        categories: {},
-        price: 0,
-        tags: [],
-        status: 'active',
-        condition: 'new',
-        location: '',
-      },
+          title: '',
+          description: '',
+          categories: {},
+          price: 0,
+          tags: [],
+          status: 'draft',
+          condition: 'new',
+          location: '',
+        },
   });
 
   useEffect(() => {
     if (product) {
-      
       reset({
         title: product.title,
         description: product.description,
@@ -152,6 +150,8 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
         categories: selectedCategories,
         images: imageUrls,
       };
+      console.log('Submitting product:', product);
+      console.log('Product data:', productData);
 
       if (product) {
         await updateProduct({ _id: product._id, ...productData }).unwrap();

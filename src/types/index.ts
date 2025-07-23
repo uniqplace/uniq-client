@@ -26,9 +26,10 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  categories: string[];
+  category: string;
+  subCategories: string[];
   creator: Creator; 
-  status: 'active' | 'sold' | 'inactive';
+  status: 'draft' | 'published' | 'hidden';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
   tags: string[];

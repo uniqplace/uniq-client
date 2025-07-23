@@ -4,8 +4,6 @@ import userReducer from './features/marketplace/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
-import { deployApi } from './features/deployProcess/slices/deployApiSlice';
-import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,13 +12,11 @@ export const store = configureStore({
     user: userReducer,
      auth: authSliceReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
-    [deployApi.reducerPath]: deployApi.reducer,
-    [locationApiSlice.reducerPath]: locationApiSlice.reducer,
 
   },
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware, deployApi.middleware, locationApiSlice.middleware),
+    getDefaultMiddleware().concat(apiSlice.middleware ),
 });
 
 

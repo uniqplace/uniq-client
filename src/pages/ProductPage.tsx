@@ -144,7 +144,7 @@ const ProductPage: React.FC = () => {
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Category</h4>
-              <p className="text-gray-700">{currentProduct.categories}</p>
+              <p className="text-gray-700">{currentProduct.subCategories}</p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Location</h4>
@@ -179,11 +179,11 @@ const ProductPage: React.FC = () => {
               variant="primary"
               size="large"
               onClick={handleBuyNow}
-              disabled={currentProduct.status !== 'active'}
+              disabled={currentProduct.status !== 'published'}
               className="w-full"
               icon="pi pi-shopping-cart"
             >
-              {currentProduct.status === 'active' 
+              {currentProduct.status === 'published' 
                 ? `Buy Now - ${formattedPrice}`
                 : 'Not Available'
               }
