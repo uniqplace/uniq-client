@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetProductsQuery } from '../features/marketplace/slices/marketplaceApiSlice';
+import {  useGetUserProductsQuery } from '../features/marketplace/slices/marketplaceApiSlice';
 import ProductUploadForm from '../features/marketplace/components/ProductUploadForm';
 import { Button } from 'primereact/button';
 import ProductCard from '../features/marketplace/components/ProductCard';
@@ -7,7 +7,7 @@ import { Dialog } from 'primereact/dialog';
 
 const CreatorProductPage: React.FC = () => {
     const [showUploadForm, setShowUploadForm] = useState(false);
-    const { data: products, isLoading, error } = useGetProductsQuery({});
+    const { data: products, isLoading, error } = useGetUserProductsQuery({});
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">

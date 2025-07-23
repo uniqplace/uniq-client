@@ -28,7 +28,21 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
             ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
-
+   getUserProducts: builder.query<Product[], GetProductsQueryParams>({
+      query: () => {
+        return {
+          url: '/api/products/user/me',
+        };
+      },
+      transformResponse: (response: { data: Product[] }) => response.data,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
+              { type: 'Product', id: 'LIST' },
+            ]
+          : [{ type: 'Product', id: 'LIST' }],
+    }),
     addProduct: builder.mutation<Product,Partial<Product>>({
       query: (formData) => ({
         url: '/api/products',
@@ -71,6 +85,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetProductsQuery,
+  useGetUserProductsQuery,
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
