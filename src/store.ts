@@ -4,7 +4,7 @@ import userReducer from './features/marketplace/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
-
+import stepperReducer from './features/deployProcess/slices/stepperSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +13,7 @@ export const store = configureStore({
     user: userReducer,
      auth: authSliceReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
+    stepper: stepperReducer
 
   },
   // Add the API middleware to the store

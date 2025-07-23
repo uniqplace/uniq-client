@@ -1,10 +1,11 @@
+import GenericStepper from '../features/deployProcess/components/Stepper/genericStepper';
+
 function Home() {
-
-
   return (
     <div>
-      <h2>Home</h2>
-      <p>Welcome to the home page!</p>
+      <div className="p-6">
+        <GenericStepper />
+      </div>
     </div>
   );
 }

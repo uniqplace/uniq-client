@@ -29,6 +29,7 @@ export interface Product {
   categories: string[];
   creator: Creator; 
   status: 'active' | 'sold' | 'inactive';
+  CreationStatus: 'Define Your Product' | 'Manufacturer Bidding' | 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
   tags: string[];
