@@ -33,22 +33,51 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
             ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
-    addProduct: builder.mutation<Product,Partial<Product>>({
-      query: (formData) => ({
-        url: '/products',
-        method: 'POST',
-        body: formData,
-      }),
+    addProduct: builder.mutation<Product, Partial<Product>>({
+      query: (formData) => {
+        // Transform category and subCategories to IDs if needed
+        const payload = {
+          ...formData,
+          category:
+            typeof formData.category === 'object' && formData.category?._id
+              ? formData.category._id
+              : formData.category,
+          subCategories: Array.isArray(formData.subCategories)
+            ? formData.subCategories.map((sub: any) =>
+                typeof sub === 'object' && sub._id ? sub._id : sub
+              )
+            : formData.subCategories,
+        };
+        return {
+          url: '/products',
+          method: 'POST',
+          body: payload,
+        };
+      },
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
-      query: (updatedProduct) => ({
-        url: `/products/${updatedProduct._id}`,
-        method: 'PUT',
-        body: updatedProduct,
-      }),
-      invalidatesTags: (result, error, { _id }) => [
+      query: (updatedProduct) => {
+        const payload = {
+          ...updatedProduct,
+          category:
+            typeof updatedProduct.category === 'object' && updatedProduct.category?._id
+              ? updatedProduct.category._id
+              : updatedProduct.category,
+          subCategories: Array.isArray(updatedProduct.subCategories)
+            ? updatedProduct.subCategories.map((sub: any) =>
+                typeof sub === 'object' && sub._id ? sub._id : sub
+              )
+            : updatedProduct.subCategories,
+        };
+        return {
+          url: `/products/${updatedProduct._id}`,
+          method: 'PUT',
+          body: payload,
+        };
+      },
+      invalidatesTags: (_result, _error, { _id }) => [
         { type: 'Product', id: _id },
         { type: 'Product', id: 'LIST' },
       ],
@@ -59,7 +88,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         url: `/products/${productId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_result, _error, id) => [
         { type: 'Product', id },
         { type: 'Product', id: 'LIST' },
       ],
@@ -67,7 +96,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     getProductById: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Product', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
   }),
   overrideExisting: false,

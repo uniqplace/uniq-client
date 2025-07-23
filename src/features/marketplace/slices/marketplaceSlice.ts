@@ -15,7 +15,7 @@ interface MarketplaceState {
   totalPages: number;
   creators: Array<{ label: string; value: string; avatar?: string }>;
   categories: Category[];
-  subCategories: Map<string, SubCategory[]>;
+  subCategories: Record<string, SubCategory[]>;
   maxPrice?: number;
 }
 
@@ -36,7 +36,7 @@ const initialState: MarketplaceState = {
   totalPages: 1,
   creators: [{ label: 'All', value: '' }],
   categories: [],
-  subCategories: new Map(),
+  subCategories: {},
   maxPrice: Number.NEGATIVE_INFINITY,
 };
 
@@ -81,6 +81,9 @@ const marketplaceSlice = createSlice({
     setMaxPrice: (state, action: PayloadAction<number>) => {
       state.maxPrice = action.payload;
     },
+    setSubCategories(state, action: PayloadAction<Record<string, SubCategory[]>>) {
+      state.subCategories = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -108,12 +111,8 @@ const marketplaceSlice = createSlice({
         }));
         state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
       })
-      .addCase(fetchSubCategories.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.categories = action.payload;
-        } else if (action.payload?.data) {
-          state.categories = action.payload.data;
-        }
+      .addCase(fetchSubCategories.fulfilled, (state, action: PayloadAction<Record<string, SubCategory[]>>) => {
+        state.subCategories = action.payload;
       })
       .addCase(fetchProduct.pending, (state) => {
         state.productLoading = true;

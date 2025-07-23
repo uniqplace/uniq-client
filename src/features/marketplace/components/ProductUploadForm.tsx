@@ -145,12 +145,21 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
     }
 
     try {
-      const selectedCategories = Object.keys(data.categories || {}).map(key => key.replace(/^sub_/, '')); const productData = {
-        ...data,
-        categories: selectedCategories,
+      const selectedCategories = Object.keys(data.categories || {});
+      const parentCategory = selectedCategories.find(key => !key.startsWith('sub_')) || '';
+      // All other selected (not parent) go to subCategories
+      const subCategories = selectedCategories
+        .filter(key => key !== parentCategory)
+        .map(key => ({ _id: key.replace(/^sub_/, ''), name: '', type: 'subCategory', category: parentCategory }));
+
+      // Build productData without categories
+      const { categories, ...rest } = data;
+      const productData = {
+        ...rest,
+        category: parentCategory ? { _id: parentCategory, name: '', type: 'category' } : undefined,
+        subCategories,
         images: imageUrls,
       };
-      console.log('Submitting product:', product);
       console.log('Product data:', productData);
 
       if (product) {

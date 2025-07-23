@@ -90,6 +90,7 @@ const ProductPage: React.FC = () => {
   }
 
   const formattedPrice = `$${currentProduct.price.toFixed(2)}`;
+console.log('Current product:', currentProduct);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -144,7 +145,9 @@ const ProductPage: React.FC = () => {
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Category</h4>
-              <p className="text-gray-700">{currentProduct.category.name}</p>
+              <p className="text-gray-700">
+                {currentProduct.category ? currentProduct.category.name : 'No category available'}
+              </p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Location</h4>
