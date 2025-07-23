@@ -19,6 +19,7 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
+import BidOfferForm from './features/deployProcess/BidOfferForm';
 
 function UserProfile() {
   return (
@@ -81,6 +82,7 @@ function App() {
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
       </Routes>
     </div>
   );
