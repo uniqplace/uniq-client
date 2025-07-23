@@ -24,6 +24,8 @@ import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import socket from './services/socket';
 import { toast } from 'react-toastify';
+import { CheckoutPage } from './features/order/components/CheckoutPage';
+import BidOfferForm from './features/deployProcess/BidOfferForm';
 
 
 function UserProfile() {
@@ -104,6 +106,9 @@ function App() {
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+        <Route path="/checkout/:productId" element={<CheckoutPage />} />
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
+
       </Routes>
       <h5>Socket.IO + React Toastify</h5>
       {/* This is where the toast notifications will appear */}
