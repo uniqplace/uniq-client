@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -17,23 +16,44 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
   const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
   const [note, setNote] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const toast = useRef<Toast>(null);
   const user = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
 
-  const handleSubmit = async () => {
-    setSubmitted(true);
+  const errorsRef = useRef({
+    price: false,
+    estimatedDelivery: false,
+  });
 
-    if (!price || !estimatedDelivery || !user?.id) {
+  const clearForm = () => {
+    setPrice('');
+    setEstimatedDelivery(null);
+    setNote('');
+    setAttachmentUrl('');
+    errorsRef.current = { price: false, estimatedDelivery: false };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors = {
+      price: !price,
+      estimatedDelivery: !estimatedDelivery,
+    };
+
+    errorsRef.current = errors;
+
+    if (errors.price || errors.estimatedDelivery || !user?.id) {
       toast.current?.show({
         severity: 'warn',
         summary: 'Missing Required Fields',
         detail: 'Please fill in all required fields.',
         life: 3000,
       });
+      // נאלץ לעדכן מחדש כי ref לא גורם לרינדור:
+      forceUpdate();
       return;
     }
 
@@ -58,35 +78,29 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
         life: 3000,
       });
 
-      // Clear form
-      setPrice('');
-      setEstimatedDelivery(null);
-      setNote('');
-      setAttachmentUrl('');
-      setSubmitted(false);
-    } catch (error: unknown){
-         if (error instanceof Error) {
-        toast.current?.show({
-          severity: 'error',
-          summary: 'Error: Failed to submit offer.',
-          detail: error.message,
-          life: 4000,
-        });
-      } else {
-        toast.current?.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to submit offer.',
-          life: 4000,
-        });
-      }
-    }  finally {
+      clearForm();
+      forceUpdate();
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: error || 'Failed to submit offer.',
+        life: 4000,
+      });
+    } finally {
       setLoading(false);
     }
   };
 
+  // פתרון לרינדור כשמשתמשים ב-ref:
+  const [, setRerender] = useState(false);
+  const forceUpdate = () => setRerender(r => !r);
+
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 border-round shadow-4 surface-card">
+    <form
+      className="max-w-lg mx-auto mt-10 p-6 border-round shadow-4 surface-card"
+      onSubmit={handleSubmit}
+    >
       <Toast ref={toast} />
       <h2 className="text-2xl font-semibold mb-5 text-center">Submit Your Offer</h2>
 
@@ -97,9 +111,9 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
           onChange={(e) => setPrice(e.target.value)}
           keyfilter="money"
           placeholder="Enter your price"
-          className={classNames('w-full', { 'p-invalid': submitted && !price })}
+          className={classNames('w-full', { 'p-invalid': errorsRef.current.price })}
         />
-        {submitted && !price && (
+        {errorsRef.current.price && (
           <small className="p-error">Price is required.</small>
         )}
       </div>
@@ -111,10 +125,10 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
           onChange={(e) => setEstimatedDelivery(e.value as Date)}
           showIcon
           placeholder="Select a delivery date"
-          className={classNames('w-full', { 'p-invalid': submitted && !estimatedDelivery })}
+          className={classNames('w-full', { 'p-invalid': errorsRef.current.estimatedDelivery })}
           minDate={new Date()}
         />
-        {submitted && !estimatedDelivery && (
+        {errorsRef.current.estimatedDelivery && (
           <small className="p-error">Delivery date is required.</small>
         )}
       </div>
@@ -140,15 +154,15 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       </div>
 
       <Button
+        type="submit"
         label={loading ? '' : 'Submit Offer'}
         icon={loading ? undefined : 'pi pi-check'}
         className="w-full"
-        onClick={handleSubmit}
         disabled={loading || !user?.id}
       >
         {loading && <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />}
       </Button>
-    </div>
+    </form>
   );
 };
 
