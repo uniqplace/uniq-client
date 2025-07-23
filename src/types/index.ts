@@ -99,7 +99,7 @@ export interface Address {
   country: string;
 }
 
-export interface Category {
+export interface SubCategory {
   _id: string;
   name: string;
   type: string;
@@ -117,3 +117,8 @@ export interface BidOffer {
   note?: string
   attachmentUrl?: string
 }
+export interface Category {
+  _id: string;
+  name: string;
+}
+export type CategoryFiltersType = string[];
