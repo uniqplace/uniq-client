@@ -1,13 +1,13 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/api';
 
-export const fetchCategoriesWithCounts = createAsyncThunk(
-  'marketplace/fetchCategoriesWithCounts',
+export const fetchSubCategories = createAsyncThunk(
+  'marketplace/fetchSubCategories',
   async (_, { rejectWithValue }) =>
     asyncThunkHelper(
-      () => api.getCategoriesWithCounts(),
+      () => api.getSubCategories(),
       rejectWithValue,
-      'Failed to fetch categories with counts',
+      'Failed to fetch subcategories',
       (res) => res
     )
 );
@@ -29,7 +29,8 @@ export const fetchProducts = createAsyncThunk(
   'marketplace/fetchProducts',
   async (params: {
     q?: string;
-    category?: string[];
+    category?: string;
+    subCategories?: string[];
     creator?: string;
     minPrice?: number;
     maxPrice?: number;

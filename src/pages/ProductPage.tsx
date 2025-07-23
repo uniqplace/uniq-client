@@ -144,7 +144,7 @@ const ProductPage: React.FC = () => {
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Category</h4>
-              <p className="text-gray-700">{currentProduct.subCategories}</p>
+              <p className="text-gray-700">{currentProduct.category.name}</p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Location</h4>

@@ -1,16 +1,9 @@
 import apiSlice from '../../../api/apiSlice';
-import type { Product } from '../../../types';
-
-export interface GetProductsQueryParams {
-  categories?: string[];
-  minPrice?: number;
-  maxPrice?: number;
-  searchTerm?: string;
-}
+import type { Filters, Product } from '../../../types';
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<Product[], GetProductsQueryParams>({
+    getProducts: builder.query<Product[], Filters>({
       query: () => {
         return {
           url: '/products',
@@ -25,7 +18,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
             ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
-   getUserProducts: builder.query<Product[], GetProductsQueryParams>({
+   getUserProducts: builder.query<Product[], Filters>({
       query: () => {
         return {
           url: '/products/user/me',

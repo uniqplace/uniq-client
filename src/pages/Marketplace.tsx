@@ -41,7 +41,7 @@ const Marketplace: React.FC = () => {
       }
     }
     dispatch(fetchProducts({
-      category: urlCategory,
+      subCategories: urlCategory,
       creator: params.get('creator') || '',
       minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
       maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,

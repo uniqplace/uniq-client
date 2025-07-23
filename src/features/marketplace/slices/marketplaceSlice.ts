@@ -1,15 +1,8 @@
 // src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Category, Product } from '../../../types';
+import type { Category, Filters, Product, SubCategory } from '../../../types';
 import { fetchProducts, fetchProduct } from '../thunks';
-import { fetchCreatorsAndManufacturers, fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
-
-interface Filters {
-  category: string[];
-  priceRange: [number, number];
-  searchTerm: string;
-  creator: string;
-}
+import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
 
 interface MarketplaceState {
   selectedProduct: Product | null;
@@ -18,15 +11,11 @@ interface MarketplaceState {
   error: string | null;
   productLoading: boolean;
   productError: string | null;
-  filters: {
-    category: string[];
-    creator: string;
-    priceRange: [number, number];
-    searchTerm: string;
-  };
+  filters: Filters;
   totalPages: number;
   creators: Array<{ label: string; value: string; avatar?: string }>;
   categories: Category[];
+  subCategories: Map<string, SubCategory[]>;
   maxPrice?: number;
 }
 
@@ -39,13 +28,15 @@ const initialState: MarketplaceState = {
   productError: null,
   filters: {
     creator: '',
-    category: [],
+    category: '',
+    subCategories: [],
     priceRange: [0, 1000],
     searchTerm: '',
   },
   totalPages: 1,
   creators: [{ label: 'All', value: '' }],
   categories: [],
+  subCategories: new Map(),
   maxPrice: Number.NEGATIVE_INFINITY,
 };
 
@@ -65,7 +56,8 @@ const marketplaceSlice = createSlice({
     },
     clearFilters(state) {
       state.filters = {
-        category: [],
+        subCategories: [],
+        category: '',
         priceRange: [0, 1000],
         searchTerm: '',
         creator: '',
@@ -116,7 +108,7 @@ const marketplaceSlice = createSlice({
         }));
         state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
       })
-      .addCase(fetchCategoriesWithCounts.fulfilled, (state, action) => {
+      .addCase(fetchSubCategories.fulfilled, (state, action) => {
         if (action.payload) {
           state.categories = action.payload;
         } else if (action.payload?.data) {

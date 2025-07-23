@@ -25,7 +25,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
   return (
     <div className="flex items-center gap-2">
       <span className="font-semibold text-sm text-gray-900">{creator.name}</span>
-      <Link to={`/user/${creator.id}`} className="shrink-0 relative">
+      <Link to={`/user/${creator._id}`} className="shrink-0 relative">
         <img
           src={defaultAvatar}
           alt={`${creator.name}'s avatar`}
@@ -36,7 +36,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
           <span
             className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 border border-white shadow"
             style={{ minWidth: 18, minHeight: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="עוקבים"
+            title="followers"
           >
             {followersCount}
           </span>

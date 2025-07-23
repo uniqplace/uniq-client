@@ -49,7 +49,8 @@ export const api = {
   // Fetch products with filters and pagination
   getProducts: async (params: {
     q?: string;
-    category?: string[];
+    category?: string;
+    subCategories?: string[];
     creator?: string;
     minPrice?: number;
     maxPrice?: number;
@@ -57,7 +58,8 @@ export const api = {
   } = {}): Promise<ApiResponse<{ data: Product[]; totalPages: number }>> => {
     const query = new URLSearchParams();
     if (params.q) query.append('q', params.q);
-    if (params.category) query.append('categories', JSON.stringify(params.category));
+    if (params.category) query.append('category', params.category);
+    if (params.subCategories) query.append('subCategories', JSON.stringify(params.subCategories));
     if (params.creator) query.append('creator', params.creator);
     if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
     if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());
@@ -80,8 +82,8 @@ export const api = {
 
   logoutApi,
 
-  // Fetch all categories
-  getCategoriesWithCounts: async (): Promise<ApiResponse<Category[]>> => {
+  // Fetch all subCategories
+  getSubCategories: async (): Promise<ApiResponse<Category[]>> => {
     return await get<Category[]>(`/subcategories`);
   },
 

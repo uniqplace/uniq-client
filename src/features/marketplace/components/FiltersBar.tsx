@@ -10,7 +10,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
-import { fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
+import { fetchSubCategories } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import type { CategoryFiltersType, Product } from '../../../types';
 
@@ -115,7 +115,7 @@ const FiltersBar: React.FC = () => {
             dispatch(fetchProducts({
                 ...filters,
                 ...urlFilters,
-                category: urlCategory,
+                subCategories: urlCategory,
                 minPrice: urlPriceRange[0],
                 maxPrice: urlPriceRange[1],
                 page: 1,
@@ -123,7 +123,7 @@ const FiltersBar: React.FC = () => {
         }
     }, [location.search, creators]);
     useEffect(() => {
-        dispatch(fetchCategoriesWithCounts());
+        dispatch(fetchSubCategories());
     }, []);
     const hasActiveFilters = () => {
         return (
@@ -144,10 +144,10 @@ const FiltersBar: React.FC = () => {
         if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
         if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        dispatch(updateFilters({ ...filters, category: filteredCategories, creator: creatorId, priceRange }));
+        dispatch(updateFilters({ ...filters, subCategories: filteredCategories, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
-            category: filteredCategories,
+            subCategories: filteredCategories,
             creator: creatorId,
             minPrice: priceRange[0],
             maxPrice: priceRange[1],

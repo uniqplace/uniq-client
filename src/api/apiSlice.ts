@@ -22,14 +22,14 @@ const apiSlice = createApi({
   endpoints: (builder) => ({
     uploadImages: builder.mutation<string[], FormData>({
       query: (formData) => ({
-        url: '/api/upload',
+        url: '/upload',
         method: 'POST',
         body: formData,
       }),
     }),
       deleteImages: builder.mutation<any, string[]>({
       query: (imageUrls) => ({
-        url: '/api/upload',
+        url: '/upload',
         method: 'DELETE',
         body: imageUrls,
       }),

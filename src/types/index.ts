@@ -13,7 +13,7 @@ export interface User {
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
 export interface Creator {
-  id: string;
+  _id: string;
   name: string;
   avatar?: string;
   followers: number | User[]; // Can be a number or an array of followers
@@ -26,8 +26,8 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  category: string;
-  subCategories: string[];
+  category: Category;
+  subCategories: SubCategory[];
   creator: Creator; 
   status: 'draft' | 'published' | 'hidden';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
@@ -82,15 +82,6 @@ export type RegisterFormData = {
   role: RoleType;
 };
 
-// 5. Filters (for product listing)
-export interface Filters {
-  category?: string;
-  priceRange?: [number, number];
-  creator?: string;
-}
-
-
-
 // 6. Address (used by Order)
 export interface Address {
   street: string;
@@ -113,3 +104,11 @@ export interface Category {
   name: string;
 }
 export type CategoryFiltersType = string[];
+
+export interface Filters {
+  category: string;
+  subCategories: string[];
+  priceRange: [number, number];
+  searchTerm: string;
+  creator: string;
+}
