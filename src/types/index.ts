@@ -106,6 +106,5 @@ export interface Category {
   category: string; 
   count?: number;
 }
-}
 
 export type CategoryFiltersType = string[];
