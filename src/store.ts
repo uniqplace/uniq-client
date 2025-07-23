@@ -13,7 +13,7 @@ export const store = configureStore({
     payments: paymentsReducer,
     user: userReducer,
      auth: authSliceReducer,
-     BidOffer: BidOfferSlice ,
+     bidOffer: BidOfferSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   // Add the API middleware to the store
