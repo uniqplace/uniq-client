@@ -7,19 +7,19 @@ export interface User {
   email: string;
   avatar?: string;
   role: RoleType;
-  bio?: string; // Optional field for user bio
+  bio?: string;
   createdAt?: Date;
 }
 
-// 2. Creator/Seller (extends User fields, but not inheritance)
+// 2. Creator/Seller
 export interface Creator {
   id: string;
   name: string;
   avatar?: string;
-  followers: number | User[]; // Can be a number or an array of followers
+  followers: number | User[];
 }
 
-// 3. Product (depends on Creator)
+// 3. Product
 export interface Product {
   _id: string;
   title: string;
@@ -36,7 +36,7 @@ export interface Product {
   updatedAt: Date;
 }
 
-// 4. Order (depends on Product, Address)
+// 4. Order
 export interface Order {
   id: string;
   productId: string;
@@ -50,7 +50,7 @@ export interface Order {
   updatedAt: Date;
 }
 
-
+// 5. Address (used by Order)
 export interface Address {
   street: string;
   city: string;
@@ -59,8 +59,7 @@ export interface Address {
   country: string;
 }
 
-
-
+// 6. Payment
 export interface Payment {
   id: string;
   orderId: string;
@@ -71,7 +70,7 @@ export interface Payment {
   createdAt: Date;
 }
 
-// FormData for registration/login forms
+// 7. Role & Auth
 export type RoleType = 'customer' | 'manufacturer' | 'creator' | 'admin';
 
 export type RegisterFormData = {
@@ -81,24 +80,14 @@ export type RegisterFormData = {
   role: RoleType;
 };
 
-// 5. Filters (for product listing)
+// 8. Filters (for product listing)
 export interface Filters {
   category?: string;
   priceRange?: [number, number];
   creator?: string;
 }
 
-
-
-// 6. Address (used by Order)
-export interface Address {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-}
-
+// 9. Sub-category
 export interface SubCategory {
   _id: string;
   name: string;
@@ -107,18 +96,21 @@ export interface SubCategory {
   count?: number;
 }
 
-export type CategoryFiltersType = string[];
-
-export interface BidOffer {
-  bidRequestId: string,
-  manufacturerId: string,
-  price: number
-  estimatedDelivery: string
-  note?: string
-  attachmentUrl?: string
-}
+// 10. Category
 export interface Category {
   _id: string;
   name: string;
 }
+
+// 11. Category Filters
 export type CategoryFiltersType = string[];
+
+// 12. BidOffer
+export interface BidOffer {
+  bidRequestId: string;
+  manufacturerId: string;
+  price: number;
+  estimatedDelivery: string;
+  note?: string;
+  attachmentUrl?: string;
+}
