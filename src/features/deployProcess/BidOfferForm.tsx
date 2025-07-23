@@ -64,14 +64,23 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       setNote('');
       setAttachmentUrl('');
       setSubmitted(false);
-    } catch (error: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: error || 'Failed to submit offer.',
-        life: 4000,
-      });
-    } finally {
+    } catch (error: unknown){
+         if (error instanceof Error) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error: Failed to submit offer.',
+          detail: error.message,
+          life: 4000,
+        });
+      } else {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to submit offer.',
+          life: 4000,
+        });
+      }
+    }  finally {
       setLoading(false);
     }
   };
