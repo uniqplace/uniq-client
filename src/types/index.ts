@@ -100,11 +100,16 @@ export interface Address {
   country: string;
 }
 
-export interface Category {
+export interface SubCategory {
   _id: string;
   name: string;
   type: string; 
   category: string; 
   count?: number;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
 }
 export type CategoryFiltersType = string[];

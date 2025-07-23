@@ -1,6 +1,6 @@
 // src/features/categories/categoriesSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { ICategory, ISubCategory } from '../../../types/index'; // הנחה שהגדרות אלו נמצאות ב-types.ts
+import type { Category, SubCategory } from '../../../types/index';
 
 export interface TreeSelectItem {
   label: string;
@@ -10,8 +10,8 @@ export interface TreeSelectItem {
 }
 
 interface CategoriesState {
-  categories: ICategory[];
-  subCategories: ISubCategory[];
+  categories: Category[];
+  subCategories: SubCategory[];
   loading: boolean;
   error: string | null;
 }
@@ -27,10 +27,10 @@ const categoriesSlice = createSlice({
   name: 'categories',
   initialState,
   reducers: {
-    setCategories: (state, action: PayloadAction<ICategory[]>) => {
+    setCategories: (state, action: PayloadAction<Category[]>) => {
       state.categories = action.payload;
     },
-    setSubCategories: (state, action: PayloadAction<ISubCategory[]>) => {
+    setSubCategories: (state, action: PayloadAction<SubCategory[]>) => {
       state.subCategories = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
