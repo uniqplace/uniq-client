@@ -75,8 +75,6 @@ const Register: React.FC = () => {
         role: data.role,
       });
 
-
-
       if (res.data.success && res.data.user) {
         const user = res.data.user;
         Cookies.set('token', res.data.token, { expires: 7 });
@@ -88,7 +86,6 @@ const Register: React.FC = () => {
           email: user.email,
           avatar: user.avatar,
           role: user.role
-
         }));
 
         dispatch(setUser({
@@ -98,6 +95,16 @@ const Register: React.FC = () => {
           avatar: user.avatar || null,
           role: user.role || null
         }));
+
+        // רישום המשתמש ל־Socket.IO
+        import('../services/socket').then(({ default: socket }) => {
+          import('../constants/socketEvents').then(({ SOCKET_EVENTS }) => {
+            socket.emit(SOCKET_EVENTS.REGISTER_USER, {
+              userId: user._id || user.id,
+              role: user.role
+            });
+          });
+        });
 
         toast.current?.show({
           severity: 'success',
@@ -109,7 +116,6 @@ const Register: React.FC = () => {
         navigate('/');
       } else {
         throw new Error('User data missing or invalid in response');
-
       }
     } catch (error: any) {
       toast.current?.show({

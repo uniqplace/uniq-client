@@ -1,5 +1,8 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import useSocketListeners from './hooks/useSocketListeners';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
 import type { AppDispatch, RootState } from './store';
@@ -19,6 +22,9 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
+import socket from './services/socket';
+import { toast } from 'react-toastify';
+
 
 function UserProfile() {
   return (
@@ -36,6 +42,7 @@ function App() {
   const user = useSelector((state: RootState) => state.user);
   const loading = user.loading;
   const [wasLoading, setWasLoading] = useState(false);
+  useSocketListeners({ userId: user?.id ?? undefined, role: user?.role ?? undefined });
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -62,6 +69,22 @@ function App() {
     console.log('user state:', user);
   }, [user]);
 
+  useEffect(() => {
+    const handleBidSentConfirmation = (data: any) => {
+      console.log('Bid sent confirmation:', data);
+      if (data.error) {
+        toast.error(data.message);
+      } else {
+        toast.success(data.message);
+      }
+    };
+    socket.on('bid_sent_confirmation', handleBidSentConfirmation);
+
+    return () => {
+      socket.off('bid_sent_confirmation', handleBidSentConfirmation);
+    };
+  }, []);
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -82,6 +105,17 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
       </Routes>
+      <h5>Socket.IO + React Toastify</h5>
+      {/* This is where the toast notifications will appear */}
+      <ToastContainer position="top-right" autoClose={5000}/>
+    <button
+  onClick={() => {
+    fetch(`http://localhost:5002/api/test-bid/687cf0e4f2e8ed1cf5545add/${user.id}`);///api/test-bid/:userId/:senderUserId
+  }}
+>
+  Simulate New Bid For User {user.name}
+</button>
+
     </div>
   );
 }

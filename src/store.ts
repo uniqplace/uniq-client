@@ -6,6 +6,7 @@ import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
 import { deployApi } from './features/deployProcess/slices/deployApiSlice';
 import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
+import socketReducer from './features/socket/socketSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,7 +17,7 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     [deployApi.reducerPath]: deployApi.reducer,
     [locationApiSlice.reducerPath]: locationApiSlice.reducer,
-
+    socket: socketReducer,
   },
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
