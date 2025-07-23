@@ -4,6 +4,7 @@ import { Button } from 'primereact/button';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 
 
+
 // פרופס בסיסיים לכל שלב
 export interface StepProps {
   onComplete: (data?: any) => void;

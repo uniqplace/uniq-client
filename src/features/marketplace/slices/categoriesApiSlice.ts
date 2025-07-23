@@ -18,7 +18,7 @@ export const categoriesApiSlice = apiSlice.injectEndpoints({
       query: () => '/api/subCategories/tree', // הנתיב לראוט שלך בשרת
     }),
     getAllCategories: builder.query<CategoryResponse, void>({
-      query: () => '/api/categories',
+      query: () => '/categories',
     }),
   }),
 });

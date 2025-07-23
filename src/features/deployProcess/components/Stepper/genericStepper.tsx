@@ -127,11 +127,9 @@ const GenericStepper: React.FC = () => {
               <CurrentStepComponent product={product} onComplete={handleCompleteStep} />
             )}
           </div>
-          {/* כפתור סימון כהושלם נמחק כאן */}
         </>
       )}
 
-      {/* כפתורי ניווט */}
       <div className="flex justify-between mt-6">
         <Button
           label="Back"

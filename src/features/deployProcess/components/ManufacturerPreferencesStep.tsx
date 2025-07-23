@@ -13,6 +13,7 @@ import { Message } from 'primereact/message';
 import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
+import axios from 'axios';
 
 const priceRangeMin = 0;
 const priceRangeMax = 1000;
@@ -107,6 +108,18 @@ const ManufacturerPreferencesStep: React.FC = () => {
   };
 
   const isFormValid = categoryId && locationPreference && priceRange.min && priceRange.max && deliveryTimeframe && deliveryMethod;
+
+  React.useEffect(() => {
+    axios.get('/api/locations', {
+      withCredentials: true,
+    })
+    .then(response => {
+      console.log('Locations:', response.data);
+    })
+    .catch(error => {
+      console.error('Failed to fetch locations:', error);
+    });
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 max-w-3xl mx-auto bg-white rounded shadow" onKeyPress={handleKeyPress}>
@@ -203,3 +216,4 @@ const ManufacturerPreferencesStep: React.FC = () => {
 };
 
 export default ManufacturerPreferencesStep;
+

@@ -24,7 +24,6 @@ import { CheckoutPage } from './features/order/components/CheckoutPage';
 import BidOfferForm from './features/deployProcess/BidOfferForm';
 
 
-
 function UserProfile() {
   return (
     <div className="p-8 text-center">
