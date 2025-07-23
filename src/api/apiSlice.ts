@@ -4,7 +4,7 @@ import type { RootState } from '../store';
 const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:5002',
+    baseUrl: 'http://localhost:5000',
     credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
      const state = getState() as Partial<RootState>;

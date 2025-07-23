@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { UserState } from '../slices/userSlice';
 
-const API_BASE = 'http://localhost:5002'; 
+const API_BASE = 'http://localhost:5000'; 
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',

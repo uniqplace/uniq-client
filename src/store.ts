@@ -4,6 +4,7 @@ import userReducer from './features/marketplace/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
+import BidOfferSlice from './features/deployProcess/BidOfferSlice';
 
 
 export const store = configureStore({
@@ -12,8 +13,8 @@ export const store = configureStore({
     payments: paymentsReducer,
     user: userReducer,
      auth: authSliceReducer,
+     BidOffer: BidOfferSlice ,
     [apiSlice.reducerPath]: apiSlice.reducer,
-
   },
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
