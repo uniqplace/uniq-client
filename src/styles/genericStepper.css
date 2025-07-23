@@ -1,0 +1,29 @@
+.p-steps {
+  padding: 0 1rem;
+}
+
+.p-steps .p-steps-item {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.p-steps-number {
+  font-size: 1rem;
+  font-weight: bold;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  margin: 0 auto;
+}
+
+.p-steps-title {
+  white-space: normal; /* מאפשר ירידת שורה */
+  overflow: visible;
+  text-overflow: unset;
+  max-width: 140px;
+  display: inline-block;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  line-height: 1.2;
+}

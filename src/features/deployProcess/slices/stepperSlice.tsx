@@ -1,48 +1,87 @@
-// src/features/stepper/stepperSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type{ PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { steps } from '../components/Stepper/steps';
-import type{ Product } from '../../../types';
+
+export interface Product {
+  _id: string;
+  CreationStatus: string;
+  title?: string;
+}
 
 interface StepperState {
   currentStepIndex: number;
-  completedSteps: string[];
+  completedSteps: boolean[];
   product: Product | null;
   loading: boolean;
+  error: string | null;
 }
 
 const initialState: StepperState = {
   currentStepIndex: 0,
-  completedSteps: [],
+  completedSteps: new Array(steps.length).fill(false),
   product: null,
   loading: false,
+  error: null,
 };
 
-// --- API Calls ---
-export const createProduct = createAsyncThunk('stepper/createProduct', async () => {
-  const response = await axios.post('/api/products');
-  const product: Product = response.data;
-  localStorage.setItem('productId', product._id);
-  return product;
-});
-
-export const fetchProductStatus = createAsyncThunk(
-  'stepper/fetchStatus',
-  async (productId: string) => {
-    const response = await axios.get(`/api/products/${productId}`);
-    return response.data as Product;
+// יצירת מוצר חדש
+export const createProduct = createAsyncThunk<Product>(
+  'stepper/createProduct',
+  async (_, thunkAPI) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5002/api/create-product',
+        null,
+        { withCredentials: true }
+      );
+      return response.data as Product;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
+    }
   }
 );
 
-export const updateProductStatus = createAsyncThunk(
-  'stepper/updateStatus',
-  async (stepId: string, { getState }) => {
-    const state = getState() as { stepper: StepperState };
-    const productId = state.stepper.product?._id;
-    if (!productId) throw new Error('No product to update');
-    const response = await axios.patch(`/api/products/${productId}/status`, { status: stepId });
-    return response.data as Product;
+// שליפת סטטוס מוצר
+export const fetchProductStatus = createAsyncThunk<Product, string>(
+  'stepper/fetchProductStatus',
+  async (productId, thunkAPI) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5002/api/create-product/${productId}/status`,
+        { withCredentials: true }
+      );
+      return response.data as Product;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
+    }
+  }
+);
+
+// עדכון שלב מוצר
+export const updateProductStep = createAsyncThunk<
+  Product,
+  { productId: string; stepNumber: number }
+>(
+  'stepper/updateProductStep',
+  async ({ productId, stepNumber }, thunkAPI) => {
+    try {
+      const stepName = steps[stepNumber - 1]?.title || steps[0].title;
+      const response = await axios.patch(
+        `http://localhost:5002/api/create-product/${productId}/step-${stepNumber}`,
+        { step: stepName },
+        { withCredentials: true }
+      );
+      return response.data as Product;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
+    }
   }
 );
 
@@ -50,49 +89,117 @@ const stepperSlice = createSlice({
   name: 'stepper',
   initialState,
   reducers: {
-    completeStep: (state, action: PayloadAction<string>) => {
-      if (!state.completedSteps.includes(action.payload)) {
-        state.completedSteps.push(action.payload);
+    setCurrentStepIndex(state, action: PayloadAction<number>) {
+      state.currentStepIndex = action.payload;
+      localStorage.setItem('currentStep', action.payload.toString());
+    },
+    goToNextStep(state) {
+      if (
+        state.completedSteps[state.currentStepIndex] &&
+        state.currentStepIndex < steps.length - 1
+      ) {
+        state.currentStepIndex += 1;
+        localStorage.setItem('currentStep', state.currentStepIndex.toString());
       }
     },
-    goToStep: (state, action: PayloadAction<number>) => {
-      const index = action.payload;
-      const allCompleted = steps.slice(0, index).every(s => state.completedSteps.includes(s.id));
-      if (allCompleted) state.currentStepIndex = index;
-    },
-    goToNextStep: (state) => {
-      const next = state.currentStepIndex + 1;
-      if (next < steps.length && state.completedSteps.includes(steps[state.currentStepIndex].id)) {
-        state.currentStepIndex = next;
+    goToPrevStep(state) {
+      if (state.currentStepIndex > 0) {
+        state.currentStepIndex -= 1;
+        localStorage.setItem('currentStep', state.currentStepIndex.toString());
       }
     },
-    goToPrevStep: (state) => {
-      if (state.currentStepIndex > 0) state.currentStepIndex--;
+    markStepCompleted(state, action: PayloadAction<number>) {
+      state.completedSteps[action.payload] = true;
+      localStorage.setItem(
+        'completedSteps',
+        JSON.stringify(state.completedSteps)
+      );
+    },
+    restoreStepperState(state) {
+      const savedStep = localStorage.getItem('currentStep');
+      const savedCompleted = localStorage.getItem('completedSteps');
+      if (savedStep) state.currentStepIndex = parseInt(savedStep);
+      if (savedCompleted) state.completedSteps = JSON.parse(savedCompleted);
+    },
+    clearStepper(state) {
+      state.currentStepIndex = 0;
+      state.completedSteps = new Array(steps.length).fill(false);
+      state.product = null;
+      state.loading = false;
+      state.error = null;
+      localStorage.removeItem('productId');
+      localStorage.removeItem('currentStep');
+      localStorage.removeItem('completedSteps');
     },
   },
   extraReducers: (builder) => {
     builder
+      // CREATE PRODUCT
       .addCase(createProduct.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.product = action.payload;
-        state.currentStepIndex = steps.findIndex(s => s.id === action.payload.status);
-        if (state.currentStepIndex === -1) state.currentStepIndex = 0;
+        state.currentStepIndex = 0;
+        state.completedSteps = new Array(steps.length).fill(false);
+        localStorage.setItem('productId', action.payload._id);
+      })
+      .addCase(createProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // FETCH STATUS
+      .addCase(fetchProductStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchProductStatus.fulfilled, (state, action) => {
+        state.loading = false;
         state.product = action.payload;
-        const currentIndex = steps.findIndex(s => s.id === action.payload.status);
-        state.currentStepIndex = currentIndex !== -1 ? currentIndex : 0;
+        const idx = steps.findIndex(
+          (s) => s.title === action.payload.CreationStatus
+        );
+        // עדכון אינדקס ושלבים שהושלמו
+        state.currentStepIndex = idx >= 0 ? idx : 0;
+        state.completedSteps = state.completedSteps.map((_, i) => i < idx);
       })
-      .addCase(updateProductStatus.fulfilled, (state, action) => {
+      .addCase(fetchProductStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // UPDATE STEP
+      .addCase(updateProductStep.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProductStep.fulfilled, (state, action) => {
+        state.loading = false;
         state.product = action.payload;
-        const index = steps.findIndex(s => s.id === action.payload.status);
-        state.currentStepIndex = index !== -1 ? index : state.currentStepIndex;
+        const idx = steps.findIndex(
+          (s) => s.title === action.payload.CreationStatus
+        );
+        if (idx >= 0) {
+          state.currentStepIndex = idx;
+          state.completedSteps = state.completedSteps.map((_, i) => i <= idx);
+        }
+      })
+      .addCase(updateProductStep.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { completeStep, goToStep, goToNextStep, goToPrevStep } = stepperSlice.actions;
+export const {
+  setCurrentStepIndex,
+  goToNextStep,
+  goToPrevStep,
+  markStepCompleted,
+  restoreStepperState,
+  clearStepper,
+} = stepperSlice.actions;
 export default stepperSlice.reducer;

@@ -1,31 +1,88 @@
-// src/features/stepper/steps.tsx
 import React from 'react';
-import type { Product } from '../../../../types'; 
+import type { Product } from '../../slices/stepperSlice';
+import { Button } from 'primereact/button';
+import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 
-interface StepProps {
-  onComplete: (data: any) => void;
+
+// פרופס בסיסיים לכל שלב
+export interface StepProps {
+  onComplete: (data?: any) => void;
   product?: Product | null;
 }
 
-export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) => (
+/* --- שלב 1: Define Product --- */
+export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) => {
+  return (
+    <div>
+      <h2>Product Definition (Hardcoded)</h2>
+      <p>Here you will define your product details (temporary content).</p>
+      <p>Product ID: {product?._id ?? 'Not created yet'}</p>
+      <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    </div>
+  );
+};
+
+
+/* --- שאר השלבים --- */
+export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, product }) => (
   <div>
-    <h2>Define Your Product</h2>
+    <h2>Send to Marketplace</h2>
     <p>Product ID: {product?._id ?? 'Not created yet'}</p>
-    <button onClick={() => onComplete({ productId: '123' })}>Finish Step</button>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
   </div>
 );
 
-export const ManufacturerBiddingStep: React.FC<StepProps> = ({ onComplete, product }) => (
+export const LiveBidsViewerStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
-    <h2>Manufacturer Bidding</h2>
-    <p>Product ID: {product?._id ?? 'Not created yet'}</p>
-    <button onClick={() => onComplete({})}>Finish Step</button>
+    <h2>View Live Bids</h2>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
   </div>
 );
 
-// ... steps array
+export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete }) => (
+  <div>
+    <h2>Choose Manufacturer</h2>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+  </div>
+);
+
+export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete }) => (
+  <div>
+    <h2>Agreement</h2>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+  </div>
+);
+
+export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete }) => (
+  <div>
+    <h2>Payment & Order</h2>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+  </div>
+);
+
+export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
+  <div>
+    <h2>Tracking & Delivery</h2>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+  </div>
+);
+
+export const DeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
+  <div>
+    <h2>Delivery</h2>
+    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+  </div>
+);
+
+/* --- מערך השלבים --- */
 export const steps = [
-  { id: 'defineProduct', title: 'Define Your Product', component: DefineProductStep },
-  { id: 'bidding', title: 'Manufacturer Bidding', component: ManufacturerBiddingStep },
-  // ... עוד שלבים
+  { title: 'Define Your Product', component: DefineProductStep },
+  { title: 'Manufacturer Preferences', component: ManufacturerPreferencesStep },
+  { title: 'Send to Marketplace', component: OpenBidConfirmationStep },
+  { title: 'View Live Bids', component: LiveBidsViewerStep },
+  { title: 'Choose Manufacturer', component: SelectManufacturerStep },
+  { title: 'Agreement', component: AgreementAndSummaryStep },
+  { title: 'Payment', component: PaymentAndOrderStep },
+  { title: 'Tracking', component: TrackingAndDeliveryStep },
+  { title: 'Delivery', component: DeliveryStep },
 ];

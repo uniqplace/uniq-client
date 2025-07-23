@@ -19,6 +19,7 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
+import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
 
 function UserProfile() {
   return (
@@ -81,6 +82,8 @@ function App() {
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+       <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+
       </Routes>
     </div>
   );

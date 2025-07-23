@@ -1,53 +1,173 @@
-// src/features/stepper/GenericStepper.tsx
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type{ RootState } from '../../../../store';
+import React, { useEffect, useCallback, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { Steps } from 'primereact/steps';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { stepsConfig } from '../../../../config/stepsConfig';
 import {
+  goToPrevStep,
+  goToNextStep,
+  setCurrentStepIndex,
+  markStepCompleted,
   createProduct,
   fetchProductStatus,
-  completeStep,
-  goToNextStep,
-  goToPrevStep,
-  updateProductStatus,
+  updateProductStep,
 } from '../../slices/stepperSlice';
+import type { RootState, AppDispatch } from '../../../../store';
+import '../../../../styles/genericStepper.css';
 import { steps } from './steps';
 
-export default function GenericStepper() {
-  const dispatch = useDispatch<any>();
-  const { currentStepIndex, product, loading } = useSelector((state: RootState) => state.stepper);
-  const currentStep = steps[currentStepIndex];
+const GenericStepper: React.FC = () => {
+  const { stepKey } = useParams<{ stepKey: string }>();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const [showFinalPopup, setShowFinalPopup] = useState(false);
 
+  const { currentStepIndex, completedSteps, product, loading, error } = useSelector(
+    (state: RootState) => state.stepper
+  );
+
+  const CurrentStepComponent = steps[currentStepIndex]?.component;
+
+  /** טוען מוצר מהשרת או יוצר חדש אם אין productId */
   useEffect(() => {
     const productId = localStorage.getItem('productId');
-    if (productId) {
-      dispatch(fetchProductStatus(productId));
+    if (!productId) {
+      dispatch(createProduct())
+        .unwrap()
+        .then((created) => {
+          if (created?._id) {
+            localStorage.setItem('productId', created._id);
+          }
+        })
+        .catch((err) => console.error('Create product error:', err));
     } else {
-      dispatch(createProduct());
+      dispatch(fetchProductStatus(productId));
     }
   }, [dispatch]);
 
-  const handleComplete = async (data: any) => {
-    dispatch(completeStep(currentStep.id));
-    await dispatch(updateProductStatus(currentStep.id));
-    dispatch(goToNextStep());
+  /** מסנכרן את ה-stepIndex לפי ה-URL */
+  useEffect(() => {
+    const index = stepsConfig.findIndex((s) => s.key === stepKey);
+    if (index !== -1) {
+      dispatch(setCurrentStepIndex(index));
+    }
+  }, [dispatch, stepKey]);
+
+  /** סימון שלב כהושלם ועדכון השרת */
+  const handleCompleteStep = useCallback(() => {
+    const productId = localStorage.getItem('productId');
+    if (!productId) return;
+
+    dispatch(markStepCompleted(currentStepIndex));
+    dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
+
+    // אם זה השלב האחרון - הצגת פופאפ
+    if (currentStepIndex === stepsConfig.length - 1) {
+      setShowFinalPopup(true);
+    }
+  }, [dispatch, currentStepIndex]);
+
+  /** ניווט לשלב הבא */
+  const handleNext = () => {
+    if (completedSteps[currentStepIndex] && currentStepIndex < stepsConfig.length - 1) {
+      const nextKey = stepsConfig[currentStepIndex + 1].key;
+      navigate(`/create-your-own-product/${nextKey}`);
+      dispatch(goToNextStep());
+    }
   };
 
-  if (loading) return <p>Loading...</p>;
+  /** ניווט לשלב הקודם */
+  const handleBack = () => {
+    if (currentStepIndex > 0) {
+      const prevKey = stepsConfig[currentStepIndex - 1].key;
+      navigate(`/create-your-own-product/${prevKey}`);
+      dispatch(goToPrevStep());
+    }
+  };
 
-  const StepComponent = currentStep.component;
+  /** דגם הסטפר עם סימון V לשלבים שהושלמו */
+  const stepsModel = stepsConfig.map((step, index) => ({
+    label: step.label,
+    icon: completedSteps[index] ? 'pi pi-check' : undefined,
+  }));
+
+  const isStepCompleted = completedSteps[currentStepIndex];
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Create Your Own Product</h1>
-      {/* שלב נוכחי */}
-      <StepComponent onComplete={handleComplete} product={product} />
+    <div className="card max-w-5xl mx-auto p-6 shadow-lg rounded-xl bg-white">
+      <h2 className="text-2xl font-semibold text-center mb-6">
+        Create Your Own Product
+      </h2>
+
+      {/* סטפר */}
+      <Steps
+        model={stepsModel}
+        activeIndex={currentStepIndex}
+        readOnly
+        className="custom-steps mb-6"
+      />
+
+      {/* תוכן */}
+      {loading ? (
+        <div className="text-center text-gray-600">Loading product status...</div>
+      ) : error ? (
+        <div className="text-center text-red-500">{error}</div>
+      ) : (
+        <>
+          <div
+            className="step-content text-center p-4 border rounded-lg bg-gray-50"
+            style={{
+              opacity: isStepCompleted ? 0.5 : 1,
+              pointerEvents: isStepCompleted ? 'none' : 'auto',
+            }}
+          >
+            {CurrentStepComponent && (
+              <CurrentStepComponent product={product} onComplete={handleCompleteStep} />
+            )}
+          </div>
+          {/* כפתור סימון כהושלם נמחק כאן */}
+        </>
+      )}
+
       {/* כפתורי ניווט */}
-      <div className="flex justify-between mt-4">
-        <button disabled={currentStepIndex === 0} onClick={() => dispatch(goToPrevStep())}>
-          Back
-        </button>
-        {/* Next אוטומטי דרך handleComplete */}
+      <div className="flex justify-between mt-6">
+        <Button
+          label="Back"
+          onClick={handleBack}
+          disabled={currentStepIndex === 0}
+          className="p-button-secondary"
+        />
+        <Button
+          label="Next"
+          onClick={handleNext}
+          disabled={
+            !completedSteps[currentStepIndex] ||
+            currentStepIndex === stepsConfig.length - 1
+          }
+          className="p-button-primary"
+        />
       </div>
+
+      {/* פופאפ סיום תהליך */}
+      <Dialog
+        header="Product Completed!"
+        visible={showFinalPopup}
+        style={{ width: '350px' }}
+        onHide={() => setShowFinalPopup(false)}
+      >
+        <div className="text-center">
+          <p>Your product is completed and is on its way to you!</p>
+          <Button
+            label="Close"
+            onClick={() => setShowFinalPopup(false)}
+            className="p-button-success mt-3"
+          />
+        </div>
+      </Dialog>
     </div>
   );
-}
+};
+
+export default GenericStepper;
