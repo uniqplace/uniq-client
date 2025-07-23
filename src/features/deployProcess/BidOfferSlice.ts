@@ -12,19 +12,19 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
         );
         return response.data;
       } catch (error: any) {
-        return thunkAPI.rejectWithValue(error.message);
+        return thunkAPI.rejectWithValue(error.response?.data?.message);
       }
     }
   );
 
-  const initialBidOffer = () => ({
+  const getInitialBidOffer = () => ({
     price: '',
     estimatedDelivery: '',
     note: '',
     attachmentUrl: '',
 })
 
-  const BidOfferSlice = createSlice({
+  const bidOfferSlice = createSlice({
     name: "BidOffer",
     initialState: {
       BidOffer: initialBidOffer(),
