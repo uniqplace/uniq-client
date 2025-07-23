@@ -20,6 +20,8 @@ import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
+import BidOfferForm from './features/deployProcess/BidOfferForm';
+
 
 function UserProfile() {
   return (
@@ -83,6 +85,8 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
+
       </Routes>
     </div>
   );
