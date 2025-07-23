@@ -39,7 +39,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     e.preventDefault();
 
     const errors = {
-      price: !price,
+      price: !price || isNaN(priceNumber) || priceNumber <= 0,,
       estimatedDelivery: !estimatedDelivery,
     };
 
