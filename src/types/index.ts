@@ -41,7 +41,7 @@ export interface Order {
   id: string;
   productId: string;
   buyerId: string;
-  sellerId: string;
+  creatorId: string;
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   totalAmount: number;
   paymentMethod: string;

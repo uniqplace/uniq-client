@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../../../components/shared';
 import { Dialog } from 'primereact/dialog';
 import ProductUploadForm from './ProductUploadForm';
