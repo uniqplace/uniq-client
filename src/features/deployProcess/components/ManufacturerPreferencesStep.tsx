@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
@@ -10,6 +10,8 @@ import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApi
 import { useGetLocationsQuery } from '../slices/locationApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
+import { Rating } from 'primereact/rating';
+import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 
 const priceRangeMin = 0;
@@ -29,16 +31,16 @@ const deliveryOptions = [
   }),
 ];
 
-
-
 const ManufacturerPreferencesStep: React.FC = () => {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [locationPreference, setLocationPreference] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: priceRangeMin, max: priceRangeMax });
   const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>('7 days');
   const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>('pickup');
+  const [ratingPreference, setRatingPreference] = useState<number>(1);
   const dispatch = useDispatch();
   const [saveBidRequest] = useSaveBidRequestMutation();
+  const toast = useRef<Toast>(null);
 
   const { data: allCategories, isLoading: loadingCategories, error: categoriesError } = useGetAllCategoriesQuery();
   const { data: locationsData, isLoading: loadingLocations, error: locationsError } = useGetLocationsQuery(undefined);
@@ -58,6 +60,7 @@ const ManufacturerPreferencesStep: React.FC = () => {
       priceRange: { min: priceRange.min, max: priceRange.max },
       deliveryTimeframe,
       deliveryMethod,
+      ratingPreference,
     };
 
     dispatch(setManufacturerPreferences(preferences));
@@ -65,8 +68,20 @@ const ManufacturerPreferencesStep: React.FC = () => {
     try {
       const response = await saveBidRequest(preferences).unwrap();
       console.log('Bid request created successfully:', response);
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Success',
+        detail: `Bid request opened successfully on ${new Date(response.createdAt).toLocaleDateString()}`,
+        life: 4000,
+      });
     } catch (error) {
       console.error('Error creating bid request:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to create bid request. Please try again.',
+        life: 4000,
+      });
     }
   };
 
@@ -94,14 +109,15 @@ const ManufacturerPreferencesStep: React.FC = () => {
   const isFormValid = categoryId && locationPreference && priceRange.min && priceRange.max && deliveryTimeframe && deliveryMethod;
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-5 max-w-lg mx-auto bg-white rounded shadow" onKeyPress={handleKeyPress}>
-      <h2 className="text-xl font-semibold mb-2">Select Bid Preferences</h2>
+    <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 max-w-3xl mx-auto bg-white rounded shadow" onKeyPress={handleKeyPress}>
+      <Toast ref={toast} />
+      <h2 className="text-xl font-semibold mb-4 text-center">Select Bid Preferences</h2>
 
       {loadingCategories && <ProgressSpinner style={{ width: '50px', height: '50px' }} />}
       {categoriesError && <Message severity="error" text="Error loading categories" />}
 
-      <div>
-        <label htmlFor="category" className="block mb-1 font-medium">Category</label>
+      <div className="flex flex-col items-center w-full">
+        <label htmlFor="category" className="block mb-2 font-medium">Category</label>
         <Dropdown
           id="category"
           value={categoryId}
@@ -113,8 +129,8 @@ const ManufacturerPreferencesStep: React.FC = () => {
         />
       </div>
 
-      <div>
-        <label htmlFor="location" className="block mb-1 font-medium">Location</label>
+      <div className="flex flex-col items-center w-full">
+        <label htmlFor="location" className="block mb-2 font-medium">Location</label>
         <Dropdown
           id="location"
           value={locationPreference}
@@ -126,8 +142,8 @@ const ManufacturerPreferencesStep: React.FC = () => {
         />
       </div>
 
-      <div>
-        <label className="block mb-1 font-medium">Price Range ($)</label>
+      <div className="flex flex-col items-center w-full">
+        <label className="block mb-2 font-medium">Price Range ($)</label>
         <Slider
           value={[priceRange.min, priceRange.max]}
           onChange={(e) => handlePriceRangeChange({ value: e.value as [number, number] })}
@@ -137,14 +153,27 @@ const ManufacturerPreferencesStep: React.FC = () => {
           step={10}
           className="w-full"
         />
-        <div className="flex justify-between text-sm mt-1">
+        <div className="flex justify-between text-sm mt-2 w-full">
           <span>{priceRange.min}</span>
           <span>{priceRange.max}</span>
         </div>
       </div>
 
-      <div>
-        <label className="block mb-1 font-medium">Delivery Timeframe</label>
+      <div className="flex flex-col items-center w-full">
+        <label className="block mb-2 font-medium">Rating Preference</label>
+        <div className="flex justify-center items-center w-full">
+          <Rating
+            value={ratingPreference}
+            onChange={(e) => setRatingPreference(e.value ?? 1)}
+            cancel={false}
+            className="w-auto"
+          />
+        </div>
+        <div className="text-sm mt-2 text-center">{ratingPreference} Stars</div>
+      </div>
+
+      <div className="flex flex-col items-center w-full">
+        <label className="block mb-2 font-medium">Delivery Timeframe</label>
         <Slider
           value={deliveryOptions.findIndex(opt => opt.label === deliveryTimeframe)}
           onChange={handleDeliveryTimeframeChange}
@@ -153,13 +182,11 @@ const ManufacturerPreferencesStep: React.FC = () => {
           step={1}
           className="w-full"
         />
-        <div className="text-sm mt-1">{deliveryTimeframe}</div>
-
+        <div className="text-sm mt-2 text-center">{deliveryTimeframe}</div>
       </div>
 
-
-      <div>
-        <label htmlFor="deliveryMethod" className="block mb-1 font-medium">Delivery Method</label>
+      <div className="flex flex-col items-center w-full">
+        <label htmlFor="deliveryMethod" className="block mb-2 font-medium">Delivery Method</label>
         <SelectButton
           id="deliveryMethod"
           value={deliveryMethod}
@@ -172,7 +199,7 @@ const ManufacturerPreferencesStep: React.FC = () => {
         />
       </div>
 
-      <Button type="submit" label="Continue" className="mt-4 w-full" disabled={!isFormValid} />
+      <Button type="submit" label="Continue" className="mt-6 w-full" disabled={!isFormValid} />
     </form>
   );
 };

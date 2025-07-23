@@ -5,7 +5,7 @@ export const locationApiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
   endpoints: (builder) => ({
     getLocations: builder.query({
-      query: () => '/location',
+      query: () => '/locations',
     }),
   }),
 });
