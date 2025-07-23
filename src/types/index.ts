@@ -13,7 +13,7 @@ export interface User {
 
 // 2. Creator/Seller (extends User fields, but not inheritance)
 export interface Creator {
-  id: string;
+  _id: string;
   name: string;
   avatar?: string;
   followers: number | User[]; // Can be a number or an array of followers
@@ -46,6 +46,7 @@ export interface Order {
   totalAmount: number;
   paymentMethod: string;
   shippingAddress: Address;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -121,4 +122,3 @@ export interface Category {
   _id: string;
   name: string;
 }
-export type CategoryFiltersType = string[];
