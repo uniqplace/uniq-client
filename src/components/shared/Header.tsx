@@ -21,6 +21,7 @@ const Header: React.FC = () => {
     ] : []),
     { label: 'CreatorMarketplace', icon: 'pi pi-star', command: () => navigate('/CreatorProductPage') },
     { label: 'Create Your Own Product', icon: 'pi pi-plus', command: () => navigate('/create-your-own-product') },
+
   ];
 
   const start = (
