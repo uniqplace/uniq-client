@@ -22,7 +22,6 @@ const ProductPage: React.FC = () => {
     (state: RootState) => state.marketplace
   );
 
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -37,11 +36,7 @@ const ProductPage: React.FC = () => {
       dispatch(clearSelectedProduct());
     };
   }, [id, dispatch, product]);
-
-  const handleBuyNow = () => {
-    setShowPaymentModal(true);
-  };
-
+  
   const handleBackToMarketplace = () => {
     navigate(-1);
   };
@@ -88,6 +83,9 @@ const ProductPage: React.FC = () => {
       </div>
     );
   }
+    const handleBuyNow = () => {
+    navigate(`/checkout/${currentProduct._id}`, { state: { product: currentProduct } });
+  };
 
   const formattedPrice = `$${currentProduct.price.toFixed(2)}`;
 console.log('Current product:', currentProduct);
@@ -195,12 +193,6 @@ console.log('Current product:', currentProduct);
         </div>
       </div>
 
-      <Payment
-        isVisible={showPaymentModal}
-        onHide={() => setShowPaymentModal(false)}
-        productTitle={currentProduct.title}
-        price={currentProduct.price}
-      />
     </div>
   );
 };

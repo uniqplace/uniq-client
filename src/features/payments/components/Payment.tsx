@@ -3,16 +3,17 @@
 
 import React from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Button } from '../shared';
+import { Button } from '../../../components/shared';
+import type { Product } from '../../../types';
 
 interface PaymentProps {
   isVisible: boolean;
   onHide: () => void;
-  productTitle?: string;
+  product?: Product;
   price?: number;
 }
 
-const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, productTitle, price }) => {
+const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) => {
   return (
     <Dialog
       visible={isVisible}
@@ -43,9 +44,9 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, productTitle, pric
         </p>
         
         {/* Product details if provided */}
-        {productTitle && (
+        {product?.title && (
           <div className="bg-gray-50 p-4 rounded-lg mb-4">
-            <p className="font-medium">{productTitle}</p>
+            <p className="font-medium">{product?.title}</p>
             {price && typeof price === 'number' && (
               <p className="text-lg font-bold text-green-600">${price.toFixed(2)}</p>
             )}

@@ -6,7 +6,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: RoleType; 
+  role: RoleType;
   bio?: string; // Optional field for user bio
   createdAt?: Date;
 }
@@ -42,7 +42,7 @@ export interface Order {
   id: string;
   productId: string;
   buyerId: string;
-  sellerId: string;
+  creatorId: string;
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   totalAmount: number;
   paymentMethod: string;
@@ -94,16 +94,25 @@ export interface Address {
 export interface SubCategory {
   _id: string;
   name: string;
-  type: string; 
-  category: string; 
+  type: string;
+  category: string;
   count?: number;
 }
 
+export type CategoryFiltersType = string[];
+
+export interface BidOffer {
+  bidRequestId: string,
+  manufacturerId: string,
+  price: number
+  estimatedDelivery: string
+  note?: string
+  attachmentUrl?: string
+}
 export interface Category {
   _id: string;
   name: string;
 }
-export type CategoryFiltersType = string[];
 
 export interface Filters {
   category: string;
