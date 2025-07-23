@@ -27,7 +27,7 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
   const bidOfferSlice = createSlice({
     name: "BidOffer",
     initialState: {
-      BidOffer: initialBidOffer(),
+      bidOffer: getInitialBidOffer(),
       loading: true,
       error: null as string | null,
     },
