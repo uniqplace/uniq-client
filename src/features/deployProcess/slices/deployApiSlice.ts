@@ -12,7 +12,7 @@ export const deployApi = createApi({
         body: preferences,
       }),
     }),
-    saveBidRequest: builder.mutation<{ id: string; status: 'open'; createdAt: Date }, ManufacturerPreferences & { productId: string }>({
+    saveBidRequest: builder.mutation<{ id: string; status: 'open'; createdAt: string }, ManufacturerPreferences & { productId: string }>({
       query: (bidRequest) => ({
         url: '/bid-requests',
         method: 'POST',
