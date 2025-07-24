@@ -88,7 +88,6 @@ const ProductPage: React.FC = () => {
   };
 
   const formattedPrice = `$${currentProduct.price.toFixed(2)}`;
-console.log('Current product:', currentProduct);
 
   return (
     <div className="container mx-auto px-4 py-8">
