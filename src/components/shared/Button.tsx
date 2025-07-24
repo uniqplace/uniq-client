@@ -20,6 +20,7 @@ const Button: React.FC<SharedButtonProps> = ({
       default: return '';
     }
   };
+  
 
 const getSizeClass = () => {
   switch (size) {

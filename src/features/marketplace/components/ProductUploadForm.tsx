@@ -86,7 +86,6 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
     register,
     reset,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: yupResolver(schema),

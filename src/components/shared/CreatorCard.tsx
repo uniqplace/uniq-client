@@ -7,7 +7,7 @@ import type { Creator as BaseCreator, User } from '../../types';
 type Creator = BaseCreator & {
   followers?: number | User[];
 };
-
+console.log();
 // Helper function to get followers count
 const getFollowersCount = (followers: unknown): number => {
   if (typeof followers === 'number') return followers;
@@ -25,7 +25,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
   return (
     <div className="flex items-center gap-2">
       <span className="font-semibold text-sm text-gray-900">{creator.name}</span>
-      <Link to={`/user/${creator.id}`} className="shrink-0 relative">
+      <Link to={`/user/${creator._id}`} className="shrink-0 relative">
         <img
           src={defaultAvatar}
           alt={`${creator.name}'s avatar`}
