@@ -23,6 +23,9 @@ export const store = configureStore({
 
 
   },
+
+  //  [locationApiSlice.reducerPath]: locationApiSlice.reducer,  },
+
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware, deployApi.middleware, locationApiSlice.middleware),

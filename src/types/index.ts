@@ -13,7 +13,7 @@ export interface User {
 
 // 2. Creator/Seller
 export interface Creator {
-  id: string;
+  _id: string;
   name: string;
   avatar?: string;
   followers: number | User[];
@@ -46,6 +46,7 @@ export interface Order {
   totalAmount: number;
   paymentMethod: string;
   shippingAddress: Address;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
