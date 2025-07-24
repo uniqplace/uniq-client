@@ -106,7 +106,7 @@ export interface Category {
 
 export interface Filters {
   category: string;
-  subCategories: string[];
+  subCategories?: string[];
   priceRange: [number, number];
   searchTerm: string;
   creator: string;

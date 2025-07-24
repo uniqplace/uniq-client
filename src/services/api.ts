@@ -59,7 +59,9 @@ export const api = {
     const query = new URLSearchParams();
     if (params.q) query.append('q', params.q);
     if (params.category) query.append('category', params.category);
-    if (params.subCategories) query.append('subCategories', JSON.stringify(params.subCategories));
+    if (Array.isArray(params.subCategories) && params.subCategories.length > 0) {
+      query.append('subCategories', JSON.stringify(params.subCategories));
+    }
     if (params.creator) query.append('creator', params.creator);
     if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
     if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());

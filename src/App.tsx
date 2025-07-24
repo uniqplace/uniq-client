@@ -21,6 +21,7 @@ import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
 import BidOfferForm from './features/deployProcess/BidOfferForm';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 
 function UserProfile() {
@@ -61,13 +62,14 @@ function App() {
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
 
-  useEffect(() => {
-    console.log('user state:', user);
-  }, [user]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+if (loading) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <ProgressSpinner />
+      <span style={{ marginTop: '1rem' }}>Loading...</span>
+    </div>
+  );
+}
 
   return (
     <div>

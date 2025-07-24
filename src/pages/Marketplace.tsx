@@ -26,22 +26,25 @@ const Marketplace: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
-    let urlCategory: string[] | undefined = undefined;
-    const categoryParam = params.get('category');
-    if (categoryParam) {
+    // Read main category and subCategories from URL
+    const mainCategory = params.get('category') || undefined;
+    let subCategoriesArr: string[] | undefined = undefined;
+    const subCategoriesParam = params.get('subCategories');
+    if (subCategoriesParam) {
       try {
-        const parsed = JSON.parse(categoryParam);
+        const parsed = JSON.parse(subCategoriesParam);
         if (Array.isArray(parsed)) {
-          urlCategory = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+          subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
         } else if (parsed && typeof parsed === 'object') {
-          urlCategory = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+          subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
         }
       } catch {
-        urlCategory = undefined;
+        subCategoriesArr = undefined;
       }
     }
     dispatch(fetchProducts({
-      subCategories: urlCategory,
+      category: mainCategory,
+      subCategories: subCategoriesArr,
       creator: params.get('creator') || '',
       minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
       maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
@@ -60,7 +63,31 @@ const Marketplace: React.FC = () => {
     params.set('page', newPage.toString());
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
 
-    dispatch(fetchProducts({ page: newPage }));
+    // Read category and subCategories from URL
+    const mainCategory = params.get('category') || undefined;
+    let subCategoriesArr: string[] | undefined = undefined;
+    const subCategoriesParam = params.get('subCategories');
+    if (subCategoriesParam) {
+      try {
+        const parsed = JSON.parse(subCategoriesParam);
+        if (Array.isArray(parsed)) {
+          subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        } else if (parsed && typeof parsed === 'object') {
+          subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+        }
+      } catch {
+        subCategoriesArr = undefined;
+      }
+    }
+    dispatch(fetchProducts({
+      category: mainCategory,
+      subCategories: subCategoriesArr,
+      creator: params.get('creator') || '',
+      minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
+      maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
+      q: params.get('q') || '',
+      page: newPage,
+    }));
   };
 
   if(loading) {

@@ -12,7 +12,7 @@ import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
 import { fetchSubCategories } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
-import type { CategoryFiltersType, Product } from '../../../types';
+import type { Product } from '../../../types';
 
 
 const FiltersBar: React.FC = () => {
@@ -27,21 +27,43 @@ const FiltersBar: React.FC = () => {
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
     const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
-        const categoryParam = params.get('category');
-        if (categoryParam) {
+        const mainCategory = params.get('category');
+        const subCategoriesParam = params.get('subCategories');
+        let subCategoriesArr: string[] = [];
+        if (subCategoriesParam) {
             try {
-                const parsed = JSON.parse(categoryParam);
+                const parsed = JSON.parse(subCategoriesParam);
                 if (Array.isArray(parsed)) {
-                    return parsed;
+                    subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string');
                 } else if (parsed && typeof parsed === 'object') {
-                    return Object.values(parsed).flat().filter(Boolean);
+                    subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string');
                 }
             } catch {
-                return [];
+                subCategoriesArr = [];
             }
         }
-        return [];
+        return mainCategory ? [mainCategory, ...subCategoriesArr] : subCategoriesArr;
     });
+
+    // Sync categoryFilters with URL when changed
+    React.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        // Main category is the first in the array (if exists)
+        const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
+        if (mainCategory) {
+            params.set('category', mainCategory);
+        } else {
+            params.delete('category');
+        }
+        // SubCategories are all except the main category
+        const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
+        if (subCategoriesArr.length > 0) {
+            params.set('subCategories', JSON.stringify(subCategoriesArr));
+        } else {
+            params.delete('subCategories');
+        }
+        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    }, [categoryFilters]);
     const minProductPrice = 0;
     const pageMaxPrice = products.length ? Math.max(...products.map((p: Product) => p.price)) : 1000;
     const maxProductPrice = globalMaxPrice && globalMaxPrice > pageMaxPrice ? globalMaxPrice : pageMaxPrice;
@@ -102,20 +124,27 @@ const FiltersBar: React.FC = () => {
             filters.priceRange[1] === urlFilters.priceRange[1];
         const hasAnyUrlFilter = urlCreator || urlMinPrice || urlMaxPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
-            let urlCategory: CategoryFiltersType | undefined = undefined;
-            const categoryParam = params.get('category');
-            if (categoryParam) {
+            const categoryParam = params.get('category') ?? undefined;
+            let subCategoriesArr: string[] = [];
+            const subCategoriesParam = params.get('subCategories');
+            if (subCategoriesParam) {
                 try {
-                    urlCategory = JSON.parse(categoryParam);
+                    const parsed = JSON.parse(subCategoriesParam);
+                    if (Array.isArray(parsed)) {
+                        subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string');
+                    } else if (parsed && typeof parsed === 'object') {
+                        subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string');
+                    }
                 } catch {
-                    urlCategory = undefined;
+                    subCategoriesArr = [];
                 }
             }
-            dispatch(updateFilters({ ...filters, ...urlFilters }));
+            dispatch(updateFilters({ ...filters, ...urlFilters, category: categoryParam, subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined }));
             dispatch(fetchProducts({
                 ...filters,
                 ...urlFilters,
-                subCategories: urlCategory,
+                category: categoryParam,
+                subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
                 minPrice: urlPriceRange[0],
                 maxPrice: urlPriceRange[1],
                 page: 1,
@@ -134,25 +163,39 @@ const FiltersBar: React.FC = () => {
         );
     };
     const handleFilter = () => {
-        const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
+        // Always use categoryFilters state for category/subCategories
         const params = new URLSearchParams(location.search);
-        const filteredCategories = categoryFilters.filter(
-            (v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined' && v !== null
-        );
-        params.set('category', JSON.stringify(filteredCategories));
-        if (creatorId) params.set('creator', creatorId); else params.delete('creator');
-        if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
-        if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
-        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        dispatch(updateFilters({ ...filters, subCategories: filteredCategories, creator: creatorId, priceRange }));
+        const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
+        const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
+        if (mainCategory) {
+            params.set('category', mainCategory);
+        } else {
+            params.delete('category');
+        }
+        if (subCategoriesArr.length > 0) {
+            params.set('subCategories', JSON.stringify(subCategoriesArr));
+        } else {
+            params.delete('subCategories');
+        }
+        const creatorId = params.get('creator') || '';
+        const minPriceParam = params.get('minPrice');
+        const maxPriceParam = params.get('maxPrice');
+        const qParam = params.get('q') || '';
+        const pageParam = params.get('page') ? Number(params.get('page')) : 1;
+        // First, update Redux and call API with current UI state
+        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
-            subCategories: filteredCategories,
+            category: mainCategory,
+            subCategories: mainCategory ? subCategoriesArr : undefined,
             creator: creatorId,
-            minPrice: priceRange[0],
-            maxPrice: priceRange[1],
-            page: 1,
+            minPrice: minPriceParam ? Number(minPriceParam) : priceRange[0],
+            maxPrice: maxPriceParam ? Number(maxPriceParam) : priceRange[1],
+            q: qParam,
+            page: pageParam,
         }));
+        // Only then update the URL (if needed)
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
     const searchCreator = useRef(
         debounce((event: { query: string }) => {
@@ -191,8 +234,10 @@ const FiltersBar: React.FC = () => {
                             const params = new URLSearchParams(location.search);
                             params.delete('creator');
                             params.delete('category');
+                            params.delete('subCategories');
                             params.delete('minPrice');
                             params.delete('maxPrice');
+                            setCategoryFilters([]); // Clear all category checkboxes
                             navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
                         }}
                     />

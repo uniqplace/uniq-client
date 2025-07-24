@@ -52,11 +52,23 @@ const marketplaceSlice = createSlice({
       state.productError = null;
     },
     updateFilters(state, action: PayloadAction<Partial<Filters>>) {
+      // Always sync category and subCategories with selected IDs from URL
+      if (action.payload.category !== undefined) {
+        state.filters.category = action.payload.category;
+        // If category is not set, subCategories should be undefined
+        if (!action.payload.category) {
+          state.filters.subCategories = undefined;
+        } else if (action.payload.subCategories) {
+          state.filters.subCategories = action.payload.subCategories;
+        }
+      } else if (action.payload.subCategories) {
+        state.filters.subCategories = action.payload.subCategories;
+      }
       state.filters = { ...state.filters, ...action.payload };
     },
     clearFilters(state) {
       state.filters = {
-        subCategories: [],
+        subCategories: undefined,
         category: '',
         priceRange: [0, 1000],
         searchTerm: '',
