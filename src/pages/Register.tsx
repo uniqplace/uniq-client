@@ -96,7 +96,7 @@ const Register: React.FC = () => {
           role: user.role || null
         }));
 
-        // רישום המשתמש ל־Socket.IO
+        // Register user to Socket.IO
         import('../services/socket').then(({ default: socket }) => {
           import('../constants/socketEvents').then(({ SOCKET_EVENTS }) => {
             socket.emit(SOCKET_EVENTS.REGISTER_USER, {

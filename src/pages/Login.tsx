@@ -42,7 +42,7 @@ const Login = () => {
         setPassword('');
         localStorage.removeItem('prefillEmail');
 
-        // התחברות ל-Socket.IO
+        // Connect to Socket.IO
         const userId = res.data.user._id || res.data.user.id;
         const role = res.data.user.role;
         if (userId && role) {
