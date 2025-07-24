@@ -71,7 +71,11 @@ const NotificationBell = () => {
       const notificationsArr = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
       // Filter only unread notifications
       const unreadNotifications = notificationsArr.filter(n => !n.isRead);
-      setNotifications((prev) => [...prev, ...unreadNotifications]);
+      if (pageNum === 1) {
+        setNotifications(unreadNotifications);
+      } else {
+        setNotifications((prev) => [...prev, ...unreadNotifications]);
+      }
       setHasMore(pageNum < (res.data?.pages ?? 1));
       setPage(pageNum);
     } catch (err: any) {
@@ -119,32 +123,43 @@ const NotificationBell = () => {
           {authError ? (
             <div className="p-4 text-center text-red-500 text-sm">יש להתחבר כדי לראות התראות</div>
           ) : (
-            <ListBox
-              value={null}
-              options={Array.from(
-                new Map(
-                  notifications
-                    .filter(n => n && n._id)
-                    .map(n => [n._id, n])
-                ).values()
+            <>
+              <ListBox
+                value={null}
+                options={Array.from(
+                  new Map(
+                    notifications
+                      .filter(n => n && n._id)
+                      .map(n => [n._id, n])
+                  ).values()
+                )}
+                optionLabel="title"
+                style={{ maxHeight: '16rem', overflowY: 'auto', marginTop: '1.5rem' }}
+                onChange={async (e) => {
+                  const n = e.value;
+                  setNotifications((prev) => prev.filter(item => item && item._id && item._id !== n._id));
+                  try {
+                    await markAsRead(n._id);
+                  } catch (err) {
+                    toast.error('Failed to mark notification as read');
+                  }
+                }}
+                itemTemplate={(n) => (
+                  <div className="p-2 border-b text-sm cursor-pointer">
+                    <span className={n.isRead ? '' : 'font-bold'}>{n.title}</span>
+                  </div>
+                )}
+              />
+              {hasMore && (
+                <button
+                  className="w-full py-2 text-center text-blue-600 hover:underline bg-gray-50 border-t"
+                  style={{ border: 'none', cursor: 'pointer' }}
+                  onClick={loadMore}
+                >
+                  טען עוד
+                </button>
               )}
-              optionLabel="title"
-              style={{ maxHeight: '16rem', overflowY: 'auto', marginTop: '1.5rem' }}
-              onChange={async (e) => {
-                const n = e.value;
-                setNotifications((prev) => prev.filter(item => item && item._id && item._id !== n._id));
-                try {
-                  await markAsRead(n._id);
-                } catch (err) {
-                  toast.error('Failed to mark notification as read');
-                }
-              }}
-              itemTemplate={(n) => (
-                <div className="p-2 border-b text-sm cursor-pointer">
-                  <span className={n.isRead ? '' : 'font-bold'}>{n.title}</span>
-                </div>
-              )}
-            />
+            </>
           )}
         </div>
       )}
