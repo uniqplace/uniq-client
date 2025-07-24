@@ -14,8 +14,6 @@ export const store = configureStore({
      auth: authSliceReducer,
      bidOffer: BidOfferSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
-
-
   },
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
