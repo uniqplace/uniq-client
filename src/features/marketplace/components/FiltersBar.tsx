@@ -177,9 +177,12 @@ const FiltersBar: React.FC = () => {
         } else {
             params.delete('subCategories');
         }
-        const creatorId = params.get('creator') || '';
-        const minPriceParam = params.get('minPrice');
-        const maxPriceParam = params.get('maxPrice');
+        // Always update minPrice and maxPrice in the URL
+        params.set('minPrice', priceRange[0].toString());
+        params.set('maxPrice', priceRange[1].toString());
+        // Always update creator in the URL from current creator state
+        const creatorId = creator && creator.value ? creator.value : '';
+        params.set('creator', creatorId);
         const qParam = params.get('q') || '';
         const pageParam = params.get('page') ? Number(params.get('page')) : 1;
         // First, update Redux and call API with current UI state
@@ -189,8 +192,8 @@ const FiltersBar: React.FC = () => {
             category: mainCategory,
             subCategories: mainCategory ? subCategoriesArr : undefined,
             creator: creatorId,
-            minPrice: minPriceParam ? Number(minPriceParam) : priceRange[0],
-            maxPrice: maxPriceParam ? Number(maxPriceParam) : priceRange[1],
+            minPrice: priceRange[0],
+            maxPrice: priceRange[1],
             q: qParam,
             page: pageParam,
         }));
