@@ -23,6 +23,7 @@ const GenericStepper: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [showFinalPopup, setShowFinalPopup] = useState(false);
+  const [forceCreate, setForceCreate] = useState(false);
 
   const { currentStepIndex, completedSteps, product, loading, error } = useSelector(
     (state: RootState) => state.stepper
@@ -32,20 +33,32 @@ const GenericStepper: React.FC = () => {
 
   /** טוען מוצר מהשרת או יוצר חדש אם אין productId */
   useEffect(() => {
-    const productId = localStorage.getItem('productId');
-    if (!productId) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
+    const productId = localStorage.getItem(userProductKey);
+
+    if (!productId || forceCreate) {
       dispatch(createProduct())
         .unwrap()
         .then((created) => {
           if (created?._id) {
-            localStorage.setItem('productId', created._id);
+            localStorage.setItem(userProductKey, created._id);
+            dispatch(fetchProductStatus(created._id));
+            setForceCreate(false);
           }
         })
         .catch((err) => console.error('Create product error:', err));
     } else {
-      dispatch(fetchProductStatus(productId));
+      dispatch(fetchProductStatus(productId))
+        .unwrap()
+        .catch((err) => {
+          if (err?.status === 404) {
+            localStorage.removeItem(userProductKey);
+            setForceCreate(true);
+          }
+        });
     }
-  }, [dispatch]);
+  }, [dispatch, forceCreate]);
 
   /** מסנכרן את ה-stepIndex לפי ה-URL */
   useEffect(() => {
@@ -55,9 +68,35 @@ const GenericStepper: React.FC = () => {
     }
   }, [dispatch, stepKey]);
 
+  /** עדכון סטטוס מוצר בכל כניסה לשלב */
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
+    const productId = localStorage.getItem(userProductKey);
+
+    // מצא את האינדקס של הסטטוס הנוכחי בשרת
+    const serverStepIndex = stepsConfig.findIndex(
+      (s) => s.label === product?.CreationStatus
+    );
+
+    // עדכן סטטוס רק אם עברנו לשלב מתקדם יותר
+    if (
+      productId &&
+      product &&
+      currentStepIndex > serverStepIndex
+    ) {
+      dispatch(updateProductStep({
+        productId,
+        stepNumber: currentStepIndex + 1
+      }));
+    }
+  }, [currentStepIndex, dispatch, product]);
+
   /** סימון שלב כהושלם ועדכון השרת */
   const handleCompleteStep = useCallback(() => {
-    const productId = localStorage.getItem('productId');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
+    const productId = localStorage.getItem(userProductKey);
     if (!productId) return;
 
     dispatch(markStepCompleted(currentStepIndex));
