@@ -17,10 +17,7 @@ export const store = configureStore({
      bidOffer: BidOfferSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
     [deployApi.reducerPath]: deployApi.reducer,
-    [locationApiSlice.reducerPath]: locationApiSlice.reducer,
-
-
-  },
+    [locationApiSlice.reducerPath]: locationApiSlice.reducer,  },
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware, deployApi.middleware, locationApiSlice.middleware),

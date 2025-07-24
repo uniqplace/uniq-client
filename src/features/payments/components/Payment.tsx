@@ -8,16 +8,16 @@ import type { Product } from '../../../types';
 
 interface PaymentProps {
   isVisible: boolean;
-  onHide: () => void;
+  onSave: () => void;
   product?: Product;
   price?: number;
 }
 
-const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) => {
+const Payment: React.FC<PaymentProps> = ({ isVisible, onSave, product, price }) => {
   return (
     <Dialog
       visible={isVisible}
-      onHide={onHide}
+      onHide={onSave}
       header="Payment"
       modal
       style={{ width: '400px' }}
@@ -25,8 +25,8 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) 
         <div className="flex justify-end space-x-2">
           <Button
             variant="secondary"
-            onClick={onHide}
-            label="Close"
+            onClick={onSave}
+            label="Save Order"
           />
         </div>
       }
@@ -38,7 +38,7 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) 
         </div>
         
         {/* Main message */}
-        <h3 className="text-lg font-semibold mb-2">Checkout Coming Soon!</h3>
+        <h3 className="text-lg font-semibold mb-2">Payment Coming Soon!</h3>
         <p className="text-gray-600 mb-4">
           Payment functionality is currently under development.
         </p>
