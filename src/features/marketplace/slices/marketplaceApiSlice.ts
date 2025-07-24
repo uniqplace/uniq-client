@@ -35,19 +35,11 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     }),
     addProduct: builder.mutation<Product, Partial<Product>>({
       query: (formData) => {
-        // Transform category and subCategories to IDs if needed
         const payload = {
           ...formData,
-          category:
-            typeof formData.category === 'object' && formData.category?._id
-              ? formData.category._id
-              : formData.category,
-          subCategories: Array.isArray(formData.subCategories)
-            ? formData.subCategories.map((sub: any) =>
-                typeof sub === 'object' && sub._id ? sub._id : sub
-              )
-            : formData.subCategories,
+          subCategories: formData.subCategories,
         };
+        console.log('Creating product with payload:', payload);
         return {
           url: '/products',
           method: 'POST',
@@ -61,15 +53,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       query: (updatedProduct) => {
         const payload = {
           ...updatedProduct,
-          category:
-            typeof updatedProduct.category === 'object' && updatedProduct.category?._id
-              ? updatedProduct.category._id
-              : updatedProduct.category,
-          subCategories: Array.isArray(updatedProduct.subCategories)
-            ? updatedProduct.subCategories.map((sub: any) =>
-                typeof sub === 'object' && sub._id ? sub._id : sub
-              )
-            : updatedProduct.subCategories,
+          subCategories: updatedProduct.subCategories,
         };
         return {
           url: `/products/${updatedProduct._id}`,

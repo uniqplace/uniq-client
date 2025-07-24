@@ -49,4 +49,4 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
    });
 }
   });
-  export default BidOfferSlice.reducer;
+  export default bidOfferSlice.reducer;

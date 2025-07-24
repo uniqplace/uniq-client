@@ -39,7 +39,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     e.preventDefault();
 
     const errors = {
-      price: !price || isNaN(priceNumber) || priceNumber <= 0,,
+      price: !price || isNaN(priceNumber) || priceNumber <= 0,
       estimatedDelivery: !estimatedDelivery,
     };
 
@@ -64,7 +64,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
         bidRequestId,
         manufacturerId: user.id,
         price: parseFloat(price),
-        estimatedDelivery: estimatedDelivery.toISOString(),
+        estimatedDelivery: estimatedDelivery?.toISOString() || '',
         note,
         attachmentUrl,
       };
