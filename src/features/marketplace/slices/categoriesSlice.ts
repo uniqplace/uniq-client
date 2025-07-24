@@ -40,7 +40,7 @@ const categoriesSlice = createSlice({
       state.error = action.payload;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (_builder) => {
   },
 });
 
