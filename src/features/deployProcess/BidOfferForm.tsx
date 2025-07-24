@@ -38,8 +38,10 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const priceNumber = parseFloat(price);
+
     const errors = {
-      price: !price || isNaN(priceNumber) || priceNumber <= 0,,
+      price: !price || isNaN(priceNumber) || priceNumber <= 0,
       estimatedDelivery: !estimatedDelivery,
     };
 
@@ -52,7 +54,6 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
         detail: 'Please fill in all required fields.',
         life: 3000,
       });
-      // נאלץ לעדכן מחדש כי ref לא גורם לרינדור:
       forceUpdate();
       return;
     }
@@ -63,8 +64,8 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       const newBidOffer: BidOffer = {
         bidRequestId,
         manufacturerId: user.id,
-        price: parseFloat(price),
-        estimatedDelivery: estimatedDelivery.toISOString(),
+        price: priceNumber,
+        estimatedDelivery: estimatedDelivery!.toISOString(), // asserted not null
         note,
         attachmentUrl,
       };
@@ -84,7 +85,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: error || 'Failed to submit offer.',
+        detail: error?.message || 'Failed to submit offer.',
         life: 4000,
       });
     } finally {
@@ -92,7 +93,6 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     }
   };
 
-  // פתרון לרינדור כשמשתמשים ב-ref:
   const [, setRerender] = useState(false);
   const forceUpdate = () => setRerender(r => !r);
 
@@ -114,7 +114,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
           className={classNames('w-full', { 'p-invalid': errorsRef.current.price })}
         />
         {errorsRef.current.price && (
-          <small className="p-error">Price is required.</small>
+          <small className="p-error">Price is required and must be a positive number.</small>
         )}
       </div>
 
