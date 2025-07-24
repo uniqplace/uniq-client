@@ -41,7 +41,7 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
       })
       .addCase(AddBidOffer.fulfilled, (state, action) => {
         state.loading = false;
-        state.BidOffer = action.payload;
+        state.bidOffer = action.payload;
       })
       .addCase(AddBidOffer.rejected, (state, action) => {
         state.loading = false;
@@ -49,4 +49,4 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
    });
 }
   });
-  export default BidOfferSlice.reducer;
+  export default bidOfferSlice.reducer;
