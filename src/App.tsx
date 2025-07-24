@@ -94,6 +94,7 @@ function App() {
   return (
     <div>
       <Header />
+      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '64px' }}/>
       <Routes>
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
@@ -108,19 +109,15 @@ function App() {
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
-
       </Routes>
       <h5>Socket.IO + React Toastify</h5>
-      {/* This is where the toast notifications will appear */}
-      <ToastContainer position="top-right" autoClose={5000}/>
-    <button
-  onClick={() => {
-    fetch(`http://localhost:5002/api/test-bid/687cf0e4f2e8ed1cf5545add/${user.id}`);///api/test-bid/:userId/:senderUserId
-  }}
->
-  Simulate New Bid For User {user.name}
-</button>
-
+      <button
+        onClick={() => {
+          fetch(`http://localhost:5002/api/test-bid/687cf0e4f2e8ed1cf5545add/${user.id}`);///api/test-bid/:userId/:senderUserId
+        }}
+      >
+        Simulate New Bid For User {user.name}
+      </button>
     </div>
   );
 }

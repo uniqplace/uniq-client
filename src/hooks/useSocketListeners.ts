@@ -8,45 +8,24 @@ interface UseSocketListenersOptions {
   role?: string;
 }
 
-interface NewBidPayload {
-  title?: string;
-  productId?: string;
-  priceRange?: { min: number; max: number };
-  status?: string;
-}
-
-interface BidResponsePayload {
-  bidId: string;
-  status: 'accepted' | 'rejected' | 'pending';
-  message?: string;
-  updatedAt?: string;
-}
-
-interface GeneralNotificationPayload {
-  text: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  createdAt?: string;
-}
-
-// Handler functions moved outside useEffect for readability and performance
-const handleNewBid = (bidData: NewBidPayload) => {
-  toast.info(`New bid received: ${bidData.title || 'No title'}`);
-};
-const handleBidResponse = (response: BidResponsePayload) => {
-  toast.success(`Bid response: ${response.status}`);
-};
-const handleGeneralNotification = (message: GeneralNotificationPayload) => {
-  toast.warning(`Notification: ${message.text}`);
-};
-
 const useSocketListeners = ({ userId, role }: UseSocketListenersOptions) => {
   useEffect(() => {
-    // Register user in socket rooms
+    // רישום המשתמש ב-rooms
     if (userId && role) {
       socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
     }
 
-    // Listen to socket events
+    // האזנה לאירועים
+    const handleNewBid = (bidData: any) => {
+      toast.info(`New bid received: ${bidData.title || 'No title'}`);
+    };
+    const handleBidResponse = (response: any) => {
+      toast.success(`Bid response: ${response.status}`);
+    };
+    const handleGeneralNotification = (message: any) => {
+      toast.warning(`Notification: ${message.text}`);
+    };
+
     socket.on(SOCKET_EVENTS.NEW_BID, handleNewBid);
     socket.on(SOCKET_EVENTS.BID_RESPONSE, handleBidResponse);
     socket.on(SOCKET_EVENTS.GENERAL_NOTIFICATION, handleGeneralNotification);
