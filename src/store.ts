@@ -5,8 +5,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/BidOfferSlice';
-// Update the import to match the actual export from deployApiSlice
 import socketReducer from './features/socket/socketSlice';
+
 
 export const store = configureStore({
   reducer: {
@@ -17,8 +17,12 @@ export const store = configureStore({
      bidOffer: BidOfferSlice,
      socket: socketReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
-   // Uncomment only if reducerPath is unique
+
+
   },
+
+  //  [locationApiSlice.reducerPath]: locationApiSlice.reducer,  },
+
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware ),
