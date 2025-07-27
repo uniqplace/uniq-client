@@ -1,12 +1,12 @@
 import React from 'react';
 import { Button } from 'primereact/button';
 
-interface finishStepButtonProps {
+interface FinishStepButtonProps {
   onClick: () => void;
 }
 
-const finishStepButton: React.FC<finishStepButtonProps> = ({ onClick }) => (
+const FinishStepButton: React.FC<FinishStepButtonProps> = ({ onClick }) => (
   <Button label="Finish Step" onClick={onClick} className="p-button-success" />
 );
 
-export default finishStepButton;
+export default FinishStepButton;
