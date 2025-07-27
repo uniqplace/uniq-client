@@ -10,12 +10,12 @@ interface UseSocketListenersOptions {
 
 const useSocketListeners = ({ userId, role }: UseSocketListenersOptions) => {
   useEffect(() => {
-    // רישום המשתמש ב-rooms
+    // Register user in socket rooms
     if (userId && role) {
       socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
     }
 
-    // האזנה לאירועים
+    // Listen to socket events
     const handleNewBid = (bidData: any) => {
       toast.info(`New bid received: ${bidData.title || 'No title'}`);
     };

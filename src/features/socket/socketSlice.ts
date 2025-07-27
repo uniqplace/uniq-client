@@ -1,39 +1,8 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import type { BidRequest, BidResponse, SocketNotification } from '../../types/socket';
 
-export interface BidManufacturer {
-  manufacturer: string; // ObjectId as string
-  status: 'read' | 'unread';
-}
-
-export interface BidRequest {
-  _id?: string;
-  creatorId: string;
-  productId: string;
-  categoryId: string;
-  locationPreference: string;
-  priceRange: { min: number; max: number };
-  deliveryTimeframe: string;
-  deliveryMethod: 'pickup' | 'shipping';
-  status: 'open' | 'closed' | 'expired';
-  manufacturers: BidManufacturer[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BidResponse {
-  bidId: string;
-  status: 'accepted' | 'rejected' | 'pending';
-  message?: string;
-  updatedAt?: string;
-}
-
-export interface SocketNotification {
-  id: string;
-  text: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  createdAt?: string;
-}
 
 interface SocketState {
   bids: BidRequest[];
@@ -60,9 +29,13 @@ const socketSlice = createSlice({
     appendSocketNotification(state, action: PayloadAction<SocketNotification>) {
       state.notifications.push(action.payload);
     },
-    clearSocketState(state) {
+    clearBids(state) {
       state.bids = [];
+    },
+    clearBidResponses(state) {
       state.bidResponses = [];
+    },
+    clearNotifications(state) {
       state.notifications = [];
     }
   },
@@ -72,6 +45,8 @@ export const {
   pushNewBidFromSocket,
   appendSocketBidResponse,
   appendSocketNotification,
-  clearSocketState
+  clearBids,
+  clearBidResponses,
+  clearNotifications
 } = socketSlice.actions;
 export default socketSlice.reducer;

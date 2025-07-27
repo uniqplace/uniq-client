@@ -5,6 +5,8 @@ import socket from '../../services/socket';
 import { getUnreadCount, getNotifications, markAsRead } from '../../services/notificationApi';
 import { toast } from 'react-toastify';
 import getUserIdFromToken from '../../utils/getUserIdFromToken';
+import { getCookie } from '../../utils/cookies';
+import { deduplicateNotifications } from '../../utils/notificationHelpers';
 
 interface Notification {
   _id: string;
@@ -22,38 +24,31 @@ const NotificationBell = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [authError, setAuthError] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get token from cookies
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
-      return null;
-    };
     const token = getCookie('token');
     if (!token) {
       setAuthError(true);
       return;
     }
-    // const user = localStorage.getItem('user');
-    // const userId = user ? JSON.parse(user).id : null;
+
     const userId = getUserIdFromToken();
     if (!userId) {
       setAuthError(true);
       return;
     }
-       socket.on('new_bid', (data: any) => {
-      const userId = getUserIdFromToken();
-      if (userId) {
-        getUnreadCount(userId)
-          .then((res) => setCount(res.data.count))
-          .catch(() => {});
-      }
+
+    socket.on('new_bid', (data: any) => {
+      getUnreadCount()
+        .then((res) => setCount(res.data.count))
+        .catch(() => {});
       setNotifications((prev) => [data.payload, ...prev]);
     });
 
-    getUnreadCount(userId)
+    getUnreadCount()
       .then((res) => setCount(res.data.count))
       .catch((err) => {
         if (err?.response?.status === 401) setAuthError(true);
@@ -69,13 +64,10 @@ const NotificationBell = () => {
   }, []);
 
   const loadNotifications = async (pageNum: number) => {
+    setLoading(true);
+    setError(null);
     try {
-      const userId = getUserIdFromToken();
-      if (!userId) {
-        setAuthError(true);
-        return;
-      }
-      const res = await getNotifications(userId, pageNum);
+      const res = await getNotifications(pageNum);
       const notificationsArr = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
       // Filter only unread notifications
       const unreadNotifications = notificationsArr.filter(n => !n.isRead);
@@ -88,6 +80,9 @@ const NotificationBell = () => {
       setPage(pageNum);
     } catch (err: any) {
       if (err?.response?.status === 401) setAuthError(true);
+      else setError('שגיאה בטעינת התראות');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,17 +122,15 @@ const NotificationBell = () => {
           </button>
           {authError ? (
             <div className="p-4 text-center text-red-500 text-sm">יש להתחבר כדי לראות התראות</div>
+          ) : loading ? (
+            <div className="p-4 text-center text-gray-500 text-sm">טוען התראות...</div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-500 text-sm">{error}</div>
           ) : (
             <>
               <ListBox
                 value={null}
-                options={Array.from(
-                  new Map(
-                    notifications
-                      .filter(n => n && n._id)
-                      .map(n => [n._id, n])
-                  ).values()
-                )}
+                options={deduplicateNotifications(notifications)}
                 optionLabel="title"
                 style={{ maxHeight: '16rem', overflowY: 'auto', marginTop: '1.5rem' }}
                 onChange={async (e) => {
@@ -146,12 +139,9 @@ const NotificationBell = () => {
                   try {
                     await markAsRead(n._id);
                     // Update bell counter after marking as read
-                    const userId = getUserIdFromToken();
-                    if (userId) {
-                      getUnreadCount(userId)
-                        .then((res) => setCount(res.data.count))
-                        .catch(() => {});
-                    }
+                    getUnreadCount()
+                      .then((res) => setCount(res.data.count))
+                      .catch(() => {});
                   } catch (err) {
                     toast.error('Failed to mark notification as read');
                   }

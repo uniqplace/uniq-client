@@ -1,5 +1,19 @@
 
+
+
 import axios from 'axios';
+import type { NotificationsResponse } from '../types/notification';
+import getUserIdFromToken from '../utils/getUserIdFromToken';
+
+// Generic safeFetch helper for API calls
+async function safeFetch<T>(fn: () => Promise<{ data: T }>, fallback: T, errorMsg: string): Promise<{ data: T }> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.error(errorMsg, err);
+    return { data: fallback };
+  }
+}
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -7,57 +21,52 @@ const api = axios.create({
 
 api.defaults.withCredentials = true;
 
-export interface Notification {
-  _id: string;
-  title: string;
-  isRead: boolean;
-  createdAt: string;
-  [key: string]: any;
-}
 
-export interface NotificationsResponse {
-  notifications: Notification[];
-  pages: number;
-}
-
-export const getNotifications = async (userId: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications?userId=${userId}&page=${page}&limit=${limit}`,
-      { credentials: 'include' });
-    if (!res.ok) throw new Error('Failed to fetch notifications');
-    const data = await res.json();
-    return { data };
-  } catch (err) {
-    console.error('getNotifications error:', err);
-    return { data: { notifications: [], pages: 1 } };
-  }
+export const getNotifications = async (page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
+  return safeFetch<NotificationsResponse>(
+    async () => {
+      const userId = getUserIdFromToken();
+      if (!userId) throw new Error('User not authenticated');
+      const res = await api.get<NotificationsResponse>(`/notifications`, {
+        params: { userId, page, limit },
+        withCredentials: true,
+      });
+      return { data: res.data };
+    },
+    { notifications: [], pages: 1 },
+    'getNotifications error:'
+  );
 };
 
-export const getUnreadCount = async (userId: string): Promise<{ data: { count: number } }> => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/unread-count?userId=${userId}`, { credentials: 'include' });
-    if (!res.ok) throw new Error('Failed to fetch unread count');
-    const data = await res.json();
-    return { data };
-  } catch (err) {
-    console.error('getUnreadCount error:', err);
-    return { data: { count: 0 } };
-  }
+
+export const getUnreadCount = async (): Promise<{ data: { count: number } }> => {
+  return safeFetch<{ count: number }>(
+    async () => {
+      const userId = getUserIdFromToken();
+      if (!userId) throw new Error('User not authenticated');
+      const res = await api.get<{ count: number }>(`/notifications/unread-count`, {
+        params: { userId },
+        withCredentials: true,
+      });
+      return { data: res.data };
+    },
+    { count: 0 },
+    'getUnreadCount error:'
+  );
 };
+
 
 export const markAsRead = async (id: string): Promise<{ data: any }> => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/${id}/read`, {
-      method: 'PUT',
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to mark as read');
-    const data = await res.json();
-    return { data };
-  } catch (err) {
-    console.error('markAsRead error:', err);
-    return { data: {} };
-  }
+  return safeFetch<any>(
+    async () => {
+      const res = await api.put<any>(`/notifications/${id}/read`, {}, {
+        withCredentials: true,
+      });
+      return { data: res.data };
+    },
+    {},
+    'markAsRead error:'
+  );
 };
 
 
