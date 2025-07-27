@@ -5,10 +5,12 @@ import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/BidOfferSlice';
-import { deployApi } from './features/deployProcess/slices/deployApiSlice';
+//import { deployApi } from './features/deployProcess/slices/deployApiSlice';
+import { deployApiSlice } from './features/deployProcess/slices/deployApiSlice';
 import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
 import socketReducer from './features/socket/socketSlice';
 
+// import { deployApiSlice } from './deployApiSlice';
 
 export const store = configureStore({
   reducer: {
