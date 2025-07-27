@@ -4,8 +4,10 @@ import userReducer from './features/user/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
+import stepperReducer from './features/deployProcess/slices/stepperSlice';
 import BidOfferSlice from './features/deployProcess/BidOfferSlice';
 import socketReducer from './features/socket/socketSlice';
+
 
 export const store = configureStore({
   reducer: {
@@ -16,9 +18,12 @@ export const store = configureStore({
      bidOffer: BidOfferSlice,
      socket: socketReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
-
-
+    stepper: stepperReducer,
+   // [deployApi.reducerPath]: deployApi.reducer,
+  //[locationApiSlice.reducerPath]: locationApiSlice.reducer, 
   },
+
+ 
 
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>

@@ -63,6 +63,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       const newBidOffer: BidOffer = {
         bidRequestId,
         manufacturerId: user.id,
+
         price: parseFloat(price),
         estimatedDelivery: estimatedDelivery ? estimatedDelivery.toISOString() : '',
         note,
