@@ -158,7 +158,7 @@ const FiltersBar: React.FC = () => {
     // Build filters for RTK Query
     const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
     const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
-    const queryFilters = {
+    const queryFilters = React.useMemo(() => ({
         q: searchValue || undefined,
         category: mainCategory,
         subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
@@ -166,7 +166,7 @@ const FiltersBar: React.FC = () => {
         minPrice: priceRange[0] !== minProductPrice ? priceRange[0] : undefined,
         maxPrice: priceRange[1] !== maxProductPrice ? priceRange[1] : undefined,
         page: 1,
-    };
+    }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
     // Use RTK Query hook
     const { data: _productsData, refetch } = useGetProductsQuery(queryFilters);
 

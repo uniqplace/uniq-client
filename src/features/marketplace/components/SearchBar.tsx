@@ -24,22 +24,24 @@ const SearchBar: React.FC = () => {
     }, [location.search]);
 
     // Build filters for RTK Query
-    let urlCategory: CategoryFiltersType | undefined = undefined;
     const params = new URLSearchParams(location.search);
     const categoryParam = params.get('category');
-    if (categoryParam) {
-        try {
-            urlCategory = JSON.parse(categoryParam);
-        } catch {
-            urlCategory = undefined;
+    const urlCategory: CategoryFiltersType | undefined = (() => {
+        if (categoryParam) {
+            try {
+                return JSON.parse(categoryParam);
+            } catch {
+                return undefined;
+            }
         }
-    }
-    const queryFilters = {
+        return undefined;
+    })();
+    const queryFilters = React.useMemo(() => ({
         ...filters,
         q: searchTerm.trim(),
         subCategories: urlCategory,
         page: 1,
-    };
+    }), [filters, searchTerm, urlCategory]);
     const { refetch } = useGetProductsQuery(queryFilters);
 
     const handleSearch = () => {
