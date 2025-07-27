@@ -20,7 +20,8 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     stepper: stepperReducer,
    // [deployApi.reducerPath]: deployApi.reducer,
-  //[locationApiSlice.reducerPath]: locationApiSlice.reducer,  },
+  //[locationApiSlice.reducerPath]: locationApiSlice.reducer, 
+  },
 
  
 
