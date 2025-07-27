@@ -20,7 +20,6 @@ import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
-import BidOfferForm from './features/deployProcess/components/BidOfferForm';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 
 
