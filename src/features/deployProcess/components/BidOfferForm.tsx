@@ -53,7 +53,6 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
         detail: 'Please fill in all required fields.',
         life: 3000,
       });
-      // נאלץ לעדכן מחדש כי ref לא גורם לרינדור:
       forceUpdate();
       return;
     }
@@ -95,7 +94,6 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     }
   };
 
-  // פתרון לרינדור כשמשתמשים ב-ref:
   const [, setRerender] = useState(false);
   const forceUpdate = () => setRerender(r => !r);
 
