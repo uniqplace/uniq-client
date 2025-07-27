@@ -24,13 +24,11 @@ export const store = configureStore({
      bidRequest: BidRequestSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
     [deployApi.reducerPath]: deployApi.reducer,
-    [locationApiSlice.reducerPath]: locationApiSlice.reducer,
+    //[locationApiSlice.reducerPath]: locationApiSlice.reducer,
      socket: socketReducer,
     //[apiSlice.reducerPath]: apiSlice.reducer,
     stepper: stepperReducer,
    // [deployApi.reducerPath]: deployApi.reducer,
-  //[locationApiSlice.reducerPath]: locationApiSlice.reducer, 
-
   },
 
  
