@@ -9,7 +9,6 @@ import BidOfferSlice from './features/deployProcess/BidOfferSlice';
 import { deployApiSlice } from './features/deployProcess/slices/deployApiSlice';
 import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
 import socketReducer from './features/socket/socketSlice';
-
 // import { deployApiSlice } from './deployApiSlice';
 
 export const store = configureStore({
@@ -20,7 +19,8 @@ export const store = configureStore({
      auth: authSliceReducer,
      bidOffer: BidOfferSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
-    [deployApi.reducerPath]: deployApi.reducer,
+    //[deployApi.reducerPath]: deployApi.reducer,
+    [deployApiSlice.reducerPath]: deployApiSlice.reducer,
     [locationApiSlice.reducerPath]: locationApiSlice.reducer,
     socket: socketReducer,
 
