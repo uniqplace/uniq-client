@@ -36,7 +36,23 @@
   min-width: 0;
   background: #f6f7fb;
 }
+.p-input-icon-left {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
+.p-input-icon-left > .pi {
+  position: absolute;
+  left: 12px;
+  color: #888;
+  pointer-events: none;
+  font-size: 1.1em;
+}
+
+.p-input-icon-left > input {
+  padding-left: 2.2em !important;
+}
 @media (min-width: 992px) {
   .checkout-columns {
     flex-direction: row;
@@ -46,7 +62,6 @@
     height: auto;
     margin: 0 16px;
   }
-}
-.p-input-icon-left .w-full {
-  margin-left: 20px;
+  /* סידור ידני של האייקון בשדה */
+
 }
