@@ -292,6 +292,7 @@ async function addNewOrder(): Promise<void> {
           <Payment
             isVisible={paymentDialog}
             onSave={() => addNewOrder()}
+            onHide={() => setPaymentDialog(false)}
             product={product}
             price={totalAmount}
           />
