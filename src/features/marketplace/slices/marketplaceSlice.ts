@@ -1,7 +1,6 @@
-// src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Category, Filters, Product, SubCategory } from '../../../types';
-import { fetchProducts, fetchProduct } from '../thunks';
+import { fetchProduct } from '../thunks';
 import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
 
 interface MarketplaceState {
@@ -99,21 +98,6 @@ const marketplaceSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.loading = false;
-        if (Array.isArray(action.payload?.data)) {
-          state.products = action.payload.data;
-          state.totalPages = action.payload.totalPages || 1;
-        }
-      })
-      .addCase(fetchProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
         const users = Array.isArray(action.payload) ? action.payload : [];
         const creatorOptions = users.map((user: { _id: string; name: string; avatar?: string }) => ({

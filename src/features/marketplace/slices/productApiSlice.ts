@@ -25,7 +25,29 @@ function getProductsBaseQuery(url: string) {
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products')),
+    getProducts: builder.query<{ data: Product[]; totalPages: number }, {
+      q?: string;
+      category?: string;
+      subCategories?: string[];
+      creator?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      page?: number;
+    }>({
+      query: (params) => {
+        const query = new URLSearchParams();
+        if (params.q) query.append('q', params.q);
+        if (params.category) query.append('category', params.category);
+        if (Array.isArray(params.subCategories) && params.subCategories.length > 0) {
+          query.append('subCategories', JSON.stringify(params.subCategories));
+        }
+        if (params.creator) query.append('creator', params.creator);
+        if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
+        if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());
+        if (params.page) query.append('page', params.page.toString());
+        return `/products/search?${query.toString()}`;
+      },
+    }),
     getUserProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products/user/me')),
     addProduct: builder.mutation<Product, Partial<Product>>({
       query: (formData) => {

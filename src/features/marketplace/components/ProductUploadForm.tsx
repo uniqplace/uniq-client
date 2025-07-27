@@ -13,7 +13,7 @@ import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
 import { TreeSelect } from 'primereact/treeselect';
 import ImageUpload from '../../../components/shared/ImageUpload';
-import { useAddProductMutation, useUpdateProductMutation } from '../slices/marketplaceApiSlice';
+import { useAddProductMutation, useUpdateProductMutation } from '../slices/productApiSlice';
 import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
 import type { Product } from '../../../types';
 import { useDeleteImagesMutation } from '../../../api/apiSlice';

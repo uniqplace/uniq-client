@@ -23,7 +23,18 @@ export const userApiSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
-        updateUser: builder.mutation<User,Partial<UserState>>({
+        updateUserAvatar: builder.mutation<User,string>({
+            query: (url) => ({
+                url: '/users/avatar',
+                method: 'PUT',
+                body: url,
+            }),
+            invalidatesTags: (_result, _error, id) =>
+                id !== null && id !== undefined
+                    ? [{ type: 'User', id }]
+                    : [{ type: 'User' }],
+        }),
+               updateUser: builder.mutation<User,Partial<UserState>>({
             query: (data) => ({
                 url: '/users/profile',
                 method: 'PUT',
@@ -51,4 +62,5 @@ export const {
     useCreateUserMutation,
     useUpdateUserMutation,
     useDeleteUserMutation,
+    useUpdateUserAvatarMutation
 } = userApiSlice;

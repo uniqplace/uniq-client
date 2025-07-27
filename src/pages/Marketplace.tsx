@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '../features/marketplace/components/ProductCard';
-import type { RootState } from '../store';
 import type { AppDispatch } from '../store';
-import { fetchProducts } from '../features/marketplace/thunks';
+import { useGetProductsQuery } from '../features/marketplace/slices/productApiSlice';
 import FiltersBar from '../features/marketplace/components/FiltersBar'; import { Paginator } from 'primereact/paginator';
 import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/marketplaceThunks';
 import SearchBar from '../features/marketplace/components/SearchBar';
@@ -38,65 +38,53 @@ const Marketplace: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchCreatorsAndManufacturers());
-
     const params = new URLSearchParams(location.search);
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
-    // Read main category and subCategories from URL
-    const mainCategory = params.get('category') || undefined;
-    const subCategoriesArr = parseSubCategoriesFromParams(params);
-    dispatch(fetchProducts({
-      category: mainCategory,
-      subCategories: subCategoriesArr,
-      creator: params.get('creator') || '',
-      minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
-      maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
-      q: params.get('q') || '',
-      page: pageParam,
-    }));
   }, [location.search]);
 
-  const { products, loading, error, totalPages } = useSelector((state: RootState) => state.marketplace);
+  // Build filters for RTK Query
+  const mainCategory = params.get('category') || undefined;
+  const subCategoriesArr = parseSubCategoriesFromParams(params);
+  const queryFilters = {
+    category: mainCategory,
+    subCategories: subCategoriesArr,
+    creator: params.get('creator') || '',
+    minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
+    maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
+    q: params.get('q') || '',
+    page,
+  };
+  const { data: productsData, error: productsError, isLoading } = useGetProductsQuery(queryFilters);
+
+  // Use products from RTK Query
+  const products = productsData?.data || [];
+  const totalPages = productsData?.totalPages || 1;
+  const error = productsError;
 
   const onPageChange = (event: { page: number }) => {
     const newPage = event.page + 1;
     setPage(newPage);
-
     const params = new URLSearchParams(location.search);
     params.set('page', newPage.toString());
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-
-    // Read category and subCategories from URL
-    const mainCategory = params.get('category') || undefined;
-    const subCategoriesArr = parseSubCategoriesFromParams(params);
-    dispatch(fetchProducts({
-      category: mainCategory,
-      subCategories: subCategoriesArr,
-      creator: params.get('creator') || '',
-      minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
-      maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
-      q: params.get('q') || '',
-      page: newPage,
-    }));
+    // refetch will be triggered automatically by page state change
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <i className="pi pi-spinner pi-spin text-4xl text-blue-500 mb-4"></i>
-          <p className="text-gray-600">Loading marketplace...</p>
-        </div>
-      </div>
-    );
-  }
+  // Remove full-page spinner, show loading only in grid
 
   if (error) {
+    let errorMsg = 'Unknown error';
+    if (typeof error === 'string') errorMsg = error;
+    else if (error && typeof error === 'object') {
+      if ('message' in error && typeof error.message === 'string') errorMsg = error.message;
+      else if ('status' in error && 'data' in error) errorMsg = `Status ${error.status}`;
+    }
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <i className="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-          <p className="text-gray-600">Error loading marketplace: {error}</p>
+          <p className="text-gray-600">Error loading marketplace: {errorMsg}</p>
         </div>
       </div>
     );
@@ -117,8 +105,13 @@ const Marketplace: React.FC = () => {
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
               <h2 className="text-xl font-semibold mb-4">Products</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.length === 0 ? (
-                  <div className="col-span-3 text-center text-gray-500 py-8">Products not found</div>
+                {isLoading ? (
+                  <div className="col-span-3 flex flex-col justify-center items-center py-12">
+                    <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
+                    <span className="text-gray-600 mt-4 block">loading products...</span>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="col-span-3 text-center text-gray-500 py-8">No products found</div>
                 ) : (
                   products.map(product => (
                     <ProductCard
