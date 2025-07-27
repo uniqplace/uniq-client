@@ -31,33 +31,36 @@ const GenericStepper: React.FC = () => {
 
   const CurrentStepComponent = steps[currentStepIndex]?.component;
 
-  useEffect(() => {
+useEffect(() => {
+  const handleProductLoading = async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
     const productId = localStorage.getItem(userProductKey);
 
-    if (!productId || forceCreate) {
-      dispatch(createProduct())
-        .unwrap()
-        .then((created) => {
-          if (created?._id) {
-            localStorage.setItem(userProductKey, created._id);
-            dispatch(fetchProductStatus(created._id));
-            setForceCreate(false);
-          }
-        })
-        .catch((err) => console.error('Create product error:', err));
-    } else {
-      dispatch(fetchProductStatus(productId))
-        .unwrap()
-        .catch((err) => {
-          if (err?.status === 404) {
-            localStorage.removeItem(userProductKey);
-            setForceCreate(true);
-          }
-        });
+    try {
+      if (!productId || forceCreate) {
+        const created = await dispatch(createProduct()).unwrap();
+        if (created?._id) {
+          localStorage.setItem(userProductKey, created._id);
+          dispatch(fetchProductStatus(created._id));
+          setForceCreate(false);
+        }
+      } else {
+        await dispatch(fetchProductStatus(productId)).unwrap();
+      }
+    } catch (err: any) {
+      if (err?.status === 404) {
+        localStorage.removeItem(userProductKey);
+        setForceCreate(true);
+      } else {
+        console.error('Product handling error:', err);
+      }
     }
-  }, [dispatch, forceCreate]);
+  };
+
+  handleProductLoading();
+}, [dispatch, forceCreate]);
+
 
   useEffect(() => {
     const index = stepsConfig.findIndex((s) => s.key === stepKey);
