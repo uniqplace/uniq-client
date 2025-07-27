@@ -40,12 +40,15 @@ const bidOfferSlice = createSlice({
       })
       .addCase(AddBidOffer.fulfilled, (state, action) => {
         state.loading = false;
-        state.bidOffer = action.payload;
+        state.bidOffer = action.payload; 
+
       })
       .addCase(AddBidOffer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-   });
-}
-  });
-  export default bidOfferSlice.reducer;
+      });
+  }
+});
+
+export default bidOfferSlice.reducer;
+

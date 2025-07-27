@@ -28,6 +28,7 @@ export const categoriesApiSlice = apiSlice.injectEndpoints({
       providesTags: (_result, _error, categoryId) => [
         { type: 'SubCategory', id: categoryId },
       ],
+
     }),
   }),
 });

@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux';
 import { setManufacturerPreferences } from '../slices/deploySlice';
 import { useSaveBidRequestMutation } from '../slices/deployApiSlice';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
-import { useGetLocationsQuery } from '../slices/locationApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { Rating } from 'primereact/rating';
@@ -31,6 +30,27 @@ const deliveryOptions = [
   }),
 ];
 
+const hardcodedLocations = [
+  { label: 'תל אביב', value: 'tel_aviv' },
+  { label: 'ירושלים', value: 'jerusalem' },
+  { label: 'חיפה', value: 'haifa' },
+  { label: 'באר שבע', value: 'beer_sheva' },
+  { label: 'אשדוד', value: 'ashdod' },
+  { label: 'ראשון לציון', value: 'rishon_lezion' },
+  { label: 'פתח תקווה', value: 'petah_tikva' },
+  { label: 'נתניה', value: 'netanya' },
+  { label: 'הרצליה', value: 'herzliya' },
+  { label: 'רעננה', value: 'raanana' },
+  { label: 'כפר סבא', value: 'kfar_saba' },
+  { label: 'מודיעין', value: 'modiin' },
+  { label: 'רחובות', value: 'rehovot' },
+  { label: 'אשקלון', value: 'ashkelon' },
+  { label: 'עפולה', value: 'afula' },
+  { label: 'טבריה', value: 'tiberias' },
+  { label: 'אילת', value: 'eilat' },
+  { label: 'General', value: 'general' },
+];
+
 const ManufacturerPreferencesStep: React.FC = () => {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [locationPreference, setLocationPreference] = useState<string | null>(null);
@@ -43,13 +63,10 @@ const ManufacturerPreferencesStep: React.FC = () => {
   const toast = useRef<Toast>(null);
 
   const { data: allCategories, isLoading: loadingCategories, error: categoriesError } = useGetAllCategoriesQuery();
-  const { data: locationsData, isLoading: loadingLocations, error: locationsError } = useGetLocationsQuery(undefined);
 
   const categoryOptions = allCategories ? allCategories.data.map((category: Category) => ({ label: category.name, value: category._id })) : [];
 
-  const locationOptions = locationsData
-    ? [...locationsData.map((loc: any) => ({ label: loc.name, value: loc.id })), { label: 'General', value: 'general' }]
-    : [];
+  const locationOptions = hardcodedLocations;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +155,7 @@ const ManufacturerPreferencesStep: React.FC = () => {
           onChange={e => setLocationPreference(e.value)}
           placeholder="Select a location"
           className="w-full"
-          disabled={loadingLocations || !!locationsError}
+          disabled={loadingCategories}
         />
       </div>
 
@@ -203,3 +220,4 @@ const ManufacturerPreferencesStep: React.FC = () => {
 };
 
 export default ManufacturerPreferencesStep;
+

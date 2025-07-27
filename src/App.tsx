@@ -22,6 +22,7 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import Header from './components/shared/Header';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
+import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
 import socket from './services/socket';
 import { toast } from 'react-toastify';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
@@ -117,6 +118,7 @@ if (loading) {
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+       <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
       </Routes>
