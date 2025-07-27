@@ -63,7 +63,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
         </div>
       ) : null}
       {categories.map((cat: Category) => {
-        const checked = selected.includes(cat._id);
+        const checked = selected[0] === cat._id;
         return (
           <div key={cat._id}>
             <label
@@ -77,23 +77,17 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                 checked={checked}
                 onChange={e => {
                   const isChecked = e.checked;
-                  let next: string[];
+                  let next: string[] = [];
                   if (isChecked) {
-                    next = [...selected, cat._id];
+                    // Only allow one category at a time
+                    next = [cat._id];
                     setOpenCategory(cat._id);
                   } else {
-                    // Remove the main category and all its subcategories from selection
-                    const subCategoryIds = subCategories.map((sub: SubCategory) => sub._id);
-                    next = selected.filter(v => v !== cat._id && !subCategoryIds.includes(v));
+                    // Uncheck category and all its subcategories
                     setOpenCategory(null);
                   }
                   updateCategoryParams(cat._id, next, !!isChecked);
-                  // If no main category, also clear all subCategories
-                  if (!isChecked) {
-                    onChange([]);
-                  } else {
-                    onChange(next);
-                  }
+                  onChange(next);
                 }}
               />
               <span>{cat.name}</span>
@@ -127,7 +121,8 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                                 const isChecked = e.checked;
                                 let next: string[];
                                 if (isChecked) {
-                                  next = [...selected, sub._id];
+                                  // Add subcategory only if main category is selected
+                                  next = [selected[0], ...selected.slice(1), sub._id];
                                 } else {
                                   next = selected.filter(v => v !== sub._id);
                                 }
