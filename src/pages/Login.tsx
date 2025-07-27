@@ -8,7 +8,7 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import Cookies from 'js-cookie';
-import { setUser } from '../features/marketplace/slices/userSlice';
+import { setUser } from '../features/user/slices/userSlice';
 import { fetchCurrentUser } from '../features/marketplace/thunks/userThunk';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import type { RootState } from '../store';

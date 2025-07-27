@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { UserState } from '../slices/userSlice';
+import type { UserState } from '../../user/slices/userSlice';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL; 
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',

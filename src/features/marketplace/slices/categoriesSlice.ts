@@ -1,4 +1,3 @@
-// src/features/categories/categoriesSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Category, SubCategory } from '../../../types/index';
 
@@ -39,8 +38,6 @@ const categoriesSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-  },
-  extraReducers: (_builder) => {
   },
 });
 
