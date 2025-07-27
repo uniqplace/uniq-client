@@ -95,9 +95,9 @@ export const OpenBidPage = () => {
         responsiveLayout="scroll"
         sortMode="multiple"
       >
-        <Column body={(rowData: BidRequest) => rowData.productId?.title || '-'}
+        <Column field='productId.title' body={(rowData: BidRequest) => rowData.productId?.title || '-'}
         header="Product" sortable />
-        <Column   body={(rowData: BidRequest) => rowData.categoryId?.name || '-'}
+        <Column field="categoryId.name" body={(rowData: BidRequest) => rowData.categoryId?.name || '-'}
         header="Category" sortable />
         <Column field="locationPreference" header="Preferred Region" sortable />
         <Column
