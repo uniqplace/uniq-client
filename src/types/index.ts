@@ -30,10 +30,7 @@ export interface Product {
   CreationStatus: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
  // category: Category;
   subCategories: SubCategory[];
-  creator: Creator; 
   status: 'draft' | 'published' | 'hidden';
-
-
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
   tags: string[];
@@ -104,9 +101,6 @@ export interface SubCategory {
   category: string;
   count?: number;
 }
-
-export type CategoryFiltersType = string[];
-
 
 export interface BidOffer {
   bidRequestId: string,
