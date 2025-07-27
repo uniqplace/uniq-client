@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Product } from '../../slices/stepperSlice';
-import { Button } from 'primereact/button';
+import finishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 
 export interface StepProps {
@@ -19,7 +19,7 @@ export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) 
       <h2>Product Definition (Hardcoded)</h2>
       <p>Here you will define your product details (temporary content).</p>
       <p>Product ID: {product?._id ?? 'Not created yet'}</p>
-      <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+      <finishStepButton onClick={() => onComplete()} />
     </div>
   );
 };
@@ -29,49 +29,49 @@ export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, produ
   <div>
     <h2>Send to Marketplace</h2>
     <p>Product ID: {product?._id ?? 'Not created yet'}</p>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const LiveBidsViewerStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>View Live Bids</h2>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Choose Manufacturer</h2>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Agreement</h2>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Payment & Order</h2>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Tracking & Delivery</h2>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const DeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Delivery</h2>
-    <Button label="Finish Step" onClick={() => onComplete()} className="p-button-success" />
+    <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
