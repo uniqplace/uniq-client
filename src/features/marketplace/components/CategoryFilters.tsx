@@ -1,8 +1,33 @@
-
 import React, { useState } from 'react';
 import { Checkbox } from 'primereact/checkbox';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../slices/categoriesApiSlice';
+import type { Category, SubCategory } from '../../../types';
+
+// Utility to group subCategories by type
+function groupSubCategoriesByType(subCategories: SubCategory[]): { [type: string]: SubCategory[] } {
+  const groups: { [type: string]: SubCategory[] } = {};
+  subCategories.forEach((sub) => {
+    const type = sub.type || 'Other';
+    if (!groups[type]) groups[type] = [];
+    groups[type].push(sub);
+  });
+  return groups;
+}
+
+// Utility function to update category and subCategories in URL
+function updateCategoryParams(mainCategoryId: string, selected: string[], isChecked: boolean) {
+  const params = new URLSearchParams(window.location.search);
+  if (isChecked === true) {
+    params.set('category', mainCategoryId);
+    const subCategoriesArr = selected.filter(id => id !== mainCategoryId);
+    params.set('subCategories', subCategoriesArr.join(','));
+  } else {
+    params.delete('category');
+    params.delete('subCategories');
+  }
+  window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+}
 
 interface CategoryFiltersProps {
   selected: string[];
@@ -12,9 +37,11 @@ interface CategoryFiltersProps {
 const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange }) => {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
+  // Compute mainCategoryId once and reuse
+  const mainCategoryId = selected.length > 0 ? selected[0] : '';
+
   // On mount, if a main category is selected, open its subCategories list
   React.useEffect(() => {
-    const mainCategoryId = selected.length > 0 ? selected[0] : '';
     if (mainCategoryId) {
       setOpenCategory(mainCategoryId);
     }
@@ -24,18 +51,18 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
 
   // Only use the last selected main category's _id for subcategory fetch
   // Assume main category is the first in selected array, subcategories are the rest
-  const mainCategoryId = selected.length > 0 ? selected[0] : '';
   const { data: subCategoriesData, isLoading: loadingSubCategories } = useGetSubCategoriesByCategoryQuery(mainCategoryId, { skip: !mainCategoryId });
   const subCategories = subCategoriesData || [];
 
   return (
     <div className="flex flex-col gap-6">
+      <label htmlFor="category-filters" className="block font-semibold text-gray-700 mb-2">Categories</label>
       {loadingCategories ? (
         <div className="flex justify-center items-center py-4">
           <ProgressSpinner style={{ width: '30px', height: '30px' }} strokeWidth="4" />
         </div>
       ) : null}
-      {categories.map((cat: any) => {
+      {categories.map((cat: Category) => {
         const checked = selected.includes(cat._id);
         return (
           <div key={cat._id}>
@@ -51,24 +78,16 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                 onChange={e => {
                   const isChecked = e.checked;
                   let next: string[];
-                  const params = new URLSearchParams(window.location.search);
                   if (isChecked) {
                     next = [...selected, cat._id];
                     setOpenCategory(cat._id);
-                    // Update URL with selected category and subCategories
-                    params.set('category', cat._id);
-                    const subCategoriesArr = next.filter(id => id !== cat._id);
-                    params.set('subCategories', JSON.stringify(subCategoriesArr));
                   } else {
                     // Remove the main category and all its subcategories from selection
-                    const subCategoryIds = subCategories.map((sub: any) => sub._id);
+                    const subCategoryIds = subCategories.map((sub: SubCategory) => sub._id);
                     next = selected.filter(v => v !== cat._id && !subCategoryIds.includes(v));
                     setOpenCategory(null);
-                    // Remove category and all subCategories from URL
-                    params.delete('category');
-                    params.delete('subCategories');
                   }
-                  window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+                  updateCategoryParams(cat._id, next, !!isChecked);
                   // If no main category, also clear all subCategories
                   if (!isChecked) {
                     onChange([]);
@@ -88,48 +107,40 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                   </div>
                 ) : null}
                 {/* Group subCategories by type */}
-                {(() => {
-                  const groups: { [type: string]: any[] } = {};
-                  subCategories.forEach((sub: any) => {
-                    const type = sub.type || 'Other';
-                    if (!groups[type]) groups[type] = [];
-                    groups[type].push(sub);
-                  });
-                  return Object.entries(groups).map(([type, subs]) => (
-                    <div key={type} className="mb-2">
-                      <div className="font-semibold text-gray-700 mb-1 text-base text-left">{type}</div>
-                      <div className="flex flex-col gap-2">
-                        {subs.map((sub: any) => {
-                          const subChecked = selected.includes(sub._id);
-                          return (
-                            <label
-                              key={sub._id}
-                              className={`flex items-center gap-2 cursor-pointer ${subChecked ? 'font-semibold text-blue-700' : ''}`}
-                              role="checkbox"
-                              aria-checked={subChecked}
-                            >
-                              <Checkbox
-                                inputId={`subCategory-${sub._id}`}
-                                checked={subChecked}
-                                onChange={e => {
-                                  const isChecked = e.checked;
-                                  let next: string[];
-                                  if (isChecked) {
-                                    next = [...selected, sub._id];
-                                  } else {
-                                    next = selected.filter(v => v !== sub._id);
-                                  }
-                                  onChange(next);
-                                }}
-                              />
-                              <span>{sub.name}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                {Object.entries(groupSubCategoriesByType(subCategories)).map(([type, subs]) => (
+                  <div key={type} className="mb-2">
+                    <div className="font-semibold text-gray-700 mb-1 text-base text-left">{type}</div>
+                    <div className="flex flex-col gap-2">
+                      {subs.map((sub: SubCategory) => {
+                        const subChecked = selected.includes(sub._id);
+                        return (
+                          <label
+                            key={sub._id}
+                            className={`flex items-center gap-2 cursor-pointer ${subChecked ? 'font-semibold text-blue-700' : ''}`}
+                            role="checkbox"
+                            aria-checked={subChecked}
+                          >
+                            <Checkbox
+                              inputId={`subCategory-${sub._id}`}
+                              checked={subChecked}
+                              onChange={e => {
+                                const isChecked = e.checked;
+                                let next: string[];
+                                if (isChecked) {
+                                  next = [...selected, sub._id];
+                                } else {
+                                  next = selected.filter(v => v !== sub._id);
+                                }
+                                onChange(next);
+                              }}
+                            />
+                            <span>{sub.name}</span>
+                          </label>
+                        );
+                      })}
                     </div>
-                  ));
-                })()}
+                  </div>
+                ))}
               </div>
             )}
           </div>

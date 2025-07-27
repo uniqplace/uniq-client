@@ -11,7 +11,7 @@ import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
 import { classNames } from 'primereact/utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '../features/marketplace/slices/userSlice';
+import { setUser } from '../features/user/slices/userSlice';
 import Cookies from 'js-cookie';
 import { Dropdown } from 'primereact/dropdown';
 import type { RegisterFormData } from '../types/index';

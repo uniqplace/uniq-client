@@ -1,38 +1,32 @@
 import apiSlice from '../../../api/apiSlice';
 import type { Filters, Product } from '../../../types';
 
+// Utility to create product tags for RTK Query
+function getProductTags(result: Product[] | undefined) {
+  return result
+    ? [
+      ...result.map(({ _id }: { _id: string }) => ({ type: "Product" as const, id: _id })),
+      { type: "Product" as const, id: "LIST" },
+    ]
+    : [{ type: "Product" as const, id: "LIST" }];
+}
+
+// Shared base query for products endpoints
+function getProductsBaseQuery(url: string) {
+  return {
+    query: (filters: Filters) => ({
+      url,
+      params: filters,
+    }),
+    transformResponse: (response: { data: Product[] }) => response.data,
+    providesTags: getProductTags,
+  };
+}
+
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<Product[], Filters>({
-      query: () => {
-        return {
-          url: '/products',
-        };
-      },
-      transformResponse: (response: { data: Product[] }) => response.data,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
-              { type: 'Product', id: 'LIST' },
-            ]
-          : [{ type: 'Product', id: 'LIST' }],
-    }),
-   getUserProducts: builder.query<Product[], Filters>({
-      query: () => {
-        return {
-          url: '/products/user/me',
-        };
-      },
-      transformResponse: (response: { data: Product[] }) => response.data,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
-              { type: 'Product', id: 'LIST' },
-            ]
-          : [{ type: 'Product', id: 'LIST' }],
-    }),
+    getProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products')),
+    getUserProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products/user/me')),
     addProduct: builder.mutation<Product, Partial<Product>>({
       query: (formData) => {
         const payload = {

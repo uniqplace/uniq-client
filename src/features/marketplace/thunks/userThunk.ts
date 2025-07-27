@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { UserState } from '../slices/userSlice';
+import type { UserState } from '../../user/slices/userSlice';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL; 
 

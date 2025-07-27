@@ -14,6 +14,35 @@ import { fetchSubCategories } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
 
+// Helper to parse filters from URLSearchParams
+function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxProductPrice: number) {
+    const category = params.get('category') ?? undefined;
+    let subCategoriesArr: string[] = [];
+    const subCategoriesParam = params.get('subCategories');
+    if (subCategoriesParam) {
+        try {
+            const parsed = JSON.parse(subCategoriesParam);
+            if (Array.isArray(parsed)) {
+                subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string');
+            } else if (parsed && typeof parsed === 'object') {
+                subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string');
+            }
+        } catch {
+            subCategoriesArr = [];
+        }
+    }
+    const creator = params.get('creator') || '';
+    const minPrice = params.get('minPrice') ? Number(params.get('minPrice')) : minProductPrice;
+    const maxPrice = params.get('maxPrice') ? Number(params.get('maxPrice')) : maxProductPrice;
+    const priceRange: [number, number] = [minPrice, maxPrice];
+    return {
+        category,
+        subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
+        creator,
+        priceRange,
+    };
+}
+
 
 const FiltersBar: React.FC = () => {
     // Ref for AutoComplete input
@@ -101,52 +130,25 @@ const FiltersBar: React.FC = () => {
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const urlCreator = params.get('creator') || '';
-        const urlMinPrice = params.get('minPrice');
-        const urlMaxPrice = params.get('maxPrice');
-        const urlPriceRange: [number, number] = [
-            urlMinPrice ? Number(urlMinPrice) : minProductPrice,
-            urlMaxPrice ? Number(urlMaxPrice) : maxProductPrice
-        ];
+        const urlFilters = parseUrlFilters(params, minProductPrice, maxProductPrice);
         setCreator(
-            creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlCreator) || null
+            creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlFilters.creator) || null
         );
-        setPriceRange(urlPriceRange);
+        setPriceRange(urlFilters.priceRange);
 
-        const urlFilters = {
-            creator: urlCreator,
-            priceRange: urlPriceRange
-        };
         const filtersMatch =
             filters.creator === urlFilters.creator &&
             Array.isArray(filters.priceRange) &&
             filters.priceRange[0] === urlFilters.priceRange[0] &&
             filters.priceRange[1] === urlFilters.priceRange[1];
-        const hasAnyUrlFilter = urlCreator || urlMinPrice || urlMaxPrice;
+        const hasAnyUrlFilter = urlFilters.creator || urlFilters.priceRange[0] !== minProductPrice || urlFilters.priceRange[1] !== maxProductPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
-            const categoryParam = params.get('category') ?? undefined;
-            let subCategoriesArr: string[] = [];
-            const subCategoriesParam = params.get('subCategories');
-            if (subCategoriesParam) {
-                try {
-                    const parsed = JSON.parse(subCategoriesParam);
-                    if (Array.isArray(parsed)) {
-                        subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string');
-                    } else if (parsed && typeof parsed === 'object') {
-                        subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string');
-                    }
-                } catch {
-                    subCategoriesArr = [];
-                }
-            }
-            dispatch(updateFilters({ ...filters, ...urlFilters, category: categoryParam, subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined }));
+            dispatch(updateFilters({ ...filters, ...urlFilters }));
             dispatch(fetchProducts({
                 ...filters,
                 ...urlFilters,
-                category: categoryParam,
-                subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
-                minPrice: urlPriceRange[0],
-                maxPrice: urlPriceRange[1],
+                minPrice: urlFilters.priceRange[0],
+                maxPrice: urlFilters.priceRange[1],
                 page: 1,
             }));
         }
@@ -177,12 +179,24 @@ const FiltersBar: React.FC = () => {
         } else {
             params.delete('subCategories');
         }
-        // Always update minPrice and maxPrice in the URL
-        params.set('minPrice', priceRange[0].toString());
-        params.set('maxPrice', priceRange[1].toString());
-        // Always update creator in the URL from current creator state
+        // Only update minPrice and maxPrice in the URL if changed from defaults
+        if (priceRange[0] !== minProductPrice) {
+            params.set('minPrice', priceRange[0].toString());
+        } else {
+            params.delete('minPrice');
+        }
+        if (priceRange[1] !== maxProductPrice) {
+            params.set('maxPrice', priceRange[1].toString());
+        } else {
+            params.delete('maxPrice');
+        }
+        // Only update creator in the URL if selected
         const creatorId = creator && creator.value ? creator.value : '';
-        params.set('creator', creatorId);
+        if (creatorId) {
+            params.set('creator', creatorId);
+        } else {
+            params.delete('creator');
+        }
         const qParam = params.get('q') || '';
         const pageParam = params.get('page') ? Number(params.get('page')) : 1;
         // First, update Redux and call API with current UI state

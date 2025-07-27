@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,10 +5,27 @@ import ProductCard from '../features/marketplace/components/ProductCard';
 import type { RootState } from '../store';
 import type { AppDispatch } from '../store';
 import { fetchProducts } from '../features/marketplace/thunks';
-import FiltersBar from '../features/marketplace/components/FiltersBar';import { Paginator } from 'primereact/paginator';
+import FiltersBar from '../features/marketplace/components/FiltersBar'; import { Paginator } from 'primereact/paginator';
 import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/marketplaceThunks';
 import SearchBar from '../features/marketplace/components/SearchBar';
 
+// Helper to parse subCategories from URLSearchParams
+function parseSubCategoriesFromParams(params: URLSearchParams): string[] | undefined {
+  const subCategoriesParam = params.get('subCategories');
+  if (subCategoriesParam) {
+    try {
+      const parsed = JSON.parse(subCategoriesParam);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+      } else if (parsed && typeof parsed === 'object') {
+        return Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
+      }
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+}
 
 const Marketplace: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -28,20 +44,7 @@ const Marketplace: React.FC = () => {
     setPage(pageParam);
     // Read main category and subCategories from URL
     const mainCategory = params.get('category') || undefined;
-    let subCategoriesArr: string[] | undefined = undefined;
-    const subCategoriesParam = params.get('subCategories');
-    if (subCategoriesParam) {
-      try {
-        const parsed = JSON.parse(subCategoriesParam);
-        if (Array.isArray(parsed)) {
-          subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
-        } else if (parsed && typeof parsed === 'object') {
-          subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
-        }
-      } catch {
-        subCategoriesArr = undefined;
-      }
-    }
+    const subCategoriesArr = parseSubCategoriesFromParams(params);
     dispatch(fetchProducts({
       category: mainCategory,
       subCategories: subCategoriesArr,
@@ -65,20 +68,7 @@ const Marketplace: React.FC = () => {
 
     // Read category and subCategories from URL
     const mainCategory = params.get('category') || undefined;
-    let subCategoriesArr: string[] | undefined = undefined;
-    const subCategoriesParam = params.get('subCategories');
-    if (subCategoriesParam) {
-      try {
-        const parsed = JSON.parse(subCategoriesParam);
-        if (Array.isArray(parsed)) {
-          subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
-        } else if (parsed && typeof parsed === 'object') {
-          subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
-        }
-      } catch {
-        subCategoriesArr = undefined;
-      }
-    }
+    const subCategoriesArr = parseSubCategoriesFromParams(params);
     dispatch(fetchProducts({
       category: mainCategory,
       subCategories: subCategoriesArr,
@@ -90,7 +80,7 @@ const Marketplace: React.FC = () => {
     }));
   };
 
-  if(loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -101,7 +91,7 @@ const Marketplace: React.FC = () => {
     );
   }
 
-  if(error) {
+  if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -111,9 +101,6 @@ const Marketplace: React.FC = () => {
       </div>
     );
   }
-
-  // Import SearchBar here to use it above the grid
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
 
   return (
     <>

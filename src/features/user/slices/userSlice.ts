@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { fetchCurrentUser, updateUserProfile } from '../thunks/userThunk';
+import { fetchCurrentUser, updateUserProfile } from '../../marketplace/thunks/userThunk'
+import type { RoleType } from '../../../types';
 
 export interface UserState {
   id: string | null;
@@ -8,8 +9,11 @@ export interface UserState {
   email: string | null;
   avatar?: string | null;
   avatarUrl?: string | null;
-  role: string | null;
+  role: RoleType | null | string;
   bio?: string | null;
+  skills?: string[];
+  servicesOffered?: string[]; 
+  portfolio?: string[];
   loading: boolean;
   error: string | null;
 }
