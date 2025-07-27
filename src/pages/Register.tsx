@@ -81,10 +81,10 @@ const Register: React.FC = () => {
 
         localStorage.setItem('user', JSON.stringify({
           name: user.name,
-          avatar: user.avatar || null
+          avatar: user.avatar || null,
           fullName: user.fullName || user.name, 
           email: user.email,
-          role: user.role
+          role: user.role,
 
         }));
 
