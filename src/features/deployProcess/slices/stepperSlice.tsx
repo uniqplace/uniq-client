@@ -3,6 +3,8 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { steps } from '../components/Stepper/steps';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export interface Product {
   _id: string;
   CreationStatus: string;
@@ -31,7 +33,7 @@ export const createProduct = createAsyncThunk<Product>(
   async (_, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://localhost:5002/api/create-product',
+        `${apiBaseUrl}/create-product`,
         null,
         { withCredentials: true }
       );
@@ -50,7 +52,7 @@ export const fetchProductStatus = createAsyncThunk<Product, string>(
   async (productId, thunkAPI) => {
     try {
       const response = await axios.get(
-        `http://localhost:5002/api/create-product/${productId}/status`,
+        `${apiBaseUrl}/create-product/${productId}/status`,
         { withCredentials: true }
       );
       return response.data as Product;
@@ -72,7 +74,7 @@ export const updateProductStep = createAsyncThunk<
     try {
       const stepName = steps[stepNumber - 1]?.title || steps[0].title;
       const response = await axios.patch(
-        `http://localhost:5002/api/create-product/${productId}/step-${stepNumber}`,
+        `${apiBaseUrl}/create-product/${productId}/step-${stepNumber}`,
         { step: stepName },
         { withCredentials: true }
       );
