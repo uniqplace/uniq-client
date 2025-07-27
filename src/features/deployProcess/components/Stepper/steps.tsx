@@ -81,13 +81,13 @@ export const DeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   For now, inline components keep everything in one place for simplicity.
 */
 export const steps = [
-  { title: 'Define Your Product', component: DefineProductStep },
+  { title: 'Define Product', component: DefineProductStep },
   { title: 'Manufacturer Preferences', component: ManufacturerPreferencesStep },
   { title: 'Send to Marketplace', component: OpenBidConfirmationStep },
   { title: 'View Live Bids', component: LiveBidsViewerStep },
   { title: 'Choose Manufacturer', component: SelectManufacturerStep },
-  { title: 'Agreement', component: AgreementAndSummaryStep },
-  { title: 'Payment', component: PaymentAndOrderStep },
-  { title: 'Tracking', component: TrackingAndDeliveryStep },
-  { title: 'Delivery', component: DeliveryStep },
+  { title: 'Agree to Terms', component: AgreementAndSummaryStep },
+  { title: 'Make Payment', component: PaymentAndOrderStep },
+  { title: 'Track Delivery', component: TrackingAndDeliveryStep },
+  { title: 'Complete Delivery', component: DeliveryStep },
 ];
