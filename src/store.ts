@@ -33,7 +33,7 @@ export const store = configureStore({
 
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware ),
+    // getDefaultMiddleware().concat(apiSlice.middleware ),
 });
 
 
