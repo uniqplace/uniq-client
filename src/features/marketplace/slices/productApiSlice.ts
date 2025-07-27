@@ -56,15 +56,24 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
           subCategories: formData.subCategories,
         };
         return {
+        //  url: 'api/products/user/me',
           url: '/products',
           method: 'POST',
           body: payload,
+
         };
       },
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
+//       query: (updatedProduct) => ({
+//         url: `/api/products/${updatedProduct._id}`,
+//         method: 'PUT',
+//         body: updatedProduct,
+//       }),
+//       invalidatesTags: (_result, error, { _id }) => [
+
       query: (updatedProduct) => {
         const payload = {
           ...updatedProduct,
@@ -77,6 +86,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         };
       },
       invalidatesTags: (_result, _error, { _id }) => [
+
         { type: 'Product', id: _id },
         { type: 'Product', id: 'LIST' },
       ],
@@ -95,6 +105,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     getProductById: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
+
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
   }),

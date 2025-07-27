@@ -24,16 +24,19 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
+  CreationStatus: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
   category: Category;
   subCategories: SubCategory[];
   creator: Creator; 
   status: 'draft' | 'published' | 'hidden';
+
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
   tags: string[];
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 // 4. Order
 export interface Order {
@@ -97,6 +100,17 @@ export interface SubCategory {
   category: string;
   count?: number;
 }
+
+
+export interface BidOffer {
+  bidRequestId: string,
+  manufacturerId: string,
+  price: number
+  estimatedDelivery: string
+  note?: string
+  attachmentUrl?: string
+}
+
 
 // 10. Category
 export interface Category {

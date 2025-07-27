@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
+import socket from '../services/socket';
+import { SOCKET_EVENTS } from '../constants/socketEvents';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { InputText } from 'primereact/inputtext';
@@ -33,12 +35,26 @@ const Login = () => {
 
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        const user = res.data.user;
+
+        localStorage.setItem('user', JSON.stringify({
+          name: user.name,
+          avatar: user.avatar || null
+        }));
         dispatch(setUser(res.data.user));
         dispatch(fetchCurrentUser());
         setEmail('');
         setPassword('');
         localStorage.removeItem('prefillEmail');
+
+        // Connect to Socket.IO
+        const userId = res.data.user._id || res.data.user.id;
+        const role = res.data.user.role;
+        if (userId && role) {
+          socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
+            console.log('User registered to socket:', { userId, role });
+        }
+
         navigate('/');
       }
     } catch (error: unknown) {
