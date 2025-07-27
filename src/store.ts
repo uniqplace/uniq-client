@@ -2,11 +2,11 @@ import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
 import userReducer from './features/user/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
-import apiSlice from './api/apiSlice';
+// import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
-import { deployApi } from './features/deployProcess/slices/deployApiSlice';
-import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
+//import { deployApi } from './features/deployProcess/slices/deployApiSlice';
+//import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
 import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
 import stepperReducer from './features/deployProcess/slices/stepperSlice';
 // import BidOfferSlice from './features/deployProcess/BidOfferSlice';
