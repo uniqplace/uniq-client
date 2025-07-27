@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import debounce from 'lodash/debounce';
-import { AutoComplete } from 'primereact/autocomplete';
 import CategoryFilters from './CategoryFilters';
-import { Slider } from 'primereact/slider';
+import CreatorFilterSection from './CreatorFilterSection';
+import PriceFilterSection from './PriceFilterSection';
+import FilterActionsSection from './FilterActionsSection';
 import { OverlayPanel } from 'primereact/overlaypanel';
-import { Button } from 'primereact/button';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
@@ -115,7 +115,7 @@ const FiltersBar: React.FC = () => {
         }
         return [minProductPrice, maxProductPrice];
     });
-    const pricePanelRef = useRef<OverlayPanel>(null);
+    const pricePanelRef = useRef<OverlayPanel>(undefined!);
     useEffect(() => {
         if (products && products.length > 0) {
             setPriceRange(prev => {
@@ -157,15 +157,12 @@ const FiltersBar: React.FC = () => {
         dispatch(fetchSubCategories());
     }, []);
     const hasActiveFilters = () => {
-        return (
-            creator ||
-            Object.values(categoryFilters).some(arr => arr && arr.length > 0) ||
+        return Boolean(creator) ||
+            (Array.isArray(categoryFilters) && categoryFilters.length > 0) ||
             priceRange[0] !== minProductPrice ||
-            priceRange[1] !== maxProductPrice
-        );
+            priceRange[1] !== maxProductPrice;
     };
     const handleFilter = () => {
-        // Always use categoryFilters state for category/subCategories
         const params = new URLSearchParams(location.search);
         const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
         const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
@@ -179,7 +176,6 @@ const FiltersBar: React.FC = () => {
         } else {
             params.delete('subCategories');
         }
-        // Only update minPrice and maxPrice in the URL if changed from defaults
         if (priceRange[0] !== minProductPrice) {
             params.set('minPrice', priceRange[0].toString());
         } else {
@@ -190,7 +186,6 @@ const FiltersBar: React.FC = () => {
         } else {
             params.delete('maxPrice');
         }
-        // Only update creator in the URL if selected
         const creatorId = creator && creator.value ? creator.value : '';
         if (creatorId) {
             params.set('creator', creatorId);
@@ -199,7 +194,6 @@ const FiltersBar: React.FC = () => {
         }
         const qParam = params.get('q') || '';
         const pageParam = params.get('page') ? Number(params.get('page')) : 1;
-        // First, update Redux and call API with current UI state
         dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
@@ -211,7 +205,6 @@ const FiltersBar: React.FC = () => {
             q: qParam,
             page: pageParam,
         }));
-        // Only then update the URL (if needed)
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
     const searchCreator = useRef(
@@ -226,14 +219,20 @@ const FiltersBar: React.FC = () => {
     ).current;
 
 
+    const handleReset = () => {
+        const params = new URLSearchParams(location.search);
+        params.delete('creator');
+        params.delete('category');
+        params.delete('subCategories');
+        params.delete('minPrice');
+        params.delete('maxPrice');
+        setCategoryFilters([]);
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+    };
+
     return (
         <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
-            <div
-                style={{
-                    minWidth: 220, maxWidth: 320, width: '100%',
-                    zIndex: 20
-                }}
-            >
+            <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
                 <aside
                     className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8 relative"
                     style={{ minWidth: 220, maxWidth: 320 }}
@@ -241,83 +240,30 @@ const FiltersBar: React.FC = () => {
                         if (e.key === 'Enter') handleFilter();
                     }}
                 >
-                    <Button label="Filter" icon="pi pi-filter" onClick={handleFilter} className="mb-4 p-button-outlined p-button-rounded filter-btn w-full" />
-                    <Button
-                        label="Reset"
-                        icon="pi pi-refresh"
-                        className="mb-2 p-button-text p-button-sm w-full"
-                        disabled={!hasActiveFilters()}
-                        onClick={() => {
-                            const params = new URLSearchParams(location.search);
-                            params.delete('creator');
-                            params.delete('category');
-                            params.delete('subCategories');
-                            params.delete('minPrice');
-                            params.delete('maxPrice');
-                            setCategoryFilters([]); // Clear all category checkboxes
-                            navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-                        }}
+                    <FilterActionsSection
+                        handleFilter={handleFilter}
+                        handleReset={handleReset}
+                        hasActiveFilters={hasActiveFilters()}
                     />
                     <CategoryFilters
                         selected={categoryFilters}
                         onChange={setCategoryFilters}
                     />
-                    <span className="p-float-label w-full">
-                        <AutoComplete
-                            id="creator"
-                            value={searchValue !== null ? searchValue : (creator ? creator.label : '')}
-                            suggestions={filteredCreators || []}
-                            completeMethod={searchCreator}
-                            onChange={(e) => {
-                                setCreator(e.value);
-                                setTimeout(() => setSearchValue(null), 0);
-                            }}
-                            onFocus={() => setSearchValue('')}
-                            onBlur={() => setSearchValue(null)}
-                            field="label"
-                            itemTemplate={(option) => option ? (
-                                <div className="flex items-center gap-2">
-                                    {option.avatar && (
-                                        <img src={option.avatar} alt={option.label} className="w-6 h-6 rounded-full object-cover" />
-                                    )}
-                                    <span>{option.label}</span>
-                                </div>
-                            ) : null}
-                            dropdown
-                            forceSelection
-                            placeholder="Select Creator"
-                            className="w-full"
-                        />
-                        <label htmlFor="creator">Creator</label>
-                    </span>
-                    <span className="w-full">
-                        <Button
-                            label={`Price: $${priceRange[0]} - $${priceRange[1]}`}
-                            icon="pi pi-chevron-down"
-                            iconPos="right"
-                            onClick={e => pricePanelRef.current?.toggle(e)}
-                            className="p-button-outlined p-button-rounded w-full filter-btn"
-                        />
-                        <OverlayPanel ref={pricePanelRef}>
-                            <div style={{ width: 220 }}>
-                                <div className="mb-2 font-semibold">Select a price range</div>
-                                <Slider
-                                    value={priceRange}
-                                    onChange={e => {
-                                        if (Array.isArray(e.value)) setPriceRange(e.value as [number, number]);
-                                    }}
-                                    range
-                                    min={minProductPrice}
-                                    max={maxProductPrice}
-                                    step={10}
-                                    style={{ width: '200px' }}
-                                />
-                                <div className="flex gap-2 mt-2">
-                                    <span>${priceRange[0]}</span> - <span>${priceRange[1]}</span>
-                                </div>
-                            </div>
-                        </OverlayPanel>
-                    </span>
+                    <CreatorFilterSection
+                        creator={creator}
+                        searchValue={searchValue}
+                        filteredCreators={filteredCreators}
+                        searchCreator={searchCreator}
+                        setCreator={setCreator}
+                        setSearchValue={setSearchValue}
+                    />
+                    <PriceFilterSection
+                        priceRange={priceRange}
+                        setPriceRange={setPriceRange}
+                        minProductPrice={minProductPrice}
+                        maxProductPrice={maxProductPrice}
+                        pricePanelRef={pricePanelRef}
+                    />
                 </aside>
             </div>
         </div>
