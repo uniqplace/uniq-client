@@ -3,6 +3,15 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { steps } from '../components/Stepper/steps';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+// Constants for localStorage keys to avoid repetition and errors
+const LOCAL_STORAGE_KEYS = {
+  productId: 'productId',
+  currentStep: 'currentStep',
+  completedSteps: 'completedSteps',
+};
+
 export interface Product {
   _id: string;
   CreationStatus: string;
@@ -17,6 +26,12 @@ interface StepperState {
   error: string | null;
 }
 
+// Helper function to map CreationStatus string to step index
+function getStepIndexByCreationStatus(status: string): number {
+  const idx = steps.findIndex((step) => step.title === status);
+  return idx >= 0 ? idx : 0;
+}
+
 const initialState: StepperState = {
   currentStepIndex: 0,
   completedSteps: new Array(steps.length).fill(false),
@@ -25,13 +40,13 @@ const initialState: StepperState = {
   error: null,
 };
 
-// יצירת מוצר חדש
+// Create a new product
 export const createProduct = createAsyncThunk<Product>(
   'stepper/createProduct',
   async (_, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://localhost:5002/api/create-product',
+        `${apiBaseUrl}/create-product`,
         null,
         { withCredentials: true }
       );
@@ -44,13 +59,13 @@ export const createProduct = createAsyncThunk<Product>(
   }
 );
 
-// שליפת סטטוס מוצר
+// Fetch product status
 export const fetchProductStatus = createAsyncThunk<Product, string>(
   'stepper/fetchProductStatus',
   async (productId, thunkAPI) => {
     try {
       const response = await axios.get(
-        `http://localhost:5002/api/create-product/${productId}/status`,
+        `${apiBaseUrl}/create-product/${productId}/status`,
         { withCredentials: true }
       );
       return response.data as Product;
@@ -62,7 +77,7 @@ export const fetchProductStatus = createAsyncThunk<Product, string>(
   }
 );
 
-// עדכון שלב מוצר
+// Update product step
 export const updateProductStep = createAsyncThunk<
   Product,
   { productId: string; stepNumber: number }
@@ -72,7 +87,7 @@ export const updateProductStep = createAsyncThunk<
     try {
       const stepName = steps[stepNumber - 1]?.title || steps[0].title;
       const response = await axios.patch(
-        `http://localhost:5002/api/create-product/${productId}/step-${stepNumber}`,
+        `${apiBaseUrl}/create-product/${productId}/step-${stepNumber}`,
         { step: stepName },
         { withCredentials: true }
       );
@@ -91,7 +106,7 @@ const stepperSlice = createSlice({
   reducers: {
     setCurrentStepIndex(state, action: PayloadAction<number>) {
       state.currentStepIndex = action.payload;
-      localStorage.setItem('currentStep', action.payload.toString());
+      localStorage.setItem(LOCAL_STORAGE_KEYS.currentStep, action.payload.toString());
     },
     goToNextStep(state) {
       if (
@@ -99,25 +114,27 @@ const stepperSlice = createSlice({
         state.currentStepIndex < steps.length - 1
       ) {
         state.currentStepIndex += 1;
-        localStorage.setItem('currentStep', state.currentStepIndex.toString());
+        localStorage.setItem(LOCAL_STORAGE_KEYS.currentStep, state.currentStepIndex.toString());
       }
     },
     goToPrevStep(state) {
       if (state.currentStepIndex > 0) {
         state.currentStepIndex -= 1;
-        localStorage.setItem('currentStep', state.currentStepIndex.toString());
+        localStorage.setItem(LOCAL_STORAGE_KEYS.currentStep, state.currentStepIndex.toString());
       }
     },
+    // Marks a step as completed locally when user finishes the step.
+    // This updates UI state and localStorage but does not sync with server.
     markStepCompleted(state, action: PayloadAction<number>) {
       state.completedSteps[action.payload] = true;
       localStorage.setItem(
-        'completedSteps',
+        LOCAL_STORAGE_KEYS.completedSteps,
         JSON.stringify(state.completedSteps)
       );
     },
     restoreStepperState(state) {
-      const savedStep = localStorage.getItem('currentStep');
-      const savedCompleted = localStorage.getItem('completedSteps');
+      const savedStep = localStorage.getItem(LOCAL_STORAGE_KEYS.currentStep);
+      const savedCompleted = localStorage.getItem(LOCAL_STORAGE_KEYS.completedSteps);
       if (savedStep) state.currentStepIndex = parseInt(savedStep);
       if (savedCompleted) state.completedSteps = JSON.parse(savedCompleted);
     },
@@ -127,9 +144,9 @@ const stepperSlice = createSlice({
       state.product = null;
       state.loading = false;
       state.error = null;
-      localStorage.removeItem('productId');
-      localStorage.removeItem('currentStep');
-      localStorage.removeItem('completedSteps');
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.productId);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.currentStep);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.completedSteps);
     },
   },
   extraReducers: (builder) => {
@@ -144,7 +161,7 @@ const stepperSlice = createSlice({
         state.product = action.payload;
         state.currentStepIndex = 0;
         state.completedSteps = new Array(steps.length).fill(false);
-        localStorage.setItem('productId', action.payload._id);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.productId, action.payload._id);
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;
@@ -159,11 +176,9 @@ const stepperSlice = createSlice({
       .addCase(fetchProductStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.product = action.payload;
-        const idx = steps.findIndex(
-          (s) => s.title === action.payload.CreationStatus
-        );
-        // עדכון אינדקס ושלבים שהושלמו
-        state.currentStepIndex = idx >= 0 ? idx : 0;
+        const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
+        // Update current step index and completed steps based on server status
+        state.currentStepIndex = idx;
         state.completedSteps = state.completedSteps.map((_, i) => i < idx);
       })
       .addCase(fetchProductStatus.rejected, (state, action) => {
@@ -172,6 +187,8 @@ const stepperSlice = createSlice({
       })
 
       // UPDATE STEP
+      // Updates the product step based on server response
+      // and syncs current step and completed steps accordingly
       .addCase(updateProductStep.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -179,11 +196,10 @@ const stepperSlice = createSlice({
       .addCase(updateProductStep.fulfilled, (state, action) => {
         state.loading = false;
         state.product = action.payload;
-        const idx = steps.findIndex(
-          (s) => s.title === action.payload.CreationStatus
-        );
+        const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
         if (idx >= 0) {
           state.currentStepIndex = idx;
+          // Mark all steps up to current as completed, reflecting server's status
           state.completedSteps = state.completedSteps.map((_, i) => i <= idx);
         }
       })
@@ -202,4 +218,5 @@ export const {
   restoreStepperState,
   clearStepper,
 } = stepperSlice.actions;
+
 export default stepperSlice.reducer;
