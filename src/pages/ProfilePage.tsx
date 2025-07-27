@@ -4,7 +4,7 @@ import { updateUserProfile, updateUserAvatar } from '../features/marketplace/thu
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { updateUser } from '../features/marketplace/slices/userSlice';
+import { updateUser } from '../features/user/slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { roleOptions } from '../constants/roles'; 
 import { Dropdown } from 'primereact/dropdown';

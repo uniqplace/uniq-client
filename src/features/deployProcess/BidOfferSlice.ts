@@ -45,8 +45,7 @@ const bidOfferSlice = createSlice({
       .addCase(AddBidOffer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      });
-  }
-});
-
-export default bidOfferSlice.reducer; // ✅ תיקון
+   });
+}
+  });
+  export default bidOfferSlice.reducer;
