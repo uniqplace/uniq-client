@@ -39,7 +39,6 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
           ...formData,
           subCategories: formData.subCategories,
         };
-        console.log('Creating product with payload:', payload);
         return {
           url: '/products',
           method: 'POST',

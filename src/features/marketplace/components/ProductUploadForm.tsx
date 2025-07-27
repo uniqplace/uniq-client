@@ -161,7 +161,6 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
         subCategories,
         images: imageUrls,
       };
-      console.log('Product data:', productData);
 
       if (product) {
         await updateProduct({ _id: product._id, ...productData }).unwrap();
