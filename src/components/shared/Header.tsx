@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menubar } from 'primereact/menubar';
 import UserGreeting from './UserGreeting';
+import NotificationBell from './NotificationBell.tsx';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store'; 
 
@@ -33,7 +34,8 @@ const Header: React.FC = () => {
   );
 
   const end = (
-    <div className="flex items-center h-full pr-4">
+    <div className="flex items-center h-full pr-4 gap-4">
+      <NotificationBell />
       <UserGreeting />
     </div>
   );

@@ -1,13 +1,13 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { UserState } from '../../user/slices/userSlice';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL; 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE}/users/getDetails`, { credentials: 'include' }); // ← עדכון לנתיב החדש
+      const res = await fetch(`${API_BASE}/users/getDetails`, { credentials: 'include' }); 
       if (!res.ok) throw new Error('Not authenticated');
       return await res.json();
     } catch (err: any) {

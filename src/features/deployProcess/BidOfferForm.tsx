@@ -39,7 +39,6 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     e.preventDefault();
 
     const priceNumber = parseFloat(price);
-
     const errors = {
       price: !price || isNaN(priceNumber) || priceNumber <= 0,
       estimatedDelivery: !estimatedDelivery,
@@ -64,8 +63,8 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       const newBidOffer: BidOffer = {
         bidRequestId,
         manufacturerId: user.id,
-        price: priceNumber,
-        estimatedDelivery: estimatedDelivery!.toISOString(), // asserted not null
+        price: parseFloat(price),
+        estimatedDelivery: estimatedDelivery ? estimatedDelivery.toISOString() : '',
         note,
         attachmentUrl,
       };
