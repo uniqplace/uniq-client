@@ -7,7 +7,6 @@ import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/BidOfferSlice';
 import socketReducer from './features/socket/socketSlice';
 
-
 export const store = configureStore({
   reducer: {
     marketplace: marketplaceReducer,
