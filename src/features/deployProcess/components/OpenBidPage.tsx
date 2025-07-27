@@ -53,13 +53,12 @@ export const OpenBidPage = () => {
   
     if (!dateValue) return '-';
   
-    // בדיקה שהשדה הוא תאריך או מחרוזת ולא אובייקט
     if (typeof dateValue === 'string' || dateValue instanceof Date) {
       const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
       return dateObj.toLocaleDateString('he-IL');
     }
   
-    return '-'; // אם זה לא תאריך או מחרוזת – מחזירים מקף
+    return '-'; 
   };
   
   
