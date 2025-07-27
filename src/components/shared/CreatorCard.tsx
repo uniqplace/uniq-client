@@ -7,7 +7,7 @@ import type { Creator as BaseCreator, User } from '../../types';
 type Creator = BaseCreator & {
   followers?: number | User[];
 };
-
+console.log();
 // Helper function to get followers count
 const getFollowersCount = (followers: unknown): number => {
   if (typeof followers === 'number') return followers;
