@@ -31,7 +31,6 @@ const GenericStepper: React.FC = () => {
 
   const CurrentStepComponent = steps[currentStepIndex]?.component;
 
-  /** טוען מוצר מהשרת או יוצר חדש אם אין productId */
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
@@ -60,7 +59,6 @@ const GenericStepper: React.FC = () => {
     }
   }, [dispatch, forceCreate]);
 
-  /** מסנכרן את ה-stepIndex לפי ה-URL */
   useEffect(() => {
     const index = stepsConfig.findIndex((s) => s.key === stepKey);
     if (index !== -1) {
@@ -68,18 +66,15 @@ const GenericStepper: React.FC = () => {
     }
   }, [dispatch, stepKey]);
 
-  /** עדכון סטטוס מוצר בכל כניסה לשלב */
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
     const productId = localStorage.getItem(userProductKey);
 
-    // מצא את האינדקס של הסטטוס הנוכחי בשרת
     const serverStepIndex = stepsConfig.findIndex(
       (s) => s.label === product?.CreationStatus
     );
 
-    // עדכן סטטוס רק אם עברנו לשלב מתקדם יותר
     if (
       productId &&
       product &&
@@ -92,7 +87,6 @@ const GenericStepper: React.FC = () => {
     }
   }, [currentStepIndex, dispatch, product]);
 
-  /** סימון שלב כהושלם ועדכון השרת */
   const handleCompleteStep = useCallback(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
@@ -102,13 +96,11 @@ const GenericStepper: React.FC = () => {
     dispatch(markStepCompleted(currentStepIndex));
     dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
 
-    // אם זה השלב האחרון - הצגת פופאפ
     if (currentStepIndex === stepsConfig.length - 1) {
       setShowFinalPopup(true);
     }
   }, [dispatch, currentStepIndex]);
 
-  /** ניווט לשלב הבא */
   const handleNext = () => {
     if (completedSteps[currentStepIndex] && currentStepIndex < stepsConfig.length - 1) {
       const nextKey = stepsConfig[currentStepIndex + 1].key;
@@ -117,7 +109,6 @@ const GenericStepper: React.FC = () => {
     }
   };
 
-  /** ניווט לשלב הקודם */
   const handleBack = () => {
     if (currentStepIndex > 0) {
       const prevKey = stepsConfig[currentStepIndex - 1].key;
@@ -126,7 +117,6 @@ const GenericStepper: React.FC = () => {
     }
   };
 
-  /** דגם הסטפר עם סימון V לשלבים שהושלמו */
   const stepsModel = stepsConfig.map((step, index) => ({
     label: step.label,
     icon: completedSteps[index] ? 'pi pi-check' : undefined,
@@ -140,7 +130,6 @@ const GenericStepper: React.FC = () => {
         Create Your Own Product
       </h2>
 
-      {/* סטפר */}
       <Steps
         model={stepsModel}
         activeIndex={currentStepIndex}
@@ -148,7 +137,6 @@ const GenericStepper: React.FC = () => {
         className="custom-steps mb-6"
       />
 
-      {/* תוכן */}
       {loading ? (
         <div className="text-center text-gray-600">Loading product status...</div>
       ) : error ? (
@@ -187,7 +175,6 @@ const GenericStepper: React.FC = () => {
         />
       </div>
 
-      {/* פופאפ סיום תהליך */}
       <Dialog
         header="Product Completed!"
         visible={showFinalPopup}
