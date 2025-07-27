@@ -1,5 +1,8 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import useSocketListeners from './hooks/useSocketListeners';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
 import type { AppDispatch, RootState } from './store';
@@ -21,6 +24,12 @@ import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
+import socket from './services/socket';
+import { toast } from 'react-toastify';
+import BidOfferForm from './features/deployProcess/BidOfferForm';
+import { ProgressSpinner } from 'primereact/progressspinner';
+
 
 
 function UserProfile() {
@@ -39,6 +48,7 @@ function App() {
   const user = useSelector((state: RootState) => state.user);
   const loading = user.loading;
   const [wasLoading, setWasLoading] = useState(false);
+  useSocketListeners({ userId: user?.id ?? undefined, role: user?.role ?? undefined });
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -65,13 +75,39 @@ function App() {
     console.log('user state:', user);
   }, [user]);
 
+  useEffect(() => {
+    const handleBidSentConfirmation = (data: any) => {
+      console.log('Bid sent confirmation:', data);
+      if (data.error) {
+        toast.error(data.message);
+      } else {
+        toast.success(data.message);
+      }
+    };
+    socket.on('bid_sent_confirmation', handleBidSentConfirmation);
+
+    return () => {
+      socket.off('bid_sent_confirmation', handleBidSentConfirmation);
+    };
+  }, []);
+
   if (loading) {
     return <div>Loading...</div>;
   }
+if (loading) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <ProgressSpinner />
+      <span style={{ marginTop: '1rem' }}>Loading...</span>
+    </div>
+  );
+}
+
 
   return (
     <div>
       <Header />
+      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '64px' }}/>
       <Routes>
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
@@ -85,11 +121,19 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
-
         <Route path="/MyBidRequest" element={<OpenBidPage  />} />
-
+       <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+        <Route path="/checkout/:productId" element={<CheckoutPage />} />
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
       </Routes>
-
+      <h5>Socket.IO + React Toastify</h5>
+      <button
+        onClick={() => {
+          fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
+        }}
+      >
+        Simulate New Bid For User {user.name}
+      </button>
     </div>
   );
 }

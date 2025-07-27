@@ -8,7 +8,7 @@ import type { Product } from '../../../types';
 interface ProductCardProps {
   product: Product;
   onAddToCart?: (productId: string) => void;
-  editable?: boolean; // חדש!
+  editable?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -68,7 +68,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
       >
         <p className="text-gray-600 line-clamp-2">{product.description}</p>
         <div className="mt-2">
-          <span className="text-sm text-gray-500">Creator: {product.creator?.name}</span>
+          <span className="text-sm text-gray-500">
+            Creator: {typeof product.creator?.name === 'string' ? product.creator.name : 'Unknown'}
+          </span>
+        </div>
+        <div className="mt-2">
+          {typeof product.category?.name === 'string' && (
+            <span className="text-sm text-gray-500 ml-2">Category: {product.category.name}</span>
+          )}
         </div>
       </Card>
       <Dialog

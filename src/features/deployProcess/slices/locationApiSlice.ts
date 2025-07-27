@@ -1,8 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import apiSlice from '../../../api/apiSlice';
 
-export const locationApiSlice = createApi({
-  reducerPath: 'locationApi',
-  baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
+export const locationApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getLocations: builder.query({
       query: () => '/locations',
