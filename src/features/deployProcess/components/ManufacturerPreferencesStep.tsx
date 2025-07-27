@@ -67,7 +67,6 @@ const ManufacturerPreferencesStep: React.FC = () => {
 
     try {
       const response = await saveBidRequest(preferences).unwrap();
-      console.log('Bid request created successfully:', response);
       toast.current?.show({
         severity: 'success',
         summary: 'Success',

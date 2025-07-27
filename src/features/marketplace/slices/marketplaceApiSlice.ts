@@ -8,7 +8,6 @@ export interface GetProductsQueryParams {
   minPrice?: number;
   maxPrice?: number;
   searchTerm?: string;
-  // ניתן להרחיב בעתיד: pagination, sorting וכו'
 }
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
@@ -16,7 +15,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     getProducts: builder.query<Product[], GetProductsQueryParams>({
       query: () => {
         return {
-          url: '/api/products',
+          url: '/products',
         };
       },
       transformResponse: (response: { data: Product[] }) => response.data,
@@ -31,7 +30,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
    getUserProducts: builder.query<Product[], GetProductsQueryParams>({
       query: () => {
         return {
-          url: '/api/products/user/me',
+          url: '/products/user/me',
         };
       },
       transformResponse: (response: { data: Product[] }) => response.data,
@@ -45,7 +44,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     }),
     addProduct: builder.mutation<Product,Partial<Product>>({
       query: (formData) => ({
-        url: '/api/products',
+        url: '/products',
         method: 'POST',
         body: formData,
       }),
@@ -54,7 +53,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
       query: (updatedProduct) => ({
-        url: `/api/products/${updatedProduct._id}`,
+        url: `/products/${updatedProduct._id}`,
         method: 'PUT',
         body: updatedProduct,
       }),
@@ -66,7 +65,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     deleteProduct: builder.mutation<void, string>({
       query: (productId) => ({
-        url: `/api/products/${productId}`,
+        url: `/products/${productId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, id) => [
@@ -76,7 +75,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     }),
 
     getProductById: builder.query<Product, string>({
-      query: (id) => `/api/products/${id}`,
+      query: (id) => `/products/${id}`,
       providesTags: (result, error, id) => [{ type: 'Product', id }],
     }),
   }),

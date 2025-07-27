@@ -15,10 +15,10 @@ export interface CategoryResponse {
 export const categoriesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCategoriesTree: builder.query<CategoryTreeNode[], void>({
-      query: () => '/api/subCategories/tree', // הנתיב לראוט שלך בשרת
+      query: () => '/subCategories/tree',
     }),
     getAllCategories: builder.query<CategoryResponse, void>({
-      query: () => '/api/categories',
+      query: () => '/categories',
     }),
   }),
 });

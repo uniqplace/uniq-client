@@ -5,7 +5,7 @@ import { Tooltip } from 'primereact/tooltip';
 import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { clearUser } from '../../features/marketplace/slices/userSlice';
+import { clearUser } from '../../features/user/slice/userSlice';
 import { api } from '../../services/api';
 
 const UserGreeting = () => {

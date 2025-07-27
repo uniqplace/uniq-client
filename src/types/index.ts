@@ -8,6 +8,9 @@ export interface User {
   avatar?: string;
   role: RoleType;
   bio?: string;
+  skills?: string[];
+  servicesOffered?: string[]; 
+  portfolio?: string[];
   createdAt?: Date;
 }
 

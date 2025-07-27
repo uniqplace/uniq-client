@@ -12,11 +12,11 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
 import { TreeSelect } from 'primereact/treeselect';
-import ImageUpload from '../../../components/shared/ImageUpload';
 import { useAddProductMutation, useUpdateProductMutation } from '../slices/marketplaceApiSlice';
 import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
 import type { Product } from '../../../types';
 import { useDeleteImagesMutation } from '../../../api/apiSlice';
+import FilesUpload from '../../../components/shared/FilesUpload';
 
 interface ProductFormData {
   title: string;
@@ -115,7 +115,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
 
   useEffect(() => {
     if (product) {
-      
+
       reset({
         title: product.title,
         description: product.description,
@@ -129,7 +129,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
       setImageUrls(product.images ?? []);
       setImages([]);
     }
-  }, [product,categoriesTree, reset]);
+  }, [product, categoriesTree, reset]);
 
   const handleRemoveImageUrl = async (url: string) => {
     try {
@@ -252,13 +252,13 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
           </div>
         )}
 
-        <ImageUpload
-          images={images}
-          setImages={setImages}
-          imageError={imageError}
-          setImageError={setImageError}
+        <FilesUpload
+          files={images}
+          setFiles={setImages}
+          fileError={imageError}
+          setFileError={setImageError}
           onUploaded={(urls) => setImageUrls((prev) => [...prev, ...urls])}
-          imageUrls={imageUrls}
+          fileUrls={imageUrls}
         />
 
         <Controller

@@ -17,7 +17,7 @@ import About from './pages/About';
 import Home from './pages/Home';
 import ProductUploadForm from './features/marketplace/components/ProductUploadForm';
 import Header from './components/shared/Header';
-import ProfilePage from './pages/ProfilePage';
+import ProfilePage from './features/user/components/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
 import BidOfferForm from './features/deployProcess/BidOfferForm';
@@ -60,11 +60,6 @@ function App() {
       navigate('/login');
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
-
-  useEffect(() => {
-    console.log('user state:', user);
-  }, [user]);
-
   if (loading) {
     return <div>Loading...</div>;
   }
