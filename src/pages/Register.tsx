@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -14,7 +14,7 @@ import { setUser } from '../features/user/slices/userSlice';
 import Cookies from 'js-cookie';
 import type { RootState } from '../store';
 
-const schema = yup.object().shape({
+const schema = yup.object({
   firstName: yup
     .string()
     .required('First name is required')
@@ -41,23 +41,22 @@ const schema = yup.object().shape({
     .oneOf(['customer', 'manufacturer', 'creator'] as const, 'Role is required')
     .required('Role is required'),
   companyName: yup.string().optional(),
-});
+}).required();
 
-interface RegisterFormData {
+type RegisterFormData = {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   role: 'customer' | 'manufacturer' | 'creator';
   companyName?: string;
-}
+};
 
 const Register: React.FC = () => {
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
-  const [selectedRole, setSelectedRole] = useState('customer');
 
   const {
     register,
@@ -66,14 +65,14 @@ const Register: React.FC = () => {
     setValue,
     watch,
     formState: { errors, isSubmitting }
-  } = useForm<RegisterFormData>({
+  } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
       password: '',
-      role: 'customer',
+      role: 'customer' as const,
       companyName: '',
     }
   });
