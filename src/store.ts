@@ -32,9 +32,10 @@ export const store = configureStore({
  
 
   // Add the API middleware to the store
-  middleware: (getDefaultMiddleware) =>
+  // temporary
+ // middleware: (getDefaultMiddleware) =>
     // getDefaultMiddleware().concat(apiSlice.middleware ),
-});
+//});
 
 
 export type RootState = ReturnType<typeof store.getState>;
