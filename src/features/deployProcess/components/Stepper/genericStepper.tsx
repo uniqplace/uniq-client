@@ -31,41 +31,43 @@ const GenericStepper: React.FC = () => {
 
   const CurrentStepComponent = steps[currentStepIndex]?.component;
 
-  const getUserProductKey = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  return user?.id ? `productId_${user.id}` : 'productId_guest';
-};
-
-useEffect(() => {
-  const handleProductLoading = async () => {
-    const userProductKey = getUserProductKey();
-    const productId = localStorage.getItem(userProductKey);
-
-    try {
-      if (!productId || forceCreate) {
-        const created = await dispatch(createProduct()).unwrap();
-        if (created?._id) {
-          localStorage.setItem(userProductKey, created._id);
-          dispatch(fetchProductStatus(created._id));
-          setForceCreate(false);
-        }
-      } else {
-        await dispatch(fetchProductStatus(productId)).unwrap();
-      }
-    } catch (err: any) {
-      if (err?.status === 404) {
-        localStorage.removeItem(userProductKey);
-        setForceCreate(true);
-      } else {
-        console.error('Product handling error:', err);
-      }
-    }
+  const getUserProductKey = (): string => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.id ? `productId_${user.id}` : 'productId_guest';
   };
 
-  handleProductLoading();
-}, [dispatch, forceCreate]);
+  const getStepKeyByIndex = (index: number): string | null => {
+    return stepsConfig[index]?.key || null;
+  };
 
+  useEffect(() => {
+    const handleProductLoading = async () => {
+      const userProductKey = getUserProductKey();
+      const productId = localStorage.getItem(userProductKey);
 
+      try {
+        if (!productId || forceCreate) {
+          const created = await dispatch(createProduct()).unwrap();
+          if (created?._id) {
+            localStorage.setItem(userProductKey, created._id);
+            dispatch(fetchProductStatus(created._id));
+            setForceCreate(false);
+          }
+        } else {
+          await dispatch(fetchProductStatus(productId)).unwrap();
+        }
+      } catch (err: any) {
+        if (err?.status === 404) {
+          localStorage.removeItem(userProductKey);
+          setForceCreate(true);
+        } else {
+          console.error('Product handling error:', err);
+        }
+      }
+    };
+
+    handleProductLoading();
+  }, [dispatch, forceCreate]);
 
   useEffect(() => {
     const index = stepsConfig.findIndex((s) => s.key === stepKey);
@@ -75,8 +77,7 @@ useEffect(() => {
   }, [dispatch, stepKey]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
+    const userProductKey = getUserProductKey();
     const productId = localStorage.getItem(userProductKey);
 
     const serverStepIndex = stepsConfig.findIndex(
@@ -96,8 +97,7 @@ useEffect(() => {
   }, [currentStepIndex, dispatch, product]);
 
   const handleCompleteStep = useCallback(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
+    const userProductKey = getUserProductKey();
     const productId = localStorage.getItem(userProductKey);
     if (!productId) return;
 
@@ -111,17 +111,21 @@ useEffect(() => {
 
   const handleNext = () => {
     if (completedSteps[currentStepIndex] && currentStepIndex < stepsConfig.length - 1) {
-      const nextKey = stepsConfig[currentStepIndex + 1].key;
-      navigate(`/create-your-own-product/${nextKey}`);
-      dispatch(goToNextStep());
+      const nextKey = getStepKeyByIndex(currentStepIndex + 1);
+      if (nextKey) {
+        navigate(`/create-your-own-product/${nextKey}`);
+        dispatch(goToNextStep());
+      }
     }
   };
 
   const handleBack = () => {
     if (currentStepIndex > 0) {
-      const prevKey = stepsConfig[currentStepIndex - 1].key;
-      navigate(`/create-your-own-product/${prevKey}`);
-      dispatch(goToPrevStep());
+      const prevKey = getStepKeyByIndex(currentStepIndex - 1);
+      if (prevKey) {
+        navigate(`/create-your-own-product/${prevKey}`);
+        dispatch(goToPrevStep());
+      }
     }
   };
 
