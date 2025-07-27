@@ -43,6 +43,16 @@ const NotificationBell = () => {
       setAuthError(true);
       return;
     }
+       socket.on('new_bid', (data: any) => {
+      const userId = getUserIdFromToken();
+      if (userId) {
+        getUnreadCount(userId)
+          .then((res) => setCount(res.data.count))
+          .catch(() => {});
+      }
+      setNotifications((prev) => [data.payload, ...prev]);
+    });
+
     getUnreadCount(userId)
       .then((res) => setCount(res.data.count))
       .catch((err) => {
@@ -50,10 +60,8 @@ const NotificationBell = () => {
       });
     loadNotifications(1);
 
-    socket.on('new_bid', (data: any) => {
-      setCount((prev) => prev + 1);
-      setNotifications((prev) => [data.payload, ...prev]);
-    });
+
+ 
 
     return () => {
       socket.off('general_notification');
@@ -91,15 +99,12 @@ const NotificationBell = () => {
     <div className="relative">
       <button
         className="relative"
-        onClick={() => {
-          setIsOpen((prev) => {
-            const next = !prev;
-            if (next) {
-              setCount(0);
-              loadNotifications(1);
-            }
-            return next;
-          });
+        onClick={async () => {
+          if (!isOpen) {
+            // On open: load notifications
+            await loadNotifications(1);
+          }
+          setIsOpen((prev) => !prev);
         }}
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
       >
@@ -140,6 +145,13 @@ const NotificationBell = () => {
                   setNotifications((prev) => prev.filter(item => item && item._id && item._id !== n._id));
                   try {
                     await markAsRead(n._id);
+                    // Update bell counter after marking as read
+                    const userId = getUserIdFromToken();
+                    if (userId) {
+                      getUnreadCount(userId)
+                        .then((res) => setCount(res.data.count))
+                        .catch(() => {});
+                    }
                   } catch (err) {
                     toast.error('Failed to mark notification as read');
                   }
