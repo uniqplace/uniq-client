@@ -8,15 +8,18 @@ export interface StepProps {
   product?: Product | null;
 }
 
-/* --- Step 1: Define Product --- */
-/* 
-  Inline step components are fine for now, but consider splitting them into separate files 
-  if their logic or UI grows in complexity.
-*/
+export interface StepDefinition {
+  key: string;
+  title: string;
+  component: React.FC<StepProps>;
+}
+
+/* --- Step components --- */
+
 export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) => {
   return (
     <div>
-      <h2>Product Definition (Hardcoded)</h2>
+      <h2>Define Product</h2>
       <p>Here you will define your product details (temporary content).</p>
       <p>Product ID: {product?._id ?? 'Not created yet'}</p>
       <finishStepButton onClick={() => onComplete()} />
@@ -24,7 +27,6 @@ export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) 
   );
 };
 
-/* --- Other steps --- */
 export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, product }) => (
   <div>
     <h2>Send to Marketplace</h2>
@@ -49,45 +51,41 @@ export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete }) => (
 
 export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
-    <h2>Agreement</h2>
+    <h2>Agree to Terms</h2>
     <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
-    <h2>Payment & Order</h2>
+    <h2>Make Payment</h2>
     <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
-    <h2>Tracking & Delivery</h2>
+    <h2>Track Delivery</h2>
     <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 export const DeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
-    <h2>Delivery</h2>
+    <h2>Complete Delivery</h2>
     <finishStepButton onClick={() => onComplete()} />
   </div>
 );
 
 /* --- Steps array --- */
-/*
-  Consider splitting these step components into separate files if their UI or logic grows.
-  For now, inline components keep everything in one place for simplicity.
-*/
-export const steps = [
-  { title: 'Define Product', component: DefineProductStep },
-  { title: 'Manufacturer Preferences', component: ManufacturerPreferencesStep },
-  { title: 'Send to Marketplace', component: OpenBidConfirmationStep },
-  { title: 'View Live Bids', component: LiveBidsViewerStep },
-  { title: 'Choose Manufacturer', component: SelectManufacturerStep },
-  { title: 'Agree to Terms', component: AgreementAndSummaryStep },
-  { title: 'Make Payment', component: PaymentAndOrderStep },
-  { title: 'Track Delivery', component: TrackingAndDeliveryStep },
-  { title: 'Complete Delivery', component: DeliveryStep },
+export const steps: StepDefinition[] = [
+  { key: 'defineProduct', title: 'Define Product', component: DefineProductStep },
+  { key: 'manufacturerPreferences', title: 'Manufacturer Preferences', component: ManufacturerPreferencesStep },
+  { key: 'sendToMarketplace', title: 'Send to Marketplace', component: OpenBidConfirmationStep },
+  { key: 'viewLiveBids', title: 'View Live Bids', component: LiveBidsViewerStep },
+  { key: 'chooseManufacturer', title: 'Choose Manufacturer', component: SelectManufacturerStep },
+  { key: 'agreement', title: 'Agree to Terms', component: AgreementAndSummaryStep },
+  { key: 'payment', title: 'Make Payment', component: PaymentAndOrderStep },
+  { key: 'tracking', title: 'Track Delivery', component: TrackingAndDeliveryStep },
+  { key: 'delivery', title: 'Complete Delivery', component: DeliveryStep },
 ];
