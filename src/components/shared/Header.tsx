@@ -15,7 +15,7 @@ const Header: React.FC = () => {
     { label: 'Marketplace', icon: 'pi pi-star', command: () => navigate('/marketplace') },
     { label: 'Orders', icon: 'pi pi-shopping-cart', command: () => navigate('/orders') },
     { label: 'About', icon: 'pi pi-info-circle', command: () => navigate('/about') },
-    { label: 'MyBidRequest', icon: 'pi pi-list', command: () => navigate('/MyBidRequest') },
+    { label: 'MyBidRequest', icon: 'pi pi-briefcase', command: () => navigate('/MyBidRequest') },
     ...(!user?.id ? [
       { label: 'Register', icon: 'pi pi-user-plus', command: () => navigate('/register') },
       { label: 'Login', icon: 'pi pi-sign-in', command: () => navigate('/login') },
