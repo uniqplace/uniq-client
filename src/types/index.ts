@@ -24,11 +24,11 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  categories: string[];
+  //categories: string[];
   creator: Creator;
   //status: 'active' | 'sold' | 'inactive';
   CreationStatus: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
- // category: Category;
+  category: Category;
   subCategories: SubCategory[];
   status: 'draft' | 'published' | 'hidden';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
