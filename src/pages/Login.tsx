@@ -33,7 +33,12 @@ const Login = () => {
 
       if (res.data.success) {
         Cookies.set('token', res.data.token, { expires: 7 });
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        const user = res.data.user;
+
+        localStorage.setItem('user', JSON.stringify({
+          name: user.name,
+          avatar: user.avatar || null
+        }));
         dispatch(setUser(res.data.user));
         dispatch(fetchCurrentUser());
         setEmail('');

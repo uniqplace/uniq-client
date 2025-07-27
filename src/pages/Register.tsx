@@ -16,7 +16,7 @@ import Cookies from 'js-cookie';
 import { Dropdown } from 'primereact/dropdown';
 import type { RegisterFormData } from '../types/index';
 import { roleOptions } from '../constants/roles';
-import type{ RootState } from '../store';
+import type { RootState } from '../store';
 
 const schema = yup.object().shape({
   fullName: yup
@@ -82,13 +82,8 @@ const Register: React.FC = () => {
         Cookies.set('token', res.data.token, { expires: 7 });
 
         localStorage.setItem('user', JSON.stringify({
-          id: user._id || user.id || null,
           name: user.name,
-          fullName: user.fullName || user.name, 
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role
-
+          avatar: user.avatar || null
         }));
 
         dispatch(setUser({

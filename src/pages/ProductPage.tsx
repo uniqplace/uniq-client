@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, ImageGallery, Payment, CreatorCard } from '../components/shared';
+import { Button, ImageGallery, CreatorCard } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
 import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks';

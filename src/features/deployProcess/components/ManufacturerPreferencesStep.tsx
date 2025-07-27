@@ -12,7 +12,6 @@ import { Message } from 'primereact/message';
 import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
-import axios from 'axios';
 
 const priceRangeMin = 0;
 const priceRangeMax = 1000;

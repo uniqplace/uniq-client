@@ -31,7 +31,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
    getUserProducts: builder.query<Product[], GetProductsQueryParams>({
       query: () => {
         return {
-          url: '/api/products/user/me',
+          url: 'api/products/user/me',
         };
       },
       transformResponse: (response: { data: Product[] }) => response.data,
@@ -58,7 +58,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: updatedProduct,
       }),
-      invalidatesTags: (result, error, { _id }) => [
+      invalidatesTags: (_result, error, { _id }) => [
         { type: 'Product', id: _id },
         { type: 'Product', id: 'LIST' },
       ],
@@ -69,7 +69,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         url: `/api/products/${productId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_result, _error, id) => [
         { type: 'Product', id },
         { type: 'Product', id: 'LIST' },
       ],
@@ -77,7 +77,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     getProductById: builder.query<Product, string>({
       query: (id) => `/api/products/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Product', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
   }),
   overrideExisting: false,
