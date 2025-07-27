@@ -7,6 +7,7 @@ import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/BidOfferSlice';
 import { deployApi } from './features/deployProcess/slices/deployApiSlice';
 import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
+import socketReducer from './features/socket/socketSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,9 +16,11 @@ export const store = configureStore({
     user: userReducer,
      auth: authSliceReducer,
      bidOffer: BidOfferSlice,
+     socket: socketReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
     [deployApi.reducerPath]: deployApi.reducer,
-    [locationApiSlice.reducerPath]: locationApiSlice.reducer,  },
+    [locationApiSlice.reducerPath]: locationApiSlice.reducer,
+  },
   // Add the API middleware to the store
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware ),

@@ -30,6 +30,9 @@ export interface BidResponse {
 export interface SocketNotification {
   id: string;
   text: string;
+  userId?: string;
+  massege?: string;
+  bidId?: string; // Optional, if the notification is related to a bid
   type: 'info' | 'warning' | 'success' | 'error';
   createdAt?: string;
 }

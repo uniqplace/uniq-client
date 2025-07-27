@@ -1,12 +1,17 @@
 import { useEffect } from 'react';
 import socket from '../services/socket';
 import { SOCKET_EVENTS } from '../constants/socketEvents';
+
 import { toast } from 'react-toastify';
+import type { BidRequest, BidResponse, SocketNotification } from '../types/socket';
+
 
 interface UseSocketListenersOptions {
   userId?: string;
   role?: string;
 }
+
+
 
 const useSocketListeners = ({ userId, role }: UseSocketListenersOptions) => {
   useEffect(() => {
@@ -16,13 +21,13 @@ const useSocketListeners = ({ userId, role }: UseSocketListenersOptions) => {
     }
 
     // Listen to socket events
-    const handleNewBid = (bidData: any) => {
-      toast.info(`New bid received: ${bidData.title || 'No title'}`);
+    const handleNewBid = (bidData: BidRequest) => {
+      toast.info(`New bid received: ${bidData.status || 'No title'}`);
     };
-    const handleBidResponse = (response: any) => {
+    const handleBidResponse = (response: BidResponse) => {
       toast.success(`Bid response: ${response.status}`);
     };
-    const handleGeneralNotification = (message: any) => {
+    const handleGeneralNotification = (message: SocketNotification) => {
       toast.warning(`Notification: ${message.text}`);
     };
 
