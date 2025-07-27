@@ -20,6 +20,7 @@ import About from './pages/About';
 import Home from './pages/Home';
 import ProductUploadForm from './features/marketplace/components/ProductUploadForm';
 import NewHeader from './components/shared/NewHeader';
+import MainContent from './components/shared/MainContent';
 import './styles/sidebar.css';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
@@ -107,7 +108,7 @@ if (loading) {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NewHeader />
       <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }}/>
-      <main className="pt-14 md:ml-64">
+      <MainContent>
         <Routes>
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
@@ -124,7 +125,7 @@ if (loading) {
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
       </Routes>
-      </main>
+      </MainContent>
       <h5>Socket.IO + React Toastify</h5>
       {/* <button
         onClick={() => {
