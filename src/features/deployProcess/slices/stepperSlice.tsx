@@ -25,7 +25,7 @@ const initialState: StepperState = {
   error: null,
 };
 
-// יצירת מוצר חדש
+// Create a new product
 export const createProduct = createAsyncThunk<Product>(
   'stepper/createProduct',
   async (_, thunkAPI) => {
@@ -44,7 +44,7 @@ export const createProduct = createAsyncThunk<Product>(
   }
 );
 
-// שליפת סטטוס מוצר
+// Fetch product status
 export const fetchProductStatus = createAsyncThunk<Product, string>(
   'stepper/fetchProductStatus',
   async (productId, thunkAPI) => {
@@ -62,7 +62,7 @@ export const fetchProductStatus = createAsyncThunk<Product, string>(
   }
 );
 
-// עדכון שלב מוצר
+// Update product step
 export const updateProductStep = createAsyncThunk<
   Product,
   { productId: string; stepNumber: number }
@@ -162,7 +162,7 @@ const stepperSlice = createSlice({
         const idx = steps.findIndex(
           (s) => s.title === action.payload.CreationStatus
         );
-        // עדכון אינדקס ושלבים שהושלמו
+        // Update current step index and completed steps
         state.currentStepIndex = idx >= 0 ? idx : 0;
         state.completedSteps = state.completedSteps.map((_, i) => i < idx);
       })
