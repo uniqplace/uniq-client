@@ -31,10 +31,14 @@ const GenericStepper: React.FC = () => {
 
   const CurrentStepComponent = steps[currentStepIndex]?.component;
 
+  const getUserProductKey = () => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  return user?.id ? `productId_${user.id}` : 'productId_guest';
+};
+
 useEffect(() => {
   const handleProductLoading = async () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userProductKey = user?.id ? `productId_${user.id}` : 'productId_guest';
+    const userProductKey = getUserProductKey();
     const productId = localStorage.getItem(userProductKey);
 
     try {
@@ -60,6 +64,7 @@ useEffect(() => {
 
   handleProductLoading();
 }, [dispatch, forceCreate]);
+
 
 
   useEffect(() => {
