@@ -7,7 +7,7 @@ import type { Creator as BaseCreator, User } from '../../types';
 type Creator = BaseCreator & {
   followers?: number | User[];
 };
-
+console.log();
 // Helper function to get followers count
 const getFollowersCount = (followers: unknown): number => {
   if (typeof followers === 'number') return followers;
@@ -36,7 +36,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
           <span
             className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 border border-white shadow"
             style={{ minWidth: 18, minHeight: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="עוקבים"
+            title="followers"
           >
             {followersCount}
           </span>

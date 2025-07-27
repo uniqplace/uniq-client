@@ -4,7 +4,7 @@
 
 import type { Category, Product } from '../types';
 import axios from 'axios';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api';
 
 // Generic API response interface to match your backend response format
 interface ApiResponse<T> {
@@ -49,7 +49,8 @@ export const api = {
   // Fetch products with filters and pagination
   getProducts: async (params: {
     q?: string;
-    category?: string[];
+    category?: string;
+    subCategories?: string[];
     creator?: string;
     minPrice?: number;
     maxPrice?: number;
@@ -57,7 +58,10 @@ export const api = {
   } = {}): Promise<ApiResponse<{ data: Product[]; totalPages: number }>> => {
     const query = new URLSearchParams();
     if (params.q) query.append('q', params.q);
-    if (params.category) query.append('categories', JSON.stringify(params.category));
+    if (params.category) query.append('category', params.category);
+    if (Array.isArray(params.subCategories) && params.subCategories.length > 0) {
+      query.append('subCategories', JSON.stringify(params.subCategories));
+    }
     if (params.creator) query.append('creator', params.creator);
     if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
     if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());
@@ -80,8 +84,8 @@ export const api = {
 
   logoutApi,
 
-  // Fetch all categories
-  getCategoriesWithCounts: async (): Promise<ApiResponse<Category[]>> => {
+  // Fetch all subCategories
+  getSubCategories: async (): Promise<ApiResponse<Category[]>> => {
     return await get<Category[]>(`/subcategories`);
   },
 

@@ -11,7 +11,7 @@ import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
 import { classNames } from 'primereact/utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '../features/marketplace/slices/userSlice';
+import { setUser } from '../features/user/slices/userSlice';
 import Cookies from 'js-cookie';
 import { Dropdown } from 'primereact/dropdown';
 import type { RegisterFormData } from '../types/index';
@@ -75,8 +75,6 @@ const Register: React.FC = () => {
         role: data.role,
       });
 
-
-
       if (res.data.success && res.data.user) {
         const user = res.data.user;
         Cookies.set('token', res.data.token, { expires: 7 });
@@ -84,6 +82,10 @@ const Register: React.FC = () => {
         localStorage.setItem('user', JSON.stringify({
           name: user.name,
           avatar: user.avatar || null
+          fullName: user.fullName || user.name, 
+          email: user.email,
+          role: user.role
+
         }));
 
         dispatch(setUser({
@@ -93,6 +95,16 @@ const Register: React.FC = () => {
           avatar: user.avatar || null,
           role: user.role || null
         }));
+
+        // Register user to Socket.IO
+        import('../services/socket').then(({ default: socket }) => {
+          import('../constants/socketEvents').then(({ SOCKET_EVENTS }) => {
+            socket.emit(SOCKET_EVENTS.REGISTER_USER, {
+              userId: user._id || user.id,
+              role: user.role
+            });
+          });
+        });
 
         toast.current?.show({
           severity: 'success',
@@ -104,7 +116,6 @@ const Register: React.FC = () => {
         navigate('/');
       } else {
         throw new Error('User data missing or invalid in response');
-
       }
     } catch (error: any) {
       toast.current?.show({

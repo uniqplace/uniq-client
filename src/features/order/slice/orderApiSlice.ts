@@ -9,7 +9,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
     }),
     getOrderById: builder.query<Order, string>({
       query: (id) => `/orders/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Order', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Order', id }],
     }),
     getUserOrders: builder.query<Order[], void>({
       query: () => '/orders/user/me',
@@ -31,7 +31,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { status },
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Order', id }],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Order', id }],
     }),
   }),
 })
