@@ -4,9 +4,10 @@ import userReducer from './features/marketplace/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
 import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
-import BidOfferSlice from './features/deployProcess/BidOfferSlice';
+import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
 import { deployApi } from './features/deployProcess/slices/deployApiSlice';
 import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
+import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     user: userReducer,
      auth: authSliceReducer,
      bidOffer: BidOfferSlice,
+     bidRequest: BidRequestSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
     [deployApi.reducerPath]: deployApi.reducer,
     [locationApiSlice.reducerPath]: locationApiSlice.reducer,

@@ -5,10 +5,10 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Calendar } from 'primereact/calendar';
 import { classNames } from 'primereact/utils';
-import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
-import type { RootState } from '../../store';
-import { AddBidOffer } from './BidOfferSlice';
-import type { BidOffer } from '../../types';
+import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
+import type { RootState } from '../../../store';
+import { AddBidOffer } from '../slices/BidOfferSlice';
+import type { BidOffer } from '../../../types';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
@@ -61,16 +61,15 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     try {
       setLoading(true);
 
-      const newBidOffer: BidOffer = {
+      const newBidOffer: Partial<BidOffer> = {
         bidRequestId,
-        manufacturerId: user.id,
         price: parseFloat(price),
         estimatedDelivery: estimatedDelivery ? estimatedDelivery.toISOString() : '',
         note,
         attachmentUrl,
       };
 
-      await dispatch(AddBidOffer(newBidOffer)).unwrap();
+      await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
 
       toast.current?.show({
         severity: 'success',
@@ -81,11 +80,14 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
 
       clearForm();
       forceUpdate();
+
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: error || 'Failed to submit offer.',
+        detail: typeof error === 'string'
+          ? error
+          : error?.message || JSON.stringify(error) || 'Failed to submit offer.',
         life: 4000,
       });
     } finally {

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { BidOffer } from "../../types";
+import type { BidOffer } from "../../../types";
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
     async (bidOffer: BidOffer, thunkAPI) => {

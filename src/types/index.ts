@@ -121,3 +121,13 @@ export interface Category {
   _id: string;
   name: string;
 }
+
+export interface BidRequest {
+  _id: string;
+  productId:  Product;
+  categoryId: {id:string, name:string};
+  locationPreference: string;
+  status: 'open' | 'expired' | 'closed';
+  createdAt: Date;
+  deliveryTimeframe : string;
+}
