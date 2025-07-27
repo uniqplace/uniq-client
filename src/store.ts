@@ -35,7 +35,7 @@ export const store = configureStore({
   // temporary
  // middleware: (getDefaultMiddleware) =>
     // getDefaultMiddleware().concat(apiSlice.middleware ),
-//});
+});
 
 
 export type RootState = ReturnType<typeof store.getState>;
