@@ -1,63 +1,59 @@
-// src/features/marketplace/marketplaceApiSlice.ts
 import apiSlice from '../../../api/apiSlice';
-import type { Product } from '../../../types';
+import type { Filters, Product } from '../../../types';
 
-// Query params for fetching products
-export interface GetProductsQueryParams {
-  categories?: string[]; // Array of category IDs
-  minPrice?: number;
-  maxPrice?: number;
-  searchTerm?: string;
-  // ניתן להרחיב בעתיד: pagination, sorting וכו'
+// Utility to create product tags for RTK Query
+function getProductTags(result: Product[] | undefined) {
+  return result
+    ? [
+      ...result.map(({ _id }: { _id: string }) => ({ type: "Product" as const, id: _id })),
+      { type: "Product" as const, id: "LIST" },
+    ]
+    : [{ type: "Product" as const, id: "LIST" }];
+}
+
+// Shared base query for products endpoints
+function getProductsBaseQuery(url: string) {
+  return {
+    query: (filters: Filters) => ({
+      url,
+      params: filters,
+    }),
+    transformResponse: (response: { data: Product[] }) => response.data,
+    providesTags: getProductTags,
+  };
 }
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<Product[], GetProductsQueryParams>({
-      query: () => {
+    getProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products')),
+    getUserProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products/user/me')),
+    addProduct: builder.mutation<Product, Partial<Product>>({
+      query: (formData) => {
+        const payload = {
+          ...formData,
+          subCategories: formData.subCategories,
+        };
         return {
-          url: '/api/products',
+          url: '/products',
+          method: 'POST',
+          body: payload,
         };
       },
-      transformResponse: (response: { data: Product[] }) => response.data,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
-              { type: 'Product', id: 'LIST' },
-            ]
-          : [{ type: 'Product', id: 'LIST' }],
-    }),
-   getUserProducts: builder.query<Product[], GetProductsQueryParams>({
-      query: () => {
-        return {
-          url: '/api/products/user/me',
-        };
-      },
-      transformResponse: (response: { data: Product[] }) => response.data,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: 'Product' as const, id: _id })),
-              { type: 'Product', id: 'LIST' },
-            ]
-          : [{ type: 'Product', id: 'LIST' }],
-    }),
-    addProduct: builder.mutation<Product,Partial<Product>>({
-      query: (formData) => ({
-        url: '/api/products',
-        method: 'POST',
-        body: formData,
-      }),
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
-      query: (updatedProduct) => ({
-        url: `/api/products/${updatedProduct._id}`,
-        method: 'PUT',
-        body: updatedProduct,
-      }),
+      query: (updatedProduct) => {
+        const payload = {
+          ...updatedProduct,
+          subCategories: updatedProduct.subCategories,
+        };
+        return {
+          url: `/products/${updatedProduct._id}`,
+          method: 'PUT',
+          body: payload,
+        };
+      },
       invalidatesTags: (_result, _error, { _id }) => [
         { type: 'Product', id: _id },
         { type: 'Product', id: 'LIST' },
@@ -66,7 +62,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     deleteProduct: builder.mutation<void, string>({
       query: (productId) => ({
-        url: `/api/products/${productId}`,
+        url: `/products/${productId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, id) => [
@@ -76,7 +72,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     }),
 
     getProductById: builder.query<Product, string>({
-      query: (id) => `/api/products/${id}`,
+      query: (id) => `/products/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
   }),

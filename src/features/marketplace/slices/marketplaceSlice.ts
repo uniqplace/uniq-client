@@ -1,15 +1,8 @@
 // src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Category, Product } from '../../../types';
+import type { Category, Filters, Product, SubCategory } from '../../../types';
 import { fetchProducts, fetchProduct } from '../thunks';
-import { fetchCreatorsAndManufacturers, fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
-
-interface Filters {
-  category: string[];
-  priceRange: [number, number];
-  searchTerm: string;
-  creator: string;
-}
+import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
 
 interface MarketplaceState {
   selectedProduct: Product | null;
@@ -18,15 +11,11 @@ interface MarketplaceState {
   error: string | null;
   productLoading: boolean;
   productError: string | null;
-  filters: {
-    category: string[];
-    creator: string;
-    priceRange: [number, number];
-    searchTerm: string;
-  };
+  filters: Filters;
   totalPages: number;
   creators: Array<{ label: string; value: string; avatar?: string }>;
   categories: Category[];
+  subCategories: Record<string, SubCategory[]>;
   maxPrice?: number;
 }
 
@@ -39,13 +28,15 @@ const initialState: MarketplaceState = {
   productError: null,
   filters: {
     creator: '',
-    category: [],
+    category: '',
+    subCategories: [],
     priceRange: [0, 1000],
     searchTerm: '',
   },
   totalPages: 1,
   creators: [{ label: 'All', value: '' }],
   categories: [],
+  subCategories: {},
   maxPrice: Number.NEGATIVE_INFINITY,
 };
 
@@ -61,11 +52,24 @@ const marketplaceSlice = createSlice({
       state.productError = null;
     },
     updateFilters(state, action: PayloadAction<Partial<Filters>>) {
+      // Always sync category and subCategories with selected IDs from URL
+      if (action.payload.category !== undefined) {
+        state.filters.category = action.payload.category;
+        // If category is not set, subCategories should be undefined
+        if (!action.payload.category) {
+          state.filters.subCategories = undefined;
+        } else if (action.payload.subCategories) {
+          state.filters.subCategories = action.payload.subCategories;
+        }
+      } else if (action.payload.subCategories) {
+        state.filters.subCategories = action.payload.subCategories;
+      }
       state.filters = { ...state.filters, ...action.payload };
     },
     clearFilters(state) {
       state.filters = {
-        category: [],
+        subCategories: undefined,
+        category: '',
         priceRange: [0, 1000],
         searchTerm: '',
         creator: '',
@@ -88,6 +92,9 @@ const marketplaceSlice = createSlice({
     },
     setMaxPrice: (state, action: PayloadAction<number>) => {
       state.maxPrice = action.payload;
+    },
+    setSubCategories(state, action: PayloadAction<Record<string, SubCategory[]>>) {
+      state.subCategories = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -116,12 +123,8 @@ const marketplaceSlice = createSlice({
         }));
         state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
       })
-      .addCase(fetchCategoriesWithCounts.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.categories = action.payload;
-        } else if (action.payload?.data) {
-          state.categories = action.payload.data;
-        }
+      .addCase(fetchSubCategories.fulfilled, (state, action: PayloadAction<Record<string, SubCategory[]>>) => {
+        state.subCategories = action.payload;
       })
       .addCase(fetchProduct.pending, (state) => {
         state.productLoading = true;

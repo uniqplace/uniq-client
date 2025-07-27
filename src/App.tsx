@@ -26,6 +26,7 @@ import socket from './services/socket';
 import { toast } from 'react-toastify';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
 import BidOfferForm from './features/deployProcess/BidOfferForm';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 
 function UserProfile() {
@@ -87,9 +88,19 @@ function App() {
     };
   }, []);
 
-  if (loading) {
+<!--   if (loading) {
     return <div>Loading...</div>;
-  }
+  } -->
+
+if (loading) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <ProgressSpinner />
+      <span style={{ marginTop: '1rem' }}>Loading...</span>
+    </div>
+  );
+}
+
 
   return (
     <div>
