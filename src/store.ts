@@ -20,10 +20,13 @@ export const store = configureStore({
      bidOffer: BidOfferSlice,
      bidRequest: BidRequestSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
+    //[deployApi.reducerPath]: deployApi.reducer,
+    //[locationApiSlice.reducerPath]: locationApiSlice.reducer,
      socket: socketReducer,
     stepper: stepperReducer,
   },
 
+ 
 
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
