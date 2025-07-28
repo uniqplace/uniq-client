@@ -1,0 +1,32 @@
+/* Sidebar specific styles */
+.sidebar-overlay {
+  backdrop-filter: blur(2px);
+}
+
+/* Ensure sidebar is above other content */
+.sidebar {
+  z-index: 40;
+}
+
+/* Smooth transitions for sidebar */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .sidebar {
+    background-color: #1f2937;
+  }
+}
+
+/* Ensure proper spacing for main content */
+.main-content-with-sidebar {
+  margin-left: 16rem; /* 256px - matches sidebar width */
+}
+
+@media (max-width: 768px) {
+  .main-content-with-sidebar {
+    margin-left: 0;
+  }
+} 

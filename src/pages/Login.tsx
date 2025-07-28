@@ -91,54 +91,83 @@ const Login = () => {
     }
   };
 
+  const handleSignUp = () => {
+    navigate('/register');
+  };
+
   const isInvalid = (val: string) => val.trim().length === 0;
 
   const isEmailValid = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   return (
-    <div className="flex justify-center mt-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Toast ref={toast} />
-      <div className="card w-full max-w-sm p-5">
-        <h2 className="text-2xl text-center mb-5">Login</h2>
-
-        <div className="p-fluid">
-          <div className="p-field mb-4">
-            <label htmlFor="email">Email</label>
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
+        <div className="space-y-6">
+          {/* Username Input */}
+          <div>
+            <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2">
+              Username
+            </label>
             <InputText
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={isInvalid(email) ? 'p-invalid' : ''}
+              className={`w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isInvalid(email) ? 'border-red-500' : ''
+              }`}
               placeholder="Enter your email"
               readOnly={!!user?.email}
             />
           </div>
 
-          <div className="p-field mb-5">
-            <label htmlFor="password">Password</label>
+          {/* Password Input */}
+          <div>
+            <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">
+              Password
+            </label>
             <Password
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               toggleMask
               feedback={false}
-              className={isInvalid(password) ? 'p-invalid' : ''}
+              className={`w-full ${
+                isInvalid(password) ? 'border-red-500' : ''
+              }`}
+              inputClassName="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter your password"
             />
           </div>
 
+          {/* Error Message */}
           {errorMessage && (
-            <div className="text-red-600 text-center mb-3">{errorMessage}</div>
+            <div className="text-red-600 text-center text-sm">{errorMessage}</div>
           )}
 
+          {/* Login Button */}
           <Button
             label="Login"
+            icon="pi pi-user"
             onClick={handleLogin}
             disabled={
               isInvalid(email) || isInvalid(password) || !isEmailValid(email)
             }
-            className="w-full"
+            className="w-full bg-cyan-500 hover:bg-cyan-600 border-cyan-500 hover:border-cyan-600 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
+          />
+
+          {/* OR Separator */}
+          <div className="text-center">
+            <span className="text-gray-700 text-sm font-medium">OR</span>
+          </div>
+
+          {/* Sign Up Button */}
+          <Button
+            label="Sign Up"
+            icon="pi pi-user-plus"
+            onClick={handleSignUp}
+            className="w-full bg-green-500 hover:bg-green-600 border-green-500 hover:border-green-600 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
           />
         </div>
       </div>
