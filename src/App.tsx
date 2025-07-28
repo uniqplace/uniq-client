@@ -93,9 +93,9 @@ function App() {
     };
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  //if (loading) {
+  //  return <div>Loading...</div>;
+  // }
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -111,22 +111,8 @@ function App() {
       <NewHeader />
       <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
       <MainContent>
-        <Routes>
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/product/:id" element={<ProductPage />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/user/:id" element={<UserProfile />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/uploadProduct" element={<ProductUploadForm />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
-          <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
-          <Route path="/checkout/:productId" element={<CheckoutPage />} />
-          <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
-        </Routes>
+      <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/orders" element={<Orders />} />
@@ -134,16 +120,14 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
-        <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/MyBidRequest" element={<OpenBidPage  />} />
-       <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+        <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
-      </Routes>
+        <Route path="/MyBidRequest" element={<OpenBidPage />} />
+    </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
 
@@ -157,7 +141,6 @@ function App() {
           Simulate New Bid For User {user.name}
         </button>
       )}
-
 
     </div>
   );
