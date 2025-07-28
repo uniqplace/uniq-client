@@ -269,8 +269,8 @@ async function addNewOrder(): Promise<void> {
             </Divider>
             <div style={{ background: '#f6f7fb', borderRadius: 8, padding: 24, boxShadow: '0 1px 6px #0001' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-                <div style={{ fontWeight: 700 }}>{product.title}</div>
-                <Tag value={product.condition} severity="info" style={{ marginLeft: 8 }} />
+               <div style={{ fontWeight: 700 }}>{product.title}</div>
+                                               <Tag value={product.condition} severity="info" style={{ marginLeft: 8 }} />
               </div>
               <Divider />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -292,6 +292,7 @@ async function addNewOrder(): Promise<void> {
           <Payment
             isVisible={paymentDialog}
             onSave={() => addNewOrder()}
+            onHide={() => setPaymentDialog(false)}
             product={product}
             price={totalAmount}
           />
