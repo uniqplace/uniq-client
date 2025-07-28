@@ -8,22 +8,23 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { Card } from 'primereact/card';
-import { classNames } from 'primereact/utils';
+import { RadioButton } from 'primereact/radiobutton';
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '../features/user/slice/userSlice';
+import { setUser } from '../features/user/slices/userSlice';
 import Cookies from 'js-cookie';
-import { Dropdown } from 'primereact/dropdown';
-import type { RegisterFormData } from '../types/index';
-import { roleOptions } from '../constants/roles';
-import type{ RootState } from '../store';
+import type { RootState } from '../store';
 
-const schema = yup.object().shape({
-  fullName: yup
+const schema = yup.object({
+  firstName: yup
     .string()
-    .required('Full name is required')
-    .min(2, 'Full name must be at least 2 characters')
-    .matches(/^[A-Za-z\u0590-\u05FF\s]+$/, 'Full name must contain only letters (Hebrew or English)'),
+    .required('First name is required')
+    .min(2, 'First name must be at least 2 characters')
+    .matches(/^[A-Za-z\u0590-\u05FF\s]+$/, 'First name must contain only letters (Hebrew or English)'),
+  lastName: yup
+    .string()
+    .required('Last name is required')
+    .min(2, 'Last name must be at least 2 characters')
+    .matches(/^[A-Za-z\u0590-\u05FF\s]+$/, 'Last name must contain only letters (Hebrew or English)'),
   email: yup
     .string()
     .required('Email is required')
@@ -35,12 +36,21 @@ const schema = yup.object().shape({
     .matches(/[a-z]/, 'At least one lowercase letter')
     .matches(/[A-Z]/, 'At least one uppercase letter')
     .matches(/\d/, 'At least one number'),
-
   role: yup
     .string()
-    .oneOf(['customer', 'manufacturer', 'creator', 'admin'], 'Role is required')
+    .oneOf(['customer', 'manufacturer', 'creator'] as const, 'Role is required')
     .required('Role is required'),
-});
+  companyName: yup.string().optional(),
+}).required();
+
+type RegisterFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: 'customer' | 'manufacturer' | 'creator';
+  companyName?: string;
+};
 
 const Register: React.FC = () => {
   const toast = useRef<Toast>(null);
@@ -52,43 +62,45 @@ const Register: React.FC = () => {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors, isSubmitting }
-  } = useForm<RegisterFormData>({
-
+  } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      fullName: '',
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
-      role: 'customer',
+      role: 'customer' as const,
+      companyName: '',
     }
   });
+
+  const watchedRole = watch('role');
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
       const res = await axios.post(`${API_BASE_URL}/auth/register`, {
-        name: data.fullName,
+        name: `${data.firstName} ${data.lastName}`,
         email: data.email,
         password: data.password,
         role: data.role,
+        companyName: data.companyName,
       });
-
-
 
       if (res.data.success && res.data.user) {
         const user = res.data.user;
         Cookies.set('token', res.data.token, { expires: 7 });
 
         localStorage.setItem('user', JSON.stringify({
-          id: user._id || user.id || null,
           name: user.name,
+          avatar: user.avatar || null,
           fullName: user.fullName || user.name, 
           email: user.email,
-          avatar: user.avatar,
-          role: user.role
-
+          role: user.role,
         }));
 
         dispatch(setUser({
@@ -98,6 +110,16 @@ const Register: React.FC = () => {
           avatar: user.avatar || null,
           role: user.role || null
         }));
+
+        // Register user to Socket.IO
+        import('../services/socket').then(({ default: socket }) => {
+          import('../constants/socketEvents').then(({ SOCKET_EVENTS }) => {
+            socket.emit(SOCKET_EVENTS.REGISTER_USER, {
+              userId: user._id || user.id,
+              role: user.role
+            });
+          });
+        });
 
         toast.current?.show({
           severity: 'success',
@@ -109,7 +131,6 @@ const Register: React.FC = () => {
         navigate('/');
       } else {
         throw new Error('User data missing or invalid in response');
-
       }
     } catch (error: any) {
       toast.current?.show({
@@ -119,7 +140,6 @@ const Register: React.FC = () => {
       });
     }
   };
-
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -141,78 +161,137 @@ const Register: React.FC = () => {
   }, [user, navigate]);
 
   return (
-    <div className="flex justify-center mt-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Toast ref={toast} />
-      <Card className="w-full max-w-md">
-        <h2 className="text-2xl text-center mb-6">Register</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid space-y-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
+        
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* First Name */}
           <div>
-            <label htmlFor="fullName">Full Name</label>
             <InputText
-              id="fullName"
-              {...register('fullName')}
-              className={errors.fullName ? 'p-invalid w-full' : 'w-full'}
+              id="firstName"
+              {...register('firstName')}
+              className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.firstName ? 'border-red-500' : ''
+              }`}
+              placeholder="First Name"
             />
-            {errors.fullName && <small className="text-red-500">{errors.fullName.message}</small>}
+            {errors.firstName && <small className="text-red-500 text-sm">{errors.firstName.message}</small>}
           </div>
+
+          {/* Last Name */}
           <div>
-            <label htmlFor="email">Email</label>
+            <InputText
+              id="lastName"
+              {...register('lastName')}
+              className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.lastName ? 'border-red-500' : ''
+              }`}
+              placeholder="Last Name"
+            />
+            {errors.lastName && <small className="text-red-500 text-sm">{errors.lastName.message}</small>}
+          </div>
+
+          {/* Email */}
+          <div>
             <InputText
               id="email"
-              type="text"
+              type="email"
               {...register('email')}
-              className={errors.email ? 'p-invalid w-full' : 'w-full'}
+              className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.email ? 'border-red-500' : ''
+              }`}
+              placeholder="Email"
               autoComplete="off"
             />
-            {errors.email && <small className="text-red-500">{errors.email.message}</small>}
+            {errors.email && <small className="text-red-500 text-sm">{errors.email.message}</small>}
           </div>
-          <Controller
-            name="password"
-            control={control}
-            render={({ field }) => (
-              <div>
-                <label htmlFor="password">Password</label>
+
+          {/* Role Selection */}
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-3">Role</label>
+            <div className="flex space-x-6">
+              <div className="flex items-center">
+                <RadioButton
+                  inputId="customer"
+                  name="role"
+                  value="customer"
+                  onChange={(e) => setValue('role', e.value)}
+                  checked={watchedRole === 'customer'}
+                  className="mr-2"
+                />
+                <label htmlFor="customer" className="text-gray-700 text-sm">Customer</label>
+              </div>
+              <div className="flex items-center">
+                <RadioButton
+                  inputId="creator"
+                  name="role"
+                  value="creator"
+                  onChange={(e) => setValue('role', e.value)}
+                  checked={watchedRole === 'creator'}
+                  className="mr-2"
+                />
+                <label htmlFor="creator" className="text-gray-700 text-sm">Creator</label>
+              </div>
+              <div className="flex items-center">
+                <RadioButton
+                  inputId="manufacturer"
+                  name="role"
+                  value="manufacturer"
+                  onChange={(e) => setValue('role', e.value)}
+                  checked={watchedRole === 'manufacturer'}
+                  className="mr-2"
+                />
+                <label htmlFor="manufacturer" className="text-gray-700 text-sm">Manufacturer</label>
+              </div>
+            </div>
+            {errors.role && <small className="text-red-500 text-sm">{errors.role.message}</small>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
                 <Password
                   id="password"
                   toggleMask
                   feedback={false}
-                  {...field}
-                  className={classNames({ 'p-invalid': errors.password })}
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={`w-full ${
+                    errors.password ? 'border-red-500' : ''
+                  }`}
+                  inputClassName="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Password"
+                  style={{ width: '100%' }}
                 />
+              )}
+            />
+            {errors.password && <small className="text-red-500 text-sm">{errors.password.message}</small>}
+          </div>
 
-                {errors.password && <small className="text-red-500">{errors.password.message}</small>}
-              </div>
-            )}
-          />
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <div>
-                <label htmlFor="role">Role</label>
-                <Dropdown
-                  id="role"
-                  {...field}
-                  options={roleOptions}
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select a role"
-                  className={errors.role ? 'p-invalid w-full' : 'w-full'}
-                />
-                {errors.role && <small className="text-red-500">{errors.role.message}</small>}
-              </div>
-            )}
-          />
+          {/* Company Name (Optional) */}
+          <div>
+            <InputText
+              id="companyName"
+              {...register('companyName')}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Company Name (optional)"
+            />
+          </div>
 
+          {/* Sign Up Button */}
           <Button
             type="submit"
-            label="Create Account"
-            icon="pi pi-user-plus"
+            label="Sign Up"
             loading={isSubmitting}
-            className="mt-2 w-full"
+            className="w-full bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
           />
         </form>
-      </Card>
+      </div>
     </div>
   );
 };

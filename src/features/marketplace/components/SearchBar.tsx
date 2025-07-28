@@ -41,7 +41,7 @@ const SearchBar: React.FC = () => {
         dispatch(fetchProducts({
             ...filters,
             q: trimmedSearch,
-            category: urlCategory,
+            subCategories: urlCategory,
             page: 1,
         }));
     };

@@ -1,10 +1,10 @@
+
 function Home() {
-
-
   return (
     <div>
-      <h2>Home</h2>
-      <p>Welcome to the home page!</p>
+      <div className="p-6">
+        Home Page
+      </div>
     </div>
   );
 }

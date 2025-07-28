@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useDispatch } from 'react-redux';
-import { setUser } from '../features/user/slice/userSlice';
+import { setUser } from '../features/user/slices/userSlice';
 
 export const useAuthUser = () => {
   const dispatch = useDispatch();

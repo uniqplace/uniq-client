@@ -1,9 +1,7 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import apiSlice from '../../../api/apiSlice';
 import type { ManufacturerPreferences } from './deploySlice';
 
-export const deployApi = createApi({
-  reducerPath: 'deployApi',
-  baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
+export const deployApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     saveManufacturerPreferences: builder.mutation<void, { categoryId: string | null; locationPreference: string | null; priceRange: { min: number; max: number }; deliveryTimeframe: string; deliveryMethod: 'pickup' | 'shipping'; }>({
       query: (preferences) => ({
@@ -22,4 +20,4 @@ export const deployApi = createApi({
   }),
 });
 
-export const { useSaveManufacturerPreferencesMutation, useSaveBidRequestMutation } = deployApi;
+export const { useSaveManufacturerPreferencesMutation, useSaveBidRequestMutation } = deployApiSlice;
