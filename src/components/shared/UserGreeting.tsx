@@ -5,9 +5,8 @@ import { Tooltip } from 'primereact/tooltip';
 import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { clearUser } from '../../features/user/slices/userSlice';
 import { api } from '../../services/api';
-
+import { clearUser } from '../../features/user/slices/userSlice';
 const UserGreeting = () => {
   const user = useSelector((state: RootState) => state.user);
   const menuRef = useRef<Menu>(null);
