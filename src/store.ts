@@ -19,8 +19,6 @@ export const store = configureStore({
      socket: socketReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
     stepper: stepperReducer,
-   // [deployApi.reducerPath]: deployApi.reducer,
-  //[locationApiSlice.reducerPath]: locationApiSlice.reducer, 
   },
 
  

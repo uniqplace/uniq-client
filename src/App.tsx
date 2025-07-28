@@ -22,7 +22,7 @@ import ProductUploadForm from './features/marketplace/components/ProductUploadFo
 import NewHeader from './components/shared/NewHeader';
 import MainContent from './components/shared/MainContent';
 import './styles/sidebar.css';
-import ProfilePage from './pages/ProfilePage';
+import ProfilePage from './features/user/components/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
 import socket from './services/socket';

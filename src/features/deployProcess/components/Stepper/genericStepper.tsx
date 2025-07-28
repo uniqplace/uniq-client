@@ -41,18 +41,19 @@ const GenericStepper: React.FC = () => {
   };
 
   useEffect(() => {
+    // Only fetch product status or create product if not on the first step
+    if (currentStepIndex === 0) return;
     const handleProductLoading = async () => {
       const userProductKey = getUserProductKey();
       const productId = localStorage.getItem(userProductKey);
-
       try {
         if (!productId || forceCreate) {
-          const created = await dispatch(createProduct()).unwrap();
-          if (created?._id) {
-            localStorage.setItem(userProductKey, created._id);
-            dispatch(fetchProductStatus(created._id));
-            setForceCreate(false);
-          }
+          // const created = await dispatch(createProduct()).unwrap();
+          // if (created?._id) {
+          //   localStorage.setItem(userProductKey, created._id);
+          //   dispatch(fetchProductStatus(created._id));
+          //   setForceCreate(false);
+          // }
         } else {
           await dispatch(fetchProductStatus(productId)).unwrap();
         }
@@ -65,9 +66,8 @@ const GenericStepper: React.FC = () => {
         }
       }
     };
-
     handleProductLoading();
-  }, [dispatch, forceCreate]);
+  }, [dispatch, forceCreate, currentStepIndex]);
 
   useEffect(() => {
     const index = stepsConfig.findIndex((s) => s.key === stepKey);
@@ -110,7 +110,8 @@ const GenericStepper: React.FC = () => {
   }, [dispatch, currentStepIndex]);
 
   const handleNext = () => {
-    if (completedSteps[currentStepIndex] && currentStepIndex < stepsConfig.length - 1) {
+     if (completedSteps[currentStepIndex] && currentStepIndex < stepsConfig.length - 1) 
+    {
       const nextKey = getStepKeyByIndex(currentStepIndex + 1);
       if (nextKey) {
         navigate(`/create-your-own-product/${nextKey}`);
