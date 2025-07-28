@@ -27,8 +27,8 @@ import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
 import socket from './services/socket';
 import { toast } from 'react-toastify';
-import BidOfferForm from './features/deployProcess/BidOfferForm';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import BidOfferForm from './features/deployProcess/components/BidOfferForm';
 
 
 
