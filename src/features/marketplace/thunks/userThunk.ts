@@ -7,7 +7,7 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE}/users/getDetails`, { credentials: 'include' }); 
+      const res = await fetch(`${API_BASE}/users/me`, { credentials: 'include' }); 
       if (!res.ok) throw new Error('Not authenticated');
       return await res.json();
     } catch (err: any) {

@@ -34,6 +34,17 @@ export const userApiSlice = apiSlice.injectEndpoints({
                     ? [{ type: 'User', id }]
                     : [{ type: 'User' }],
         }),
+        updateUserAvatar: builder.mutation<User, string>({
+            query: (url) => ({
+                url: '/users/avatar',
+                method: 'PUT',
+                body: url,
+            }),
+            invalidatesTags: (_result, _error, id) =>
+                id !== null && id !== undefined
+                    ? [{ type: 'User', id }]
+                    : [{ type: 'User' }],
+        }),
         deleteUser: builder.mutation<{ success: boolean }, string>({
             query: (id) => ({
                 url: `/users/${id}`,
@@ -51,4 +62,5 @@ export const {
     useCreateUserMutation,
     useUpdateUserMutation,
     useDeleteUserMutation,
+    useUpdateUserAvatarMutation,
 } = userApiSlice;

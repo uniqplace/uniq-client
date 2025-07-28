@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  avatar?: string;
+  avatarUrl?: string;
   role: RoleType;
   bio?: string; // Optional field for user bio
   createdAt?: Date;
@@ -13,7 +13,7 @@ export interface User {
 export interface Creator {
   _id: string;
   name: string;
-  avatar?: string;
+  avatarUrl?: string;
   followers: number | User[];
 }
 
@@ -24,10 +24,10 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
+  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
   //categories: string[];
   creator: Creator;
   //status: 'active' | 'sold' | 'inactive';
-  CreationStatus: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
   category: Category;
   subCategories: SubCategory[];
   status: 'draft' | 'published' | 'hidden';

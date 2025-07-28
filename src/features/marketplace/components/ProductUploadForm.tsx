@@ -12,11 +12,11 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
 import { TreeSelect } from 'primereact/treeselect';
-import ImageUpload from '../../../components/shared/ImageUpload';
 import { useAddProductMutation, useUpdateProductMutation } from '../slices/marketplaceApiSlice';
 import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
 import type { Product } from '../../../types';
 import { useDeleteImagesMutation } from '../../../api/apiSlice';
+import FilesUpload from '../../../components/shared/FilesUpload';
 
 interface ProductFormData {
   title: string;
@@ -29,9 +29,10 @@ interface ProductFormData {
   location: string;
 }
 
-interface ProductUploadFormProps {
+export interface ProductUploadFormProps {
   product?: Product;
   onClose?: () => void;
+  onComplete?: () => void; // Callback when product is successfully created/updated
 }
 
 const statusOptions = [
@@ -71,7 +72,7 @@ function getDefaultCategories(product?: Product): { [key: string]: true } {
 }
 
 
-const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose }) => {
+const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose, onComplete }) => {
   const [images, setImages] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>(product?.images ?? []);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -91,25 +92,25 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
     resolver: yupResolver(schema),
     defaultValues: product
       ? {
-          title: product.title,
-          description: product.description,
-          categories: getDefaultCategories(product),
-          price: product.price,
-          tags: product.tags,
-          status: product.status,
-          condition: product.condition,
-          location: product.location,
-        }
+        title: product.title,
+        description: product.description,
+        categories: getDefaultCategories(product),
+        price: product.price,
+        tags: product.tags,
+        status: product.status,
+        condition: product.condition,
+        location: product.location,
+      }
       : {
-          title: '',
-          description: '',
-          categories: {},
-          price: 0,
-          tags: [],
-          status: 'draft',
-          condition: 'new',
-          location: '',
-        },
+        title: '',
+        description: '',
+        categories: {},
+        price: 0,
+        tags: [],
+        status: 'draft',
+        condition: 'new',
+        location: '',
+      },
   });
 
   useEffect(() => {
@@ -127,7 +128,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
       setImageUrls(product.images ?? []);
       setImages([]);
     }
-  }, [product,categoriesTree, reset]);
+  }, [product, categoriesTree, reset]);
 
   const handleRemoveImageUrl = async (url: string) => {
     try {
@@ -139,6 +140,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
   };
 
   const onSubmit = async (data: ProductFormData) => {
+    console.log('Form data:', data);
     if (imageUrls.length === 0) {
       setImageError('You must upload at least one image');
       return;
@@ -167,7 +169,8 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
       } else {
         await addProduct(productData).unwrap();
       }
-
+    
+      onComplete?.();
       reset();
       setImages([]);
       setImageUrls([]);
@@ -261,13 +264,13 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose 
           </div>
         )}
 
-        <ImageUpload
-          images={images}
-          setImages={setImages}
-          imageError={imageError}
-          setImageError={setImageError}
+        <FilesUpload
+          files={images}
+          setFiles={setImages}
+          fileError={imageError}
+          setFileError={setImageError}
           onUploaded={(urls) => setImageUrls((prev) => [...prev, ...urls])}
-          imageUrls={imageUrls}
+          fileUrls={imageUrls}
         />
 
         <Controller
