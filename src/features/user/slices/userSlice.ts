@@ -9,11 +9,7 @@ export interface UserState {
   email: string | null;
   avatar?: string | null;
   avatarUrl?: string | null;
-<<<<<<<< HEAD:src/features/user/slice/userSlice.ts
-  role: RoleType | null;
-========
   role: RoleType | null | string;
->>>>>>>> 8454415a5fcb81807d1d9e980f0fd3a72a66e679:src/features/user/slices/userSlice.ts
   bio?: string | null;
   skills?: string[];
   servicesOffered?: string[]; 
