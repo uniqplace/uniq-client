@@ -10,7 +10,7 @@ import {
   goToNextStep,
   setCurrentStepIndex,
   markStepCompleted,
-  createProduct,
+  // createProduct,
   fetchProductStatus,
   updateProductStep,
 } from '../../slices/stepperSlice';
