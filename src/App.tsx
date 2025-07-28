@@ -127,13 +127,13 @@ if (loading) {
       </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
-      {/* <button
+      <button
         onClick={() => {
           fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
         }}
       >
         Simulate New Bid For User {user.name}
-      </button> */}
+      </button> 
     </div>
   );
 }
