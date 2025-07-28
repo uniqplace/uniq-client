@@ -94,6 +94,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
     }
   };
 
+  // פתרון לרינדור כשמשתמשים ב-ref:
   const [, setRerender] = useState(false);
   const forceUpdate = () => setRerender(r => !r);
 

@@ -61,6 +61,9 @@ export const OpenBidPage = () => {
     return '-'; 
   };
   
+  const title = (
+    <h2 className="text-xl font-bold mb-4"> My BidRequests</h2>
+  )
   
 
   if (loading) {
@@ -78,15 +81,15 @@ export const OpenBidPage = () => {
   if (!Array.isArray(bidRequests) || bidRequests.length === 0) {
     return (
       <div className="p-4 text-center text-gray-600">
-        <h2 className="text-xl font-bold mb-4"> My BidRequests</h2>
-        <p>There are no open BidRequest to display at this time.</p>
+        {title}
+        <p>There are no open BidREquest to display at this time.</p>
       </div>
     );
   }
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">My BidRequests </h2>
+      {title}
       <DataTable
         value={bidRequests}
         paginator
