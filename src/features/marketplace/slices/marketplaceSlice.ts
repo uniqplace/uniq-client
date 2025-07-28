@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Category, Filters, Product, SubCategory } from '../../../types';
-import { fetchProduct } from '../thunks';
 import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
 
 interface MarketplaceState {
@@ -110,18 +109,6 @@ const marketplaceSlice = createSlice({
       .addCase(fetchSubCategories.fulfilled, (state, action: PayloadAction<Record<string, SubCategory[]>>) => {
         state.subCategories = action.payload;
       })
-      .addCase(fetchProduct.pending, (state) => {
-        state.productLoading = true;
-        state.productError = null;
-      })
-      .addCase(fetchProduct.fulfilled, (state, action) => {
-        state.productLoading = false;
-        state.selectedProduct = action.payload;
-      })
-      .addCase(fetchProduct.rejected, (state, action) => {
-        state.productLoading = false;
-        state.productError = action.payload as string;
-      });
   },
 });
 
