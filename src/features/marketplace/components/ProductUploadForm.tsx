@@ -169,7 +169,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
       } else {
         await addProduct(productData).unwrap();
       }
-      debugger;
+    
       onComplete?.();
       reset();
       setImages([]);

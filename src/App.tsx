@@ -127,6 +127,9 @@ if (loading) {
       </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
+
+{process.env.NODE_ENV === 'development' && (
+      
       <button
         onClick={() => {
           fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
@@ -134,6 +137,9 @@ if (loading) {
       >
         Simulate New Bid For User {user.name}
       </button> 
+)}
+
+
     </div>
   );
 }

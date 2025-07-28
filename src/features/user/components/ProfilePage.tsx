@@ -13,7 +13,7 @@ import FilesUpload from '../../../components/shared/FilesUpload';
 import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slices/userApiSlice';
 import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation } from '../../../api/apiSlice';
-import { useDeleteImagesMutation } from '../../../api/apiSlice'; // ייבוא ה-mutation
+import { useDeleteImagesMutation } from '../../../api/apiSlice';
 
 const ProfilePage = () => {
   const user = useAppSelector((state) => state.user);
@@ -120,8 +120,8 @@ const ProfilePage = () => {
   const handleRemovePortfolioItem = useCallback(
     async (itemToRemove: string) => {
       try {
-        await deleteImagesMutation([itemToRemove]).unwrap(); // מחיקה מהענן
-        setPortfolioUrls((prev) => prev.filter((item) => item !== itemToRemove)); // מחיקה מה-state
+        await deleteImagesMutation([itemToRemove]).unwrap(); 
+        setPortfolioUrls((prev) => prev.filter((item) => item !== itemToRemove));
         toast.current?.show({
           severity: 'success',
           summary: 'Deleted',
