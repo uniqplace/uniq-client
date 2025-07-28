@@ -1,6 +1,5 @@
 import apiSlice from '../../../api/apiSlice';
 import { type Order } from '../../../types';
-
 export const orderApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getOrders: builder.query<Order[], void>({

@@ -2,11 +2,16 @@ import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
 import userReducer from './features/user/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
-import apiSlice from './api/apiSlice';
+// import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
+import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
+//import { deployApi } from './features/deployProcess/slices/deployApiSlice';
+//import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
+import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
 import stepperReducer from './features/deployProcess/slices/stepperSlice';
-import BidOfferSlice from './features/deployProcess/BidOfferSlice';
+// import BidOfferSlice from './features/deployProcess/BidOfferSlice';
 import socketReducer from './features/socket/socketSlice';
+
 
 
 export const store = configureStore({
@@ -16,18 +21,20 @@ export const store = configureStore({
     user: userReducer,
      auth: authSliceReducer,
      bidOffer: BidOfferSlice,
+     bidRequest: BidRequestSlice,
+    //[apiSlice.reducerPath]: apiSlice.reducer,
+    //[deployApi.reducerPath]: deployApi.reducer,
+    //[locationApiSlice.reducerPath]: locationApiSlice.reducer,
      socket: socketReducer,
-    [apiSlice.reducerPath]: apiSlice.reducer,
     stepper: stepperReducer,
-   // [deployApi.reducerPath]: deployApi.reducer,
-  //[locationApiSlice.reducerPath]: locationApiSlice.reducer, 
   },
 
  
 
   // Add the API middleware to the store
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware ),
+  // temporary
+ // middleware: (getDefaultMiddleware) =>
+    // getDefaultMiddleware().concat(apiSlice.middleware ),
 });
 
 

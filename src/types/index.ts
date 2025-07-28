@@ -5,7 +5,7 @@ export interface User {
   email: string;
   avatar?: string;
   role: RoleType;
-  bio?: string;
+  bio?: string; // Optional field for user bio
   createdAt?: Date;
 }
 
@@ -24,12 +24,13 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
+  //categories: string[];
+  creator: Creator;
+  //status: 'active' | 'sold' | 'inactive';
   CreationStatus: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
   category: Category;
   subCategories: SubCategory[];
-  creator: Creator; 
   status: 'draft' | 'published' | 'hidden';
-
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
   tags: string[];
@@ -101,7 +102,6 @@ export interface SubCategory {
   count?: number;
 }
 
-
 export interface BidOffer {
   bidRequestId: string,
   manufacturerId: string,
@@ -111,11 +111,20 @@ export interface BidOffer {
   attachmentUrl?: string
 }
 
-
 // 10. Category
 export interface Category {
   _id: string;
   name: string;
+}
+
+export interface BidRequest {
+  _id: string;
+  productId:  Product;
+  categoryId: {id:string, name:string};
+  locationPreference: string;
+  status: 'open' | 'expired' | 'closed';
+  createdAt: Date;
+  deliveryTimeframe : string;
 }
 
 export interface Filters {
@@ -138,3 +147,4 @@ export interface BidOffer {
   note?: string;
   attachmentUrl?: string;
 }
+

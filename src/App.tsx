@@ -24,12 +24,14 @@ import MainContent from './components/shared/MainContent';
 import './styles/sidebar.css';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
+import { CheckoutPage } from './features/order/components/CheckoutPage';
+import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
 import socket from './services/socket';
 import { toast } from 'react-toastify';
-import { CheckoutPage } from './features/order/components/CheckoutPage';
-import BidOfferForm from './features/deployProcess/BidOfferForm';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import BidOfferForm from './features/deployProcess/components/BidOfferForm';
+
 
 
 function UserProfile() {
@@ -121,6 +123,8 @@ if (loading) {
         <Route path="/uploadProduct" element={<ProductUploadForm />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+        <Route path="/checkout/:productId" element={<CheckoutPage />} />
+        <Route path="/MyBidRequest" element={<OpenBidPage  />} />
        <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
