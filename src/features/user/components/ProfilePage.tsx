@@ -13,7 +13,7 @@ import FilesUpload from '../../../components/shared/FilesUpload';
 import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slices/userApiSlice';
 import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation } from '../../../api/apiSlice';
-import { useDeleteImagesMutation } from '../../../api/apiSlice'; // ייבוא ה-mutation
+import { useDeleteImagesMutation } from '../../../api/apiSlice';
 
 const ProfilePage = () => {
   const user = useAppSelector((state) => state.user);
