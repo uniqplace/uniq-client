@@ -10,7 +10,7 @@ export interface StepProps {
 export interface StepDefinition {
   key: string;
   title: string;
-  component: React.FC<StepProps>;
+  component: React.FC<any>;
 }
 /* --- Step components --- */
 // export const DefineProductStep: React.FC<StepProps> = ({ onComplete }) => {

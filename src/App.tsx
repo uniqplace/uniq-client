@@ -94,50 +94,50 @@ function App() {
   if (loading) {
     return <div>Loading...</div>;
   }
-if (loading) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <ProgressSpinner />
-      <span style={{ marginTop: '1rem' }}>Loading...</span>
-    </div>
-  );
-}
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <ProgressSpinner />
+        <span style={{ marginTop: '1rem' }}>Loading...</span>
+      </div>
+    );
+  }
 
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NewHeader />
-      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }}/>
+      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
       <MainContent>
         <Routes>
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/user/:id" element={<UserProfile />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/uploadProduct" element={<ProductUploadForm />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
-       <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
-        <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
-      </Routes>
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/user/:id" element={<UserProfile />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/uploadProduct" element={<ProductUploadForm />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+          <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+          <Route path="/checkout/:productId" element={<CheckoutPage />} />
+          <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
+        </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
 
-{process.env.NODE_ENV === 'development' && (
-      
-      <button
-        onClick={() => {
-          fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
-        }}
-      >
-        Simulate New Bid For User {user.name}
-      </button> 
-)}
+      {import.meta.env.NODE_ENV === 'development' && (
+
+        <button
+          onClick={() => {
+            fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
+          }}
+        >
+          Simulate New Bid For User {user.name}
+        </button>
+      )}
 
 
     </div>
