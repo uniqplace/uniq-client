@@ -40,6 +40,7 @@ export const getUnreadCount = async (): Promise<{ data: { count: number } }> => 
   return safeFetch<{ count: number }>(
     async () => {
       const userId = getUserIdFromToken();
+      console.log('getUnreadCount userId:', userId); // Debug log
       if (!userId) throw new Error('User not authenticated');
       const res = await api.get<{ count: number }>(`/notifications/unread-count`, {
         params: { userId },
