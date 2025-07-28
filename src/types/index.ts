@@ -1,5 +1,3 @@
-// Shared types used across epics
-
 // 1. User (base)
 export interface User {
   id: string;
@@ -29,15 +27,19 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  categories: string[];
-  creator: Creator;
-  status: 'active' | 'sold' | 'inactive';
+  CreationStatus: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
+  category: Category;
+  subCategories: SubCategory[];
+  creator: Creator; 
+  status: 'draft' | 'published' | 'hidden';
+
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
   tags: string[];
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 // 4. Order
 export interface Order {
@@ -84,11 +86,13 @@ export type RegisterFormData = {
   role: RoleType;
 };
 
-// 8. Filters (for product listing)
-export interface Filters {
-  category?: string;
-  priceRange?: [number, number];
-  creator?: string;
+// 6. Address (used by Order)
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
 // 9. Sub-category
@@ -100,12 +104,30 @@ export interface SubCategory {
   count?: number;
 }
 
+
+export interface BidOffer {
+  bidRequestId: string,
+  manufacturerId: string,
+  price: number
+  estimatedDelivery: string
+  note?: string
+  attachmentUrl?: string
+}
+
+
 // 10. Category
 export interface Category {
   _id: string;
   name: string;
 }
 
+export interface Filters {
+  category: string;
+  subCategories?: string[];
+  priceRange: [number, number];
+  searchTerm: string;
+  creator: string;
+}
 
 // 11. Category Filters
 export type CategoryFiltersType = string[];

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, ImageGallery, Payment, CreatorCard } from '../components/shared';
+import { Button, ImageGallery, CreatorCard } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
 import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks';
@@ -142,7 +142,9 @@ const ProductPage: React.FC = () => {
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Category</h4>
-              <p className="text-gray-700">{currentProduct.categories}</p>
+              <p className="text-gray-700">
+                {currentProduct.category ? currentProduct.category.name : 'No category available'}
+              </p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Location</h4>
@@ -177,11 +179,11 @@ const ProductPage: React.FC = () => {
               variant="primary"
               size="large"
               onClick={handleBuyNow}
-              disabled={currentProduct.status !== 'active'}
+              disabled={currentProduct.status !== 'published'}
               className="w-full"
               icon="pi pi-shopping-cart"
             >
-              {currentProduct.status === 'active' 
+              {currentProduct.status === 'published' 
                 ? `Buy Now - ${formattedPrice}`
                 : 'Not Available'
               }

@@ -9,7 +9,7 @@ export interface UserState {
   email: string | null;
   avatar?: string | null;
   avatarUrl?: string | null;
-  role: RoleType | null;
+  role: RoleType | null | string;
   bio?: string | null;
   skills?: string[];
   servicesOffered?: string[]; 
