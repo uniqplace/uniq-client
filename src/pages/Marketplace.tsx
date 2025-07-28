@@ -71,7 +71,6 @@ const Marketplace: React.FC = () => {
     // refetch will be triggered automatically by page state change
   };
 
-  // Remove full-page spinner, show loading only in grid
 
   if (error) {
     let errorMsg = 'Unknown error';
