@@ -62,7 +62,7 @@ export const OpenBidPage = () => {
   };
   
   const title = (
-    <h2 className="text-xl font-bold mb-4"> My BidRequests</h2>
+    <h2 className="text-xl font-bold mb-4 mt-8"> My BidRequests</h2>
   )
   
 
