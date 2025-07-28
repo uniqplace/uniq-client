@@ -1,8 +1,9 @@
 // CreatorCard Component - displays seller/creator information
-// Shows avatar, name, and provides link to seller profile (placeholder for now)
+// Shows avatarUrl, name, and provides link to seller profile (placeholder for now)
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Creator as BaseCreator, User } from '../../types';
+import { Avatar } from 'primereact/avatar';
 
 type Creator = BaseCreator & {
   followers?: number | User[];
@@ -18,7 +19,7 @@ interface CreatorCardProps {
   creator: Creator;
 }
 const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
-  const defaultAvatar = creator.avatar || 'https://via.placeholder.com/64x64?text=User';
+  const defaultAvatar = creator.avatarUrl || creator.name.charAt(0).toUpperCase();
   // Use the helper function to get followers count
   const followersCount = getFollowersCount(creator.followers);
 
@@ -26,11 +27,13 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
     <div className="flex items-center gap-2">
       <span className="font-semibold text-sm text-gray-900">{creator.name}</span>
       <Link to={`/user/${creator._id}`} className="shrink-0 relative">
-        <img
-          src={defaultAvatar}
-          alt={`${creator.name}'s avatar`}
+        <Avatar
+          image={defaultAvatar}
+          label={!creator.avatarUrl && creator.name ? creator.name.charAt(0).toUpperCase() : undefined}
+          shape="circle"
+          size="normal"
           className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-blue-400 transition"
-          style={{ cursor: 'pointer' }}
+          style={{ backgroundColor: !creator.avatarUrl ? '#1d4ed8' : undefined, color: '#fff', fontSize: 18 }}
         />
         {followersCount > 0 && (
           <span

@@ -2,6 +2,7 @@ import React from 'react';
 import type { Product } from '../../slices/stepperSlice';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
+import ProductUploadForm from '../../../../features/marketplace/components/ProductUploadForm';
 export interface StepProps {
   onComplete: (data?: any) => void;
   product?: Product | null;
@@ -9,19 +10,14 @@ export interface StepProps {
 export interface StepDefinition {
   key: string;
   title: string;
-  component: React.FC<StepProps>;
+  component: React.FC<any>;
 }
 /* --- Step components --- */
-export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) => {
-  return (
-    <div>
-      <h2>Define Product</h2>
-      <p>Here you will define your product details (temporary content).</p>
-      <p>Product ID: {product?._id ?? 'Not created yet'}</p>
-      <FinishStepButton onClick={() => onComplete()} />
-    </div>
-  );
-};
+// export const DefineProductStep: React.FC<StepProps> = ({ onComplete }) => {
+//   return (
+//     <ProductUploadForm  onClose={onComplete} />
+//   );
+// };
 export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, product }) => (
   <div>
     <h2>Send to Marketplace</h2>
@@ -67,7 +63,7 @@ export const DeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
 );
 /* --- Steps array --- */
 export const steps: StepDefinition[] = [
-  { key: 'defineProduct', title: 'Define Product', component: DefineProductStep },
+  { key: 'defineProduct', title: 'Define Product', component: ProductUploadForm},
   { key: 'manufacturerPreferences', title: 'Manufacturer Preferences', component: ManufacturerPreferencesStep },
   { key: 'sendToMarketplace', title: 'Send to Marketplace', component: OpenBidConfirmationStep },
   { key: 'viewLiveBids', title: 'View Live Bids', component: LiveBidsViewerStep },
