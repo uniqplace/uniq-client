@@ -29,7 +29,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
   });
 
   const clearForm = () => {
-    setPrice(-1);
+    setPrice(null);
     setEstimatedDelivery(null);
     setNote('');
     setAttachmentUrl('');
