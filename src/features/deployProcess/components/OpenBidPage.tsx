@@ -6,10 +6,10 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
-import { getBidRequesByCreator } from '../slices/BidRequestSlice';
 import type { BidRequest } from '../../../types';
 import type { RootState } from '../../../store';
 import { Tag } from 'primereact/tag';
+import { getBidRequestsByCreator } from '../slices/BidRequestSlice';
 
 export const OpenBidPage = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export const OpenBidPage = () => {
   );
 
   useEffect(() => {
-    dispatch(getBidRequesByCreator());
+    dispatch(getBidRequestsByCreator());
   }, [dispatch]);
 
   const goToBidOffers = (bidRequestId: string) => {

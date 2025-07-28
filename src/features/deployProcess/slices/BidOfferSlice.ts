@@ -17,8 +17,8 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
     }
   );
 
-  const getInitialBidOffer = () => ({
-    price: '',
+  const getInitialBidOffer = (): Partial<BidOffer> => ({
+    price: -1,
     estimatedDelivery: '',
     note: '',
     attachmentUrl: '',
@@ -32,6 +32,10 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
       error: null as string | null,
     },
     reducers: {
+      resetBidOffer: (state) => {
+        state.bidOffer = getInitialBidOffer(); // מאפס את ההצעה
+        state.error = null;
+      },
     },
     extraReducers: (builder) => {
       builder
@@ -49,4 +53,7 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
    });
 }
   });
+  
+  export const { resetBidOffer } = bidOfferSlice.actions;
+
   export default bidOfferSlice.reducer;

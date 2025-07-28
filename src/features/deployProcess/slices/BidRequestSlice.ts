@@ -2,7 +2,13 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidRequest } from "../../../types";
 
-export const getBidRequesByCreator = createAsyncThunk("getBidRequesByCreator",
+interface BidRequestState {
+    bidRequests: BidRequest[];
+    loading: boolean;
+    error: string | null;
+}
+
+export const getBidRequestsByCreator = createAsyncThunk<BidRequest[], void>("getBidRequesByCreator",
     async ( _ , thunkAPI) => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/bidRequests/creator`,
@@ -17,26 +23,29 @@ export const getBidRequesByCreator = createAsyncThunk("getBidRequesByCreator",
     }
   );
 
+  
+  const initialState: BidRequestState = {
+    bidRequests: [] as BidRequest[],
+    loading: true,
+    error: null,
+  };
+  
   const bidRequestSlice = createSlice({
     name: "bidRequests",
-    initialState: {
-      bidRequests: [] as BidRequest[],
-      loading: true,
-      error: null as string | null,
-    },
+    initialState,
     reducers: {
     },
     extraReducers: (builder) => {
       builder
-      .addCase(getBidRequesByCreator.pending, (state) => {
+      .addCase(getBidRequestsByCreator .pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getBidRequesByCreator.fulfilled, (state, action) => {
+      .addCase(getBidRequestsByCreator .fulfilled, (state, action) => {
         state.loading = false;
         state.bidRequests = action.payload;
       })
-      .addCase(getBidRequesByCreator.rejected, (state, action) => {
+      .addCase(getBidRequestsByCreator .rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
    });

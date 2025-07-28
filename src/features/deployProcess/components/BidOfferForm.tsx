@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -7,12 +8,12 @@ import { Calendar } from 'primereact/calendar';
 import { classNames } from 'primereact/utils';
 import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
 import type { RootState } from '../../../store';
-import { AddBidOffer } from '../slices/BidOfferSlice';
+import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import type { BidOffer } from '../../../types';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState<number | null>(null);
   const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
   const [note, setNote] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
@@ -28,7 +29,7 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
   });
 
   const clearForm = () => {
-    setPrice('');
+    setPrice(-1);
     setEstimatedDelivery(null);
     setNote('');
     setAttachmentUrl('');
@@ -38,9 +39,8 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const priceNumber = parseFloat(price);
     const errors = {
-      price: !price || isNaN(priceNumber) || priceNumber <= 0,
+      price: price == null || price <= 0,
       estimatedDelivery: !estimatedDelivery,
     };
 
@@ -62,14 +62,14 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
 
       const newBidOffer: Partial<BidOffer> = {
         bidRequestId,
-        price: parseFloat(price),
+        price: price ?? 0,
         estimatedDelivery: estimatedDelivery ? estimatedDelivery.toISOString() : '',
         note,
         attachmentUrl,
       };
 
       await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
-
+      dispatch(resetBidOffer());
       toast.current?.show({
         severity: 'success',
         summary: 'Offer Sent',
@@ -108,10 +108,14 @@ const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
       <div className="mb-4">
         <label className="block mb-1">Price (₪)*</label>
         <InputText
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          keyfilter="money"
+          value={price != null ? price.toString() : ''}
+          onChange={(e) => {
+            const value = e.target.value;
+            const parsed = parseFloat(value);
+            setPrice(isNaN(parsed) ? null : parsed);
+          }}
           placeholder="Enter your price"
+          keyfilter="money"
           className={classNames('w-full', { 'p-invalid': errorsRef.current.price })}
         />
         {errorsRef.current.price && (
