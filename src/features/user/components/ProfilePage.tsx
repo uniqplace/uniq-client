@@ -7,10 +7,10 @@ import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { FileUpload } from 'primereact/fileupload';
-import { updateUser } from '../slice/userSlice';
+import { updateUser } from '../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 import FilesUpload from '../../../components/shared/FilesUpload';
-import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slice/userApiSlice';
+import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slices/userApiSlice';
 import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation } from '../../../api/apiSlice';
 import { useDeleteImagesMutation } from '../../../api/apiSlice'; // ייבוא ה-mutation
