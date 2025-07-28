@@ -25,8 +25,8 @@ function getProductsBaseQuery(url: string) {
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products')),
-    getUserProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/products/user/me')),
+    getProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/api/products')),
+    getUserProducts: builder.query<Product[], Filters>(getProductsBaseQuery('/api/products/user/me')),
     addProduct: builder.mutation<Product, Partial<Product>>({
       query: (formData) => {
         const payload = {
@@ -34,31 +34,22 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
           subCategories: formData.subCategories,
         };
         return {
-        //  url: 'api/products/user/me',
-          url: '/products',
+          url: '/api/products',
           method: 'POST',
           body: payload,
-
         };
       },
       invalidatesTags: [{ type: 'Product', id: 'LIST' }],
     }),
 
     updateProduct: builder.mutation<Product, Partial<Product>>({
-//       query: (updatedProduct) => ({
-//         url: `/api/products/${updatedProduct._id}`,
-//         method: 'PUT',
-//         body: updatedProduct,
-//       }),
-//       invalidatesTags: (_result, error, { _id }) => [
-
       query: (updatedProduct) => {
         const payload = {
           ...updatedProduct,
           subCategories: updatedProduct.subCategories,
         };
         return {
-          url: `/products/${updatedProduct._id}`,
+          url: `/api/products/${updatedProduct._id}`,
           method: 'PUT',
           body: payload,
         };
@@ -72,7 +63,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     deleteProduct: builder.mutation<void, string>({
       query: (productId) => ({
-        url: `/products/${productId}`,
+        url: `/api/products/${productId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, id) => [
@@ -82,7 +73,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
     }),
 
     getProductById: builder.query<Product, string>({
-      query: (id) => `/products/${id}`,
+      query: (id) => `/api/products/${id}`,
 
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),

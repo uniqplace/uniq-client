@@ -4,7 +4,6 @@ import GenericStepper from '../features/deployProcess/components/Stepper/generic
 function CreateYourOwnProduct() {
   return (
 <Routes>
-  {/* נתיב ריק ינתב ל-step הראשון */}
   <Route path="" element={<Navigate to="product-definition" />} />
   <Route path=":stepKey" element={<GenericStepper />} />
 </Routes>

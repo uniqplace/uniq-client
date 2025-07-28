@@ -1,6 +1,3 @@
-
-
-
 import axios from 'axios';
 import type { NotificationsResponse } from '../types/notification';
 import getUserIdFromToken from '../utils/getUserIdFromToken';
