@@ -19,7 +19,9 @@ import Login from './pages/Login';
 import About from './pages/About';
 import Home from './pages/Home';
 import ProductUploadForm from './features/marketplace/components/ProductUploadForm';
-import Header from './components/shared/Header';
+import NewHeader from './components/shared/NewHeader';
+import MainContent from './components/shared/MainContent';
+import './styles/sidebar.css';
 import ProfilePage from './pages/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
@@ -105,10 +107,11 @@ if (loading) {
 
 
   return (
-    <div>
-      <Header />
-      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '64px' }}/>
-      <Routes>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <NewHeader />
+      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }}/>
+      <MainContent>
+        <Routes>
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/orders" element={<Orders />} />
@@ -126,14 +129,15 @@ if (loading) {
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
       </Routes>
+      </MainContent>
       <h5>Socket.IO + React Toastify</h5>
-      <button
+      {/* <button
         onClick={() => {
           fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
         }}
       >
         Simulate New Bid For User {user.name}
-      </button>
+      </button> */}
     </div>
   );
 }
