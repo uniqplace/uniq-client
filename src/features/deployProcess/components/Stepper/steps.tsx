@@ -2,20 +2,16 @@ import React from 'react';
 import type { Product } from '../../slices/stepperSlice';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
-
 export interface StepProps {
   onComplete: (data?: any) => void;
   product?: Product | null;
 }
-
 export interface StepDefinition {
   key: string;
   title: string;
   component: React.FC<StepProps>;
 }
-
 /* --- Step components --- */
-
 export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) => {
   return (
     <div>
@@ -26,7 +22,6 @@ export const DefineProductStep: React.FC<StepProps> = ({ onComplete, product }) 
     </div>
   );
 };
-
 export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, product }) => (
   <div>
     <h2>Send to Marketplace</h2>
@@ -34,49 +29,42 @@ export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, produ
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 export const LiveBidsViewerStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>View Live Bids</h2>
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Choose Manufacturer</h2>
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Agree to Terms</h2>
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Make Payment</h2>
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Track Delivery</h2>
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 export const DeliveryStep: React.FC<StepProps> = ({ onComplete }) => (
   <div>
     <h2>Complete Delivery</h2>
     <FinishStepButton onClick={() => onComplete()} />
   </div>
 );
-
 
 /* --- Steps array --- */
 export const steps: StepDefinition[] = [

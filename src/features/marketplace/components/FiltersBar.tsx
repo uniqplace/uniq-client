@@ -1,18 +1,47 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import debounce from 'lodash/debounce';
-import { AutoComplete } from 'primereact/autocomplete';
 import CategoryFilters from './CategoryFilters';
-import { Slider } from 'primereact/slider';
+import CreatorFilterSection from './CreatorFilterSection';
+import PriceFilterSection from './PriceFilterSection';
+import FilterActionsSection from './FilterActionsSection';
 import { OverlayPanel } from 'primereact/overlaypanel';
-import { Button } from 'primereact/button';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { fetchProducts } from '../thunks';
-import { fetchCategoriesWithCounts } from '../thunks/marketplaceThunks';
+import { fetchSubCategories } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
-import type { CategoryFiltersType, Product } from '../../../types';
+import type { Product } from '../../../types';
+
+// Helper to parse filters from URLSearchParams
+function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxProductPrice: number) {
+    const category = params.get('category') ?? undefined;
+    let subCategoriesArr: string[] = [];
+    const subCategoriesParam = params.get('subCategories');
+    if (subCategoriesParam) {
+        try {
+            const parsed = JSON.parse(subCategoriesParam);
+            if (Array.isArray(parsed)) {
+                subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string');
+            } else if (parsed && typeof parsed === 'object') {
+                subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string');
+            }
+        } catch {
+            subCategoriesArr = [];
+        }
+    }
+    const creator = params.get('creator') || '';
+    const minPrice = params.get('minPrice') ? Number(params.get('minPrice')) : minProductPrice;
+    const maxPrice = params.get('maxPrice') ? Number(params.get('maxPrice')) : maxProductPrice;
+    const priceRange: [number, number] = [minPrice, maxPrice];
+    return {
+        category,
+        subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
+        creator,
+        priceRange,
+    };
+}
 
 
 const FiltersBar: React.FC = () => {
@@ -27,21 +56,43 @@ const FiltersBar: React.FC = () => {
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
     const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
-        const categoryParam = params.get('category');
-        if (categoryParam) {
+        const mainCategory = params.get('category');
+        const subCategoriesParam = params.get('subCategories');
+        let subCategoriesArr: string[] = [];
+        if (subCategoriesParam) {
             try {
-                const parsed = JSON.parse(categoryParam);
+                const parsed = JSON.parse(subCategoriesParam);
                 if (Array.isArray(parsed)) {
-                    return parsed;
+                    subCategoriesArr = parsed.filter((v): v is string => typeof v === 'string');
                 } else if (parsed && typeof parsed === 'object') {
-                    return Object.values(parsed).flat().filter(Boolean);
+                    subCategoriesArr = Object.values(parsed).flat().filter((v): v is string => typeof v === 'string');
                 }
             } catch {
-                return [];
+                subCategoriesArr = [];
             }
         }
-        return [];
+        return mainCategory ? [mainCategory, ...subCategoriesArr] : subCategoriesArr;
     });
+
+    // Sync categoryFilters with URL when changed
+    React.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        // Main category is the first in the array (if exists)
+        const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
+        if (mainCategory) {
+            params.set('category', mainCategory);
+        } else {
+            params.delete('category');
+        }
+        // SubCategories are all except the main category
+        const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
+        if (subCategoriesArr.length > 0) {
+            params.set('subCategories', JSON.stringify(subCategoriesArr));
+        } else {
+            params.delete('subCategories');
+        }
+        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    }, [categoryFilters]);
     const minProductPrice = 0;
     const pageMaxPrice = products.length ? Math.max(...products.map((p: Product) => p.price)) : 1000;
     const maxProductPrice = globalMaxPrice && globalMaxPrice > pageMaxPrice ? globalMaxPrice : pageMaxPrice;
@@ -64,7 +115,7 @@ const FiltersBar: React.FC = () => {
         }
         return [minProductPrice, maxProductPrice];
     });
-    const pricePanelRef = useRef<OverlayPanel>(null);
+    const pricePanelRef = useRef<OverlayPanel>(undefined!);
     useEffect(() => {
         if (products && products.length > 0) {
             setPriceRange(prev => {
@@ -79,80 +130,82 @@ const FiltersBar: React.FC = () => {
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const urlCreator = params.get('creator') || '';
-        const urlMinPrice = params.get('minPrice');
-        const urlMaxPrice = params.get('maxPrice');
-        const urlPriceRange: [number, number] = [
-            urlMinPrice ? Number(urlMinPrice) : minProductPrice,
-            urlMaxPrice ? Number(urlMaxPrice) : maxProductPrice
-        ];
+        const urlFilters = parseUrlFilters(params, minProductPrice, maxProductPrice);
         setCreator(
-            creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlCreator) || null
+            creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlFilters.creator) || null
         );
-        setPriceRange(urlPriceRange);
+        setPriceRange(urlFilters.priceRange);
 
-        const urlFilters = {
-            creator: urlCreator,
-            priceRange: urlPriceRange
-        };
         const filtersMatch =
             filters.creator === urlFilters.creator &&
             Array.isArray(filters.priceRange) &&
             filters.priceRange[0] === urlFilters.priceRange[0] &&
             filters.priceRange[1] === urlFilters.priceRange[1];
-        const hasAnyUrlFilter = urlCreator || urlMinPrice || urlMaxPrice;
+        const hasAnyUrlFilter = urlFilters.creator || urlFilters.priceRange[0] !== minProductPrice || urlFilters.priceRange[1] !== maxProductPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
-            let urlCategory: CategoryFiltersType | undefined = undefined;
-            const categoryParam = params.get('category');
-            if (categoryParam) {
-                try {
-                    urlCategory = JSON.parse(categoryParam);
-                } catch {
-                    urlCategory = undefined;
-                }
-            }
             dispatch(updateFilters({ ...filters, ...urlFilters }));
             dispatch(fetchProducts({
                 ...filters,
                 ...urlFilters,
-                category: urlCategory,
-                minPrice: urlPriceRange[0],
-                maxPrice: urlPriceRange[1],
+                minPrice: urlFilters.priceRange[0],
+                maxPrice: urlFilters.priceRange[1],
                 page: 1,
             }));
         }
     }, [location.search, creators]);
     useEffect(() => {
-        dispatch(fetchCategoriesWithCounts());
+        dispatch(fetchSubCategories());
     }, []);
     const hasActiveFilters = () => {
-        return (
-            creator ||
-            Object.values(categoryFilters).some(arr => arr && arr.length > 0) ||
+        return Boolean(creator) ||
+            (Array.isArray(categoryFilters) && categoryFilters.length > 0) ||
             priceRange[0] !== minProductPrice ||
-            priceRange[1] !== maxProductPrice
-        );
+            priceRange[1] !== maxProductPrice;
     };
     const handleFilter = () => {
-        const creatorId = typeof creator === 'object' && creator !== null ? creator.value : creator || '';
         const params = new URLSearchParams(location.search);
-        const filteredCategories = categoryFilters.filter(
-            (v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined' && v !== null
-        );
-        params.set('category', JSON.stringify(filteredCategories));
-        if (creatorId) params.set('creator', creatorId); else params.delete('creator');
-        if (priceRange[0] !== minProductPrice) params.set('minPrice', String(priceRange[0])); else params.delete('minPrice');
-        if (priceRange[1] !== maxProductPrice) params.set('maxPrice', String(priceRange[1])); else params.delete('maxPrice');
-        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        dispatch(updateFilters({ ...filters, category: filteredCategories, creator: creatorId, priceRange }));
+        const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
+        const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
+        if (mainCategory) {
+            params.set('category', mainCategory);
+        } else {
+            params.delete('category');
+        }
+        if (subCategoriesArr.length > 0) {
+            params.set('subCategories', JSON.stringify(subCategoriesArr));
+        } else {
+            params.delete('subCategories');
+        }
+        if (priceRange[0] !== minProductPrice) {
+            params.set('minPrice', priceRange[0].toString());
+        } else {
+            params.delete('minPrice');
+        }
+        if (priceRange[1] !== maxProductPrice) {
+            params.set('maxPrice', priceRange[1].toString());
+        } else {
+            params.delete('maxPrice');
+        }
+        const creatorId = creator && creator.value ? creator.value : '';
+        if (creatorId) {
+            params.set('creator', creatorId);
+        } else {
+            params.delete('creator');
+        }
+        const qParam = params.get('q') || '';
+        const pageParam = params.get('page') ? Number(params.get('page')) : 1;
+        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creatorId, priceRange }));
         dispatch(fetchProducts({
             ...filters,
-            category: filteredCategories,
+            category: mainCategory,
+            subCategories: mainCategory ? subCategoriesArr : undefined,
             creator: creatorId,
             minPrice: priceRange[0],
             maxPrice: priceRange[1],
-            page: 1,
+            q: qParam,
+            page: pageParam,
         }));
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
     const searchCreator = useRef(
         debounce((event: { query: string }) => {
@@ -166,14 +219,20 @@ const FiltersBar: React.FC = () => {
     ).current;
 
 
+    const handleReset = () => {
+        const params = new URLSearchParams(location.search);
+        params.delete('creator');
+        params.delete('category');
+        params.delete('subCategories');
+        params.delete('minPrice');
+        params.delete('maxPrice');
+        setCategoryFilters([]);
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+    };
+
     return (
         <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
-            <div
-                style={{
-                    minWidth: 220, maxWidth: 320, width: '100%',
-                    zIndex: 20
-                }}
-            >
+            <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
                 <aside
                     className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8 relative"
                     style={{ minWidth: 220, maxWidth: 320 }}
@@ -181,81 +240,30 @@ const FiltersBar: React.FC = () => {
                         if (e.key === 'Enter') handleFilter();
                     }}
                 >
-                    <Button label="Filter" icon="pi pi-filter" onClick={handleFilter} className="mb-4 p-button-outlined p-button-rounded filter-btn w-full" />
-                    <Button
-                        label="Reset"
-                        icon="pi pi-refresh"
-                        className="mb-2 p-button-text p-button-sm w-full"
-                        disabled={!hasActiveFilters()}
-                        onClick={() => {
-                            const params = new URLSearchParams(location.search);
-                            params.delete('creator');
-                            params.delete('category');
-                            params.delete('minPrice');
-                            params.delete('maxPrice');
-                            navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-                        }}
+                    <FilterActionsSection
+                        handleFilter={handleFilter}
+                        handleReset={handleReset}
+                        hasActiveFilters={hasActiveFilters()}
                     />
                     <CategoryFilters
                         selected={categoryFilters}
                         onChange={setCategoryFilters}
                     />
-                    <span className="p-float-label w-full">
-                        <AutoComplete
-                            id="creator"
-                            value={searchValue !== null ? searchValue : (creator ? creator.label : '')}
-                            suggestions={filteredCreators || []}
-                            completeMethod={searchCreator}
-                            onChange={(e) => {
-                                setCreator(e.value);
-                                setTimeout(() => setSearchValue(null), 0);
-                            }}
-                            onFocus={() => setSearchValue('')}
-                            onBlur={() => setSearchValue(null)}
-                            field="label"
-                            itemTemplate={(option) => option ? (
-                                <div className="flex items-center gap-2">
-                                    {option.avatar && (
-                                        <img src={option.avatar} alt={option.label} className="w-6 h-6 rounded-full object-cover" />
-                                    )}
-                                    <span>{option.label}</span>
-                                </div>
-                            ) : null}
-                            dropdown
-                            forceSelection
-                            placeholder="Select Creator"
-                            className="w-full"
-                        />
-                        <label htmlFor="creator">Creator</label>
-                    </span>
-                    <span className="w-full">
-                        <Button
-                            label={`Price: $${priceRange[0]} - $${priceRange[1]}`}
-                            icon="pi pi-chevron-down"
-                            iconPos="right"
-                            onClick={e => pricePanelRef.current?.toggle(e)}
-                            className="p-button-outlined p-button-rounded w-full filter-btn"
-                        />
-                        <OverlayPanel ref={pricePanelRef}>
-                            <div style={{ width: 220 }}>
-                                <div className="mb-2 font-semibold">Select a price range</div>
-                                <Slider
-                                    value={priceRange}
-                                    onChange={e => {
-                                        if (Array.isArray(e.value)) setPriceRange(e.value as [number, number]);
-                                    }}
-                                    range
-                                    min={minProductPrice}
-                                    max={maxProductPrice}
-                                    step={10}
-                                    style={{ width: '200px' }}
-                                />
-                                <div className="flex gap-2 mt-2">
-                                    <span>${priceRange[0]}</span> - <span>${priceRange[1]}</span>
-                                </div>
-                            </div>
-                        </OverlayPanel>
-                    </span>
+                    <CreatorFilterSection
+                        creator={creator}
+                        searchValue={searchValue}
+                        filteredCreators={filteredCreators}
+                        searchCreator={searchCreator}
+                        setCreator={setCreator}
+                        setSearchValue={setSearchValue}
+                    />
+                    <PriceFilterSection
+                        priceRange={priceRange}
+                        setPriceRange={setPriceRange}
+                        minProductPrice={minProductPrice}
+                        maxProductPrice={maxProductPrice}
+                        pricePanelRef={pricePanelRef}
+                    />
                 </aside>
             </div>
         </div>

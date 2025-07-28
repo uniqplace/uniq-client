@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
+import socket from '../services/socket';
+import { SOCKET_EVENTS } from '../constants/socketEvents';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { InputText } from 'primereact/inputtext';
@@ -6,7 +8,7 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import Cookies from 'js-cookie';
-import { setUser } from '../features/marketplace/slices/userSlice';
+import { setUser } from '../features/user/slices/userSlice';
 import { fetchCurrentUser } from '../features/marketplace/thunks/userThunk';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import type { RootState } from '../store';
@@ -44,6 +46,15 @@ const Login = () => {
         setEmail('');
         setPassword('');
         localStorage.removeItem('prefillEmail');
+
+        // Connect to Socket.IO
+        const userId = res.data.user._id || res.data.user.id;
+        const role = res.data.user.role;
+        if (userId && role) {
+          socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
+            console.log('User registered to socket:', { userId, role });
+        }
+
         navigate('/');
       }
     } catch (error: unknown) {
