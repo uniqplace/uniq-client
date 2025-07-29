@@ -4,8 +4,6 @@ import userReducer from './features/user/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
 import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
-//import { deployApi } from './features/deployProcess/slices/deployApiSlice';
-//import { locationApiSlice } from './features/deployProcess/slices/locationApiSlice';
 import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
 import stepperReducer from './features/deployProcess/slices/stepperSlice';
 import socketReducer from './features/socket/socketSlice';
@@ -28,7 +26,6 @@ export const store = configureStore({
     stepper: stepperReducer,
   },
 
- 
 
   // Add the API middleware to the store
   // temporary
