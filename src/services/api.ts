@@ -4,7 +4,7 @@
 
 import type { Category, Product } from '../types';
 import axios from 'axios';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://uniq-backend-o4mp.onrender.com/api';
 
 // Generic API response interface to match your backend response format
 interface ApiResponse<T> {
