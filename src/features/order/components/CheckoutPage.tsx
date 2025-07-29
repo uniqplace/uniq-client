@@ -9,9 +9,10 @@ import { Checkbox } from 'primereact/checkbox';
 import type { Address, Product } from '../../../types/index';
 import Payment from '../../payments/components/Payment';
 import './CheckoutPage.css';
-import { useCreateOrderMutation } from '../slice/orderApiSlice';
+import { useCreateOrderMutation } from '../slices/orderApiSlice';
 import { Toast } from 'primereact/toast';
 import { useRef } from 'react';
+
 interface CheckoutPageProps {
   product?: Product;
 }
