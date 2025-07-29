@@ -85,6 +85,9 @@ const marketplaceSlice = createSlice({
     removeProduct(state, action: PayloadAction<string>) {
       state.products = state.products.filter(p => p._id !== action.payload);
     },
+    setProducts(state, action: PayloadAction<Product[]>) {
+      state.products = action.payload;
+    },
     setCreators: (state, action: PayloadAction<Array<{ label: string; value: string; avatar?: string }>>) => {
       state.creators = action.payload;
     },

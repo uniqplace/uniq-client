@@ -167,10 +167,17 @@ const FiltersBar: React.FC = () => {
         maxPrice: priceRange[1] !== maxProductPrice ? priceRange[1] : undefined,
         page: 1,
     }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
-    // Use RTK Query hook
-    const { data: _productsData, refetch } = useGetProductsQuery(queryFilters);
 
-    const handleFilter = () => {
+    // Use RTK Query hook
+    const { data: productsData, refetch } = useGetProductsQuery(queryFilters);
+    useEffect(() => {
+        if (productsData && Array.isArray(productsData)) {
+            dispatch({ type: 'marketplace/setProducts', payload: productsData });
+        }
+    }, [productsData, dispatch]);
+
+    // Helper to build filter params
+    const buildFilterParams = () => {
         const params = new URLSearchParams(location.search);
         if (mainCategory) {
             params.set('category', mainCategory);
@@ -198,7 +205,12 @@ const FiltersBar: React.FC = () => {
         } else {
             params.delete('creator');
         }
-        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creatorId, priceRange }));
+        return params;
+    };
+
+    const handleFilter = () => {
+        const params = buildFilterParams();
+        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
         refetch();
     };
@@ -215,14 +227,20 @@ const FiltersBar: React.FC = () => {
 
 
     const handleReset = () => {
+    // Helper to build reset params
+    const buildResetParams = () => {
         const params = new URLSearchParams(location.search);
         params.delete('creator');
         params.delete('category');
         params.delete('subCategories');
         params.delete('minPrice');
         params.delete('maxPrice');
-        setCategoryFilters([]);
-        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+        params.set('page', '1');
+        return params;
+    };
+    const params = buildResetParams();
+    setCategoryFilters([]);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
     return (
@@ -235,7 +253,6 @@ const FiltersBar: React.FC = () => {
                         if (e.key === 'Enter') handleFilter();
                     }}
                 >
-                    {/* No global loading spinner here. Show loading only in grid or relevant filter sections. */}
                     <FilterActionsSection
                         handleFilter={handleFilter}
                         handleReset={handleReset}

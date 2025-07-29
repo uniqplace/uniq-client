@@ -38,10 +38,9 @@ const Marketplace: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchCreatorsAndManufacturers());
-    const params = new URLSearchParams(location.search);
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
-  }, [location.search]);
+  }, [location.search, params]);
 
   // Build filters for RTK Query
   const mainCategory = params.get('category') || undefined;
@@ -103,23 +102,25 @@ const Marketplace: React.FC = () => {
           <div className="flex-1">
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
               <h2 className="text-xl font-semibold mb-4">Products</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {isLoading ? (
-                  <div className="col-span-3 flex flex-col justify-center items-center py-12">
-                    <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
-                    <span className="text-gray-600 mt-4 block">loading products...</span>
-                  </div>
-                ) : products.length === 0 ? (
-                  <div className="col-span-3 text-center text-gray-500 py-8">No products found</div>
-                ) : (
-                  products.map(product => (
-                    <ProductCard
-                      key={product._id}
-                      product={product}
-                    />
-                  ))
-                )}
-              </div>
+              {isLoading ? (
+                <div className="flex flex-col justify-center items-center py-12">
+                  <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
+                  <span className="text-gray-600 mt-4 block">loading products...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.length === 0 ? (
+                    <div className="col-span-3 text-center text-gray-500 py-8">No products found</div>
+                  ) : (
+                    products.map(product => (
+                      <ProductCard
+                        key={product._id}
+                        product={product}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
             </section>
             <div className="flex justify-center mt-8">
               <Paginator

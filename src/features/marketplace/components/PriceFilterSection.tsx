@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import type { RefObject } from 'react';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { Slider } from 'primereact/slider';
@@ -12,33 +12,27 @@ interface Props {
 }
 
 const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minProductPrice, maxProductPrice, pricePanelRef }) => {
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    if (sliderRef.current) {
-      // Find the input inside the slider
-      const input = sliderRef.current.querySelector('input');
-      if (input) {
-        input.onkeydown = (e: KeyboardEvent) => {
-          if (e.key === 'Enter' && pricePanelRef?.current) {
-            const panel = pricePanelRef.current.getElement();
-            if (panel) {
-              const filterBtn = panel.querySelector('.filter-btn');
-              if (filterBtn) {
-                (filterBtn as HTMLButtonElement).click();
-              }
-            }
-          }
-        };
+  const handleSliderKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && pricePanelRef?.current) {
+      const panel = pricePanelRef.current.getElement();
+      if (panel) {
+        const filterBtn = panel.querySelector('.filter-btn');
+        if (filterBtn) {
+          (filterBtn as HTMLButtonElement).click();
+        }
       }
     }
-  }, [sliderRef, pricePanelRef, priceRange]);
+  };
 
   return (
     <div className="w-full">
-      <div className="mb-2 font-semibold">Select a price range</div>
-      <div ref={sliderRef}>
+      <div className="flex flex-col">
+        <label id="price-slider-label" htmlFor="price-slider" className="mb-5 font-semibold">Select a price range</label>
         <Slider
+          id="price-slider"
+          aria-labelledby="price-slider-label"
           value={priceRange}
           onChange={e => {
             if (Array.isArray(e.value)) setPriceRange(e.value as [number, number]);
@@ -48,6 +42,10 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
           max={maxProductPrice}
           step={10}
           style={{ width: '200px' }}
+          // @ts-ignore
+          inputRef={inputRef}
+          // @ts-ignore
+          onKeyDown={handleSliderKeyDown}
         />
       </div>
       <div className="flex gap-2 mt-2">

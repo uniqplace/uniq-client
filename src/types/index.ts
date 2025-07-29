@@ -135,9 +135,6 @@ export interface Filters {
   creator: string;
 }
 
-// 11. Category Filters
-export type CategoryFiltersType = string[];
-
 // 12. BidOffer
 export interface BidOffer {
   bidRequestId: string;

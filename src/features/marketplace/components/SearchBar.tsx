@@ -7,7 +7,6 @@ import type { AppDispatch } from '../../../store';
 import { useGetProductsQuery } from '../slices/productApiSlice';
 import { updateFilters } from '../slices/marketplaceSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
-import type { CategoryFiltersType } from '../../../types';
 
 const SearchBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
@@ -26,20 +25,12 @@ const SearchBar: React.FC = () => {
     // Build filters for RTK Query
     const params = new URLSearchParams(location.search);
     const categoryParam = params.get('category');
-    const urlCategory: CategoryFiltersType | undefined = (() => {
-        if (categoryParam) {
-            try {
-                return JSON.parse(categoryParam);
-            } catch {
-                return undefined;
-            }
-        }
-        return undefined;
-    })();
+    // Treat category as a string ID
+    const urlCategory: string | undefined = categoryParam || undefined;
     const queryFilters = React.useMemo(() => ({
         ...filters,
         q: searchTerm.trim(),
-        subCategories: urlCategory,
+        category: urlCategory,
         page: 1,
     }), [filters, searchTerm, urlCategory]);
     const { refetch } = useGetProductsQuery(queryFilters);
