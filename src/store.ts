@@ -10,7 +10,6 @@ import socketReducer from './features/socket/socketSlice';
 import apiSlice from './api/apiSlice';
 
 
-
 export const store = configureStore({
   reducer: {
     marketplace: marketplaceReducer,
@@ -20,19 +19,16 @@ export const store = configureStore({
      bidOffer: BidOfferSlice,
      bidRequest: BidRequestSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
-    //[deployApi.reducerPath]: deployApi.reducer,
-    //[locationApiSlice.reducerPath]: locationApiSlice.reducer,
      socket: socketReducer,
     stepper: stepperReducer,
   },
 
  
 
+  // Add the API middleware to the store
+  // temporary
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-      immutableCheck: false,
-    }).concat(apiSlice.middleware),
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 
