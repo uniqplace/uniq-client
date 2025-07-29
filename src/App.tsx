@@ -26,11 +26,13 @@ import ProfilePage from './features/user/components/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import MyBidRequestsNotifications from './pages/MyBidRequestsNotifications';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
 import socket from './services/socket';
 import { toast } from 'react-toastify';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
+import BidRequestDetails from './pages/BidRequestDetails';
 
 
 
@@ -125,9 +127,11 @@ function App() {
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
+        <Route path="/BidOffer" element={<BidOfferForm />} />
         <Route path="/MyBidRequest" element={<OpenBidPage />} />
-    </Routes>
+        <Route path="/my-bid-requests-notifications" element={<MyBidRequestsNotifications />} />
+        <Route path="/bids/:bidRequestId" element={<BidRequestDetails />} />
+      </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
 
@@ -140,7 +144,7 @@ function App() {
         >
           Simulate New Bid For User {user.name}
         </button>
-      )}
+       )}
 
     </div>
   );

@@ -1,6 +1,3 @@
-
-
-
 import axios from 'axios';
 import type { NotificationsResponse } from '../types/notification';
 import getUserIdFromToken from '../utils/getUserIdFromToken';
@@ -70,4 +67,16 @@ export const markAsRead = async (id: string): Promise<{ data: any }> => {
   );
 };
 
-
+// Fetch notifications using fetch API (for use in React components)
+export async function getNotificationsFetch(userId: string, page: number = 1, limit: number = 10): Promise<{ notifications: any[]; pages: number }> {
+  const url = `${import.meta.env.VITE_API_BASE_URL}/notifications/${userId}?page=${page}&limit=${limit}`;
+  const response = await fetch(url, {
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Error loading notifications');
+  const data = await response.json();
+  return {
+    notifications: Array.isArray(data.notifications) ? data.notifications : [],
+    pages: data.pages || 1,
+  };
+}

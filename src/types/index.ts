@@ -24,7 +24,7 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
+  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'Select Manufacturer' | 'Agreement' | 'Payment & Order' | 'Trucking & Delivery' | 'Delivery';
   //categories: string[];
   creator: Creator;
   //status: 'active' | 'sold' | 'inactive';
@@ -117,14 +117,26 @@ export interface Category {
   name: string;
 }
 
+// Bid Manufacturer
+export interface BidManufacturer {
+  manufacturer: string; // ManufacturerProfile ID
+  status: 'read' | 'unread';
+}
+
+// Bid Request
 export interface BidRequest {
   _id: string;
-  productId:  Product;
-  categoryId: {id:string, name:string};
+  creatorId: string;
+  productId: string;
+  categoryId: string;
   locationPreference: string;
-  status: 'open' | 'expired' | 'closed';
+  priceRange: { min: number; max: number };
+  deliveryTimeframe: string;
+  deliveryMethod: 'pickup' | 'shipping';
+  status: 'open' | 'closed' | 'expired';
+  manufacturers?: BidManufacturer[];
   createdAt: Date;
-  deliveryTimeframe : string;
+  updatedAt: Date;
 }
 
 export interface Filters {
@@ -147,4 +159,3 @@ export interface BidOffer {
   note?: string;
   attachmentUrl?: string;
 }
-

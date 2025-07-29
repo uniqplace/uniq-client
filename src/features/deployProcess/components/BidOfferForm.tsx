@@ -11,8 +11,11 @@ import type { RootState } from '../../../store';
 import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import type { BidOffer } from '../../../types';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { useLocation } from 'react-router-dom';
 
-const BidOfferForm = ({ bidRequestId }: { bidRequestId: string }) => {
+const BidOfferForm = () => {
+  const { state } = useLocation();
+  const bidRequestId = state?.bidRequestId;
   const [price, setPrice] = useState<number | null>(null);
   const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
   const [note, setNote] = useState('');
