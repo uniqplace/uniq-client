@@ -2,7 +2,7 @@ import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
 import userReducer from './features/user/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
- import apiSlice from './api/apiSlice';
+import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
 import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
@@ -24,8 +24,9 @@ export const store = configureStore({
     stepper: stepperReducer,
   },
 
- middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware ),
+
+  middleware: (getDefaultMiddleware) =>
+     getDefaultMiddleware().concat(apiSlice.middleware ),
 });
 
 
