@@ -102,14 +102,7 @@ export interface SubCategory {
   count?: number;
 }
 
-export interface BidOffer {
-  bidRequestId: string,
-  manufacturerId: string,
-  price: number
-  estimatedDelivery: string
-  note?: string
-  attachmentUrl?: string
-}
+// Removed duplicate BidOffer interface with manufacturerId as string
 
 // 10. Category
 export interface Category {
@@ -138,8 +131,32 @@ export interface Filters {
 // 11. Category Filters
 export type CategoryFiltersType = string[];
 
+
+interface UserToBidOffer {
+  _id: string;
+  name: string;
+  avatarUrl?: string;
+  email: string;
+}
+
+export interface Manufacturer {
+  _id: string;
+  userId: UserToBidOffer;
+  name: string;
+  rating?: number;
+  location?: string;
+  availableFrom?: string;
+}
 // 12. BidOffer
 export interface BidOffer {
+  bidRequestId: any;
+  manufacturerId: any; // Manufacturer can be an object or just an ID string
+  price: number;
+  estimatedDelivery: string;
+  note?: string;
+  attachmentUrl?: string;
+}
+export interface BidOfferResponse {
   bidRequestId: string;
   manufacturerId: string;
   price: number;
@@ -147,4 +164,3 @@ export interface BidOffer {
   note?: string;
   attachmentUrl?: string;
 }
-
