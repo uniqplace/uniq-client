@@ -125,13 +125,14 @@ function App() {
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="exampleId" />} />
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
+        <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
         <Route path="/MyBidRequest" element={<OpenBidPage />} />
     </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
 
-      {import.meta.env.NODE_ENV === 'development' && (
+      
 
         <button
           onClick={() => {
@@ -140,7 +141,7 @@ function App() {
         >
           Simulate New Bid For User {user.name}
         </button>
-      )}
+     
 
     </div>
   );

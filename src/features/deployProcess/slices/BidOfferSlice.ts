@@ -1,9 +1,30 @@
+
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { BidOffer } from "../../../types";
+import type { BidOffer, BidOfferResponse } from "../../../types";
+// Thunk to fetch offers by bidRequestId
+export const fetchBidOffersByRequest = createAsyncThunk(
+  "BidOffer/fetchByBidRequest",
+  async (
+    params: { bidRequestId: string; sort?: 'price' | 'rating' },
+    thunkAPI
+  ) => {
+    try {
+      const { bidRequestId, sort } = params;
+      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
+        (sort ? `?sort=${sort}` : '');
+      const response = await axios.get(url, {
+        withCredentials: true,
+      });
+      return response.data.data; // assuming { success, data }
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');
+    }
+  }
+);
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
-    async (bidOffer: BidOffer, thunkAPI) => {
+    async (bidOffer: BidOfferResponse, thunkAPI) => {
       try {
         const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers`, bidOffer,
             {
@@ -24,21 +45,22 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
     attachmentUrl: '',
 })
 
-  const bidOfferSlice = createSlice({
-    name: "BidOffer",
-    initialState: {
-      bidOffer: getInitialBidOffer(),
-      loading: true,
-      error: null as string | null,
+const bidOfferSlice = createSlice({
+  name: "BidOffer",
+  initialState: {
+    bidOffer: getInitialBidOffer(),
+    offers: [] as BidOffer[],
+    loading: false,
+    error: null as string | null,
+  },
+  reducers: {
+    resetBidOffer: (state) => {
+      state.bidOffer = getInitialBidOffer();
+      state.error = null;
     },
-    reducers: {
-      resetBidOffer: (state) => {
-        state.bidOffer = getInitialBidOffer(); // מאפס את ההצעה
-        state.error = null;
-      },
-    },
-    extraReducers: (builder) => {
-      builder
+  },
+  extraReducers: (builder) => {
+    builder
       .addCase(AddBidOffer.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -50,9 +72,22 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
       .addCase(AddBidOffer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-   });
-}
-  });
+      })
+      // Fetch offers by bidRequestId
+      .addCase(fetchBidOffersByRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBidOffersByRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        state.offers = action.payload;
+      })
+      .addCase(fetchBidOffersByRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
   
   export const { resetBidOffer } = bidOfferSlice.actions;
 
