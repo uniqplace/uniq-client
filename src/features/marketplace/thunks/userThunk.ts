@@ -18,7 +18,7 @@ export const fetchCurrentUser = createAsyncThunk(
       
       const res = await fetch(`${API_BASE}/users/me`, { 
         method: 'GET',
-        credentials: isProduction ? 'omit' : 'include',
+        credentials:  'omit' ,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,

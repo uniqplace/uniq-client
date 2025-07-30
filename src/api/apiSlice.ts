@@ -5,7 +5,7 @@ const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
-    credentials: window.location.hostname !== 'localhost' ? 'omit' : 'include', // ✅ Dynamic credentials
+    credentials:  'omit', // ✅ Dynamic credentials
     prepareHeaders: (headers, { getState }) => {
      const state = getState() as Partial<RootState>;
       const token = state?.auth?.token;
