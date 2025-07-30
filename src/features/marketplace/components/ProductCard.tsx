@@ -34,7 +34,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         className="product-card"
         header={
           <img
-            src={product.images[0] || 'https://via.placeholder.com/150'}
+            src={product.images[0]}
             alt={product.title}
             className="w-full h-48 object-cover"
           />

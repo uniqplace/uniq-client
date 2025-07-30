@@ -2,12 +2,12 @@ import marketplaceReducer from './features/marketplace/slices/marketplaceSlice'
 import paymentsReducer from './features/payments/slices/paymentsSlice'
 import userReducer from './features/user/slices/userSlice'
 import { configureStore } from '@reduxjs/toolkit';
-import apiSlice from './api/apiSlice';
 import authSliceReducer from "./features/auth/authSlice";
 import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
 import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
 import stepperReducer from './features/deployProcess/slices/stepperSlice';
 import socketReducer from './features/socket/socketSlice';
+import apiSlice from './api/apiSlice';
 
 
 
@@ -26,7 +26,10 @@ export const store = configureStore({
 
 
   middleware: (getDefaultMiddleware) =>
-     getDefaultMiddleware().concat(apiSlice.middleware ),
+    getDefaultMiddleware({
+      serializableCheck: false,
+      immutableCheck: false,
+    }).concat(apiSlice.middleware),
 });
 
 

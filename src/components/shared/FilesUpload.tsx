@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { FileUpload, type FileUploadSelectEvent } from 'primereact/fileupload';
 import { Message } from 'primereact/message';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useDeleteImagesMutation, useUploadImagesMutation } from '../../api/apiSlice';
+import './FilesUpload.css';
 
 interface FilesUploadProps {
   files: File[];
@@ -11,7 +12,7 @@ interface FilesUploadProps {
   setFileError?: (msg: string | null) => void;
   onUploaded?: (urls: string[]) => void;
   fileUrls?: string[];
-  accept?: string; // e.g. "image/*,video/*,application/pdf"
+  accept?: string;
   maxFileSize?: number;
 }
 
@@ -27,6 +28,18 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
 }) => {
   const [uploadFiles, { isLoading }] = useUploadImagesMutation();
   const [deleteFiles, { isLoading: isDeleting }] = useDeleteImagesMutation();
+  const objectUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    objectUrlsRef.current = files
+      .filter(file => file.type.startsWith('image/'))
+      .map(file => URL.createObjectURL(file));
+    return () => {
+      objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      objectUrlsRef.current = [];
+    };
+  }, [files]);
 
   const handleUploadToServer = async () => {
     if (!files.length) return;
@@ -57,29 +70,25 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
     }
   };
 
-  // Preview for files
   const renderFilePreview = () => (
-    <div className="flex flex-wrap gap-2 mt-2">
+    <div className="file-preview">
       {files.map((file, idx) => {
         const isImage = file.type.startsWith('image/');
         const isVideo = file.type.startsWith('video/');
         const isPdf = file.type === 'application/pdf';
+        const objectUrl = isImage ? objectUrlsRef.current[idx] : undefined;
         return (
-          <div key={idx} className="flex flex-col items-center p-2 border rounded bg-blue-50">
+          <div key={idx} className="file-preview-item">
             {isImage ? (
-              <img
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }}
-              />
+              <img src={objectUrl} alt={file.name} className="file-preview-img" />
             ) : isVideo ? (
-              <i className="pi pi-video" style={{ fontSize: 40, color: '#1976d2' }} />
+              <i className="pi pi-video file-preview-icon video" />
             ) : isPdf ? (
-              <i className="pi pi-file-pdf" style={{ fontSize: 40, color: '#d32f2f' }} />
+              <i className="pi pi-file-pdf file-preview-icon pdf" />
             ) : (
-              <i className="pi pi-file" style={{ fontSize: 40, color: '#1976d2' }} />
+              <i className="pi pi-file file-preview-icon" />
             )}
-            <span className="text-xs mt-1">{file.name}</span>
+            <span className="file-preview-name">{file.name}</span>
           </div>
         );
       })}
@@ -87,20 +96,10 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
   );
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="files-upload-container">
       {(isLoading || isDeleting) && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(255,255,255,0.7)',
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <ProgressSpinner style={{ width: 50, height: 50 }} />
+        <div className="files-upload-spinner">
+          <ProgressSpinner style={{ width: 40, height: 40 }} />
         </div>
       )}
       <FileUpload
@@ -113,11 +112,50 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
         onSelect={(e: FileUploadSelectEvent) => setFiles(e.files as File[])}
         accept={accept}
         maxFileSize={maxFileSize}
-        emptyTemplate={<p className="m-0">Drag and drop files here.</p>}
+        emptyTemplate={
+          <p className="files-upload-empty">
+            Drag and drop files here or click to select.
+          </p>
+        }
         disabled={isLoading || isDeleting}
+        headerTemplate={(options) => {
+          const { className, chooseButton, uploadButton, cancelButton } = options;
+          return (
+            <div className={`files-upload-header ${className}`}>
+              <div className="files-upload-header-inner">
+                <div className="files-upload-btn">{chooseButton}</div>
+                <div className="files-upload-btn">{uploadButton}</div>
+                <div className="files-upload-btn">{cancelButton}</div>
+              </div>
+            </div>
+          );
+        }}
+        chooseOptions={{
+          icon: 'pi pi-fw pi-plus',
+          label: 'Choose',
+          className: 'p-button-sm p-button-rounded files-upload-btn'
+        }}
+        uploadOptions={{
+          icon: 'pi pi-fw pi-cloud-upload',
+          label: 'Upload',
+          className: 'p-button-sm p-button-rounded p-button-success files-upload-btn'
+        }}
+        cancelOptions={{
+          icon: 'pi pi-fw pi-times',
+          label: 'Cancel',
+          className: 'p-button-sm p-button-rounded p-button-danger files-upload-btn'
+        }}
       />
       {files.length > 0 && renderFilePreview()}
-      {fileError && <Message severity="error" text={fileError} />}
+      {fileError && <Message severity="error" text={fileError} className="mt-2 w-full text-center" />}
+      <div className="files-upload-info">
+        Max file size: {maxFileSize ? (maxFileSize / 1000000).toFixed(1) : 'N/A'} MB
+      </div>
+      {accept && (
+        <div className="files-upload-info">
+          Accepted types: {accept}
+        </div>
+      )}
     </div>
   );
 };

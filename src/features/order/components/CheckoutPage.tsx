@@ -9,9 +9,10 @@ import { Checkbox } from 'primereact/checkbox';
 import type { Address, Product } from '../../../types/index';
 import Payment from '../../payments/components/Payment';
 import './CheckoutPage.css';
-import { useCreateOrderMutation } from '../slice/orderApiSlice';
+import { useCreateOrderMutation } from '../slices/orderApiSlice';
 import { Toast } from 'primereact/toast';
 import { useRef } from 'react';
+
 interface CheckoutPageProps {
   product?: Product;
 }
@@ -90,7 +91,10 @@ async function addNewOrder(): Promise<void> {
       totalAmount,
       shippingAddress,
       notes,
-      creatorId: product?.creator._id,
+      /////////////////////////////////////////////////////////////////////////////////////
+      creator:{name: product?.creator.name || '', _id: product?.creator._id || ''},
+      /////////////////////////////////////////////////////////////////////////////////////
+      // creatorId: product?.creator._id,
       buyerId: JSON.parse(localStorage.getItem('user') || '{}').id,
       status: 'pending',
     }).unwrap();

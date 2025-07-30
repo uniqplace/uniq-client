@@ -25,26 +25,6 @@ async function asyncThunkHelper<T>(fn: () => Promise<any>, rejectWithValue: (v: 
   }
 }
 
-export const fetchProducts = createAsyncThunk(
-  'marketplace/fetchProducts',
-  async (params: {
-    q?: string;
-    category?: string;
-    subCategories?: string[];
-    creator?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    page?: number;
-  } = {}, { rejectWithValue }) => {
-    try {
-      const response = await api.getProducts({ ...params });
-      return response;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch products');
-    }
-  }
-);
-
 export const fetchProduct = createAsyncThunk(
   'marketplace/fetchProduct',
   async (productId: string, { rejectWithValue }) =>

@@ -10,8 +10,9 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/orders/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Order', id }],
     }),
-    getUserOrders: builder.query<Order[], void>({
-      query: () => '/orders/user/me',
+    getOrdersByRole: builder.query<Order[], 'buyer' | 'creator'>({
+      query: (role) => `/orders/user/me?role=${role}`,
+      transformResponse: (response: { data: Order[] }) => response.data,
       providesTags: ['Order'],
     }),
     createOrder: builder.mutation<Order, Partial<Order>>({
@@ -37,7 +38,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetOrdersQuery,
   useGetOrderByIdQuery,
-  useGetUserOrdersQuery,
+  useGetOrdersByRoleQuery,
   useCreateOrderMutation,
   useUpdateOrderStatusMutation,
 } = orderApiSlice;

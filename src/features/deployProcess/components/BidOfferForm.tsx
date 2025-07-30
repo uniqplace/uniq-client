@@ -9,13 +9,10 @@ import { classNames } from 'primereact/utils';
 import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
 import type { RootState } from '../../../store';
 import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
-import type { BidOffer } from '../../../types';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { useLocation } from 'react-router-dom';
+import type { BidOfferResponse } from '../../../types';
 
-const BidOfferForm = () => {
-  const { state } = useLocation();
-  const bidRequestId = state?.bidRequestId;
+const BidOfferForm = ({ bidRequestId, manufacturerId }: { bidRequestId: string, manufacturerId: string }) => {
   const [price, setPrice] = useState<number | null>(null);
   const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
   const [note, setNote] = useState('');
@@ -63,15 +60,16 @@ const BidOfferForm = () => {
     try {
       setLoading(true);
 
-      const newBidOffer: Partial<BidOffer> = {
+      const newBidOffer: Partial<BidOfferResponse> = {
         bidRequestId,
+        manufacturerId,
         price: price ?? 0,
         estimatedDelivery: estimatedDelivery ? estimatedDelivery.toISOString() : '',
         note,
         attachmentUrl,
       };
 
-      await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
+      await dispatch(AddBidOffer(newBidOffer as BidOfferResponse)).unwrap();
       dispatch(resetBidOffer());
       toast.current?.show({
         severity: 'success',

@@ -12,7 +12,6 @@ import 'primeicons/primeicons.css';
 import './App.css';
 import './index.css';
 import Marketplace from './pages/Marketplace';
-import Orders from './pages/Orders';
 import ProductPage from './pages/ProductPage';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -34,6 +33,8 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
 import BidRequestDetails from './features/deployProcess/components/BidRequestDetails';
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
+import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
+import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 
 
 
@@ -118,7 +119,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/account/orders" element={<MyOrdersWrapper />} />
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
@@ -128,16 +129,17 @@ function App() {
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/BidOffer" element={<BidOfferForm />} />
         <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
         <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
         <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
         <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
-      </Routes>
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
+        <Route path="/MyBidRequest" element={<OpenBidPage />} />
+    </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
 
-      {import.meta.env.NODE_ENV === 'development' && (
+      
 
         <button
           onClick={() => {
@@ -146,7 +148,7 @@ function App() {
         >
           Simulate New Bid For User {user.name}
         </button>
-       )}
+     
 
     </div>
   );

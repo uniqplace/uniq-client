@@ -1,6 +1,6 @@
 
+
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -10,10 +10,13 @@ import type { BidRequest } from '../../../types';
 import type { RootState } from '../../../store';
 import { Tag } from 'primereact/tag';
 import { getBidRequestsByCreator } from '../slices/BidRequestSlice';
+import BidOffersList from './BidOffersList';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const OpenBidPage = () => {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { bidRequestId } = useParams<{ bidRequestId?: string }>();
 
   const { bidRequests, loading, error } = useAppSelector(
     (state: RootState) => state.bidRequest
@@ -23,19 +26,12 @@ export const OpenBidPage = () => {
     dispatch(getBidRequestsByCreator());
   }, [dispatch]);
 
-  const goToBidOffers = (bidRequestId: string) => {
-    navigate(`/bidOffers/${bidRequestId}`);
-  };
-
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
-  
     let severity: 'success' | 'warning' | 'danger' | 'info' = 'info';
-  
     if (status === 'open') severity = 'success';
     else if (status === 'expired') severity = 'warning';
     else if (status === 'closed') severity = 'danger';
-  
     return <Tag value={status} severity={severity} />;
   };
 
@@ -43,28 +39,24 @@ export const OpenBidPage = () => {
     <Button
       label="View offers"
       icon="pi pi-eye"
-      onClick={() => goToBidOffers(rowData._id)}
+      onClick={() => navigate(`/MyBidRequest/${rowData._id}`)}
       className="p-button-sm"
     />
   );
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
     const dateValue = rowData[field];
-  
     if (!dateValue) return '-';
-  
     if (typeof dateValue === 'string' || dateValue instanceof Date) {
       const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
       return dateObj.toLocaleDateString('he-IL');
     }
-  
-    return '-'; 
+    return '-';
   };
-  
+
   const title = (
     <h2 className="text-xl font-bold mb-4 mt-8"> My BidRequests</h2>
-  )
-  
+  );
 
   if (loading) {
     return (
@@ -83,6 +75,15 @@ export const OpenBidPage = () => {
       <div className="p-4 text-center text-gray-600">
         {title}
         <p>There are no open BidREquest to display at this time.</p>
+      </div>
+    );
+  }
+
+  if (bidRequestId) {
+    return (
+      <div className="p-4">
+        <Button label="Back to My BidRequests" icon="pi pi-arrow-left" className="mb-4" onClick={() => navigate('/MyBidRequest')} />
+        <BidOffersList bidRequestId={bidRequestId} />
       </div>
     );
   }
