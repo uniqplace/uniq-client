@@ -15,7 +15,7 @@ export const fetchCurrentUser = createAsyncThunk(
 
       // Use 'omit' for production, 'include' for development
       const isProduction = window.location.hostname !== 'localhost';
-      
+      console.log('isProduction', isProduction);
       const res = await fetch(`${API_BASE}/users/me`, { 
         method: 'GET',
         credentials:  'omit' ,
