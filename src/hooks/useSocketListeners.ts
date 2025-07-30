@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import socket from '../services/socket';
+import { getSocket } from '../services/socket';
 import { SOCKET_EVENTS } from '../constants/socketEvents';
 
 import { toast } from 'react-toastify';
@@ -15,10 +15,15 @@ interface UseSocketListenersOptions {
 
 const useSocketListeners = ({ userId, role }: UseSocketListenersOptions) => {
   useEffect(() => {
-    // Register user in socket rooms
-    if (userId && role) {
-      socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
+    const socket = getSocket();
+    
+    // Only proceed if socket is connected and user is authenticated
+    if (!socket || !userId || !role) {
+      return;
     }
+
+    // Register user in socket rooms
+    socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
 
     // Listen to socket events
     const handleNewBid = (bidData: BidRequest) => {

@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { UserState } from '../../user/slices/userSlice';
+import Cookies from 'js-cookie';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -7,10 +8,34 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE}/users/me`, { credentials: 'include' }); 
-      if (!res.ok) throw new Error('Not authenticated');
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Detect if it's a same-site or cross-site request
+      const isSameSite = window.location.hostname === new URL(API_BASE).hostname;
+      
+      const res = await fetch(`${API_BASE}/users/me`, { 
+        method: 'GET',
+        credentials: isSameSite ? 'include' : 'omit', // ✅ Dynamic credentials
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      }); 
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Not authenticated');
+        }
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       return await res.json();
     } catch (err: any) {
+      console.error('fetchCurrentUser error:', err);
       return rejectWithValue(err.message);
     }
   }

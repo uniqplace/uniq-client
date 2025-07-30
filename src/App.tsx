@@ -26,7 +26,7 @@ import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
-import socket from './services/socket';
+import { initializeSocket, disconnectSocket } from './services/socket';
 import { toast } from 'react-toastify';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
@@ -77,21 +77,30 @@ function App() {
     console.log('user state:', user);
   }, [user]);
 
+  // Initialize socket only when user is authenticated
   useEffect(() => {
-    const handleBidSentConfirmation = (data: any) => {
-      console.log('Bid sent confirmation:', data);
-      if (data.error) {
-        toast.error(data.message);
-      } else {
-        toast.success(data.message);
-      }
-    };
-    socket.on('bid_sent_confirmation', handleBidSentConfirmation);
+    if (user?.id && user?.email) {
+      const socket = initializeSocket();
+      
+      const handleBidSentConfirmation = (data: any) => {
+        console.log('Bid sent confirmation:', data);
+        if (data.error) {
+          toast.error(data.message);
+        } else {
+          toast.success(data.message);
+        }
+      };
+      
+      socket.on('bid_sent_confirmation', handleBidSentConfirmation);
 
-    return () => {
-      socket.off('bid_sent_confirmation', handleBidSentConfirmation);
-    };
-  }, []);
+      return () => {
+        socket.off('bid_sent_confirmation', handleBidSentConfirmation);
+      };
+    } else {
+      // Disconnect socket when user is not authenticated
+      disconnectSocket();
+    }
+  }, [user?.id, user?.email]);
 
   //if (loading) {
   //  return <div>Loading...</div>;
@@ -126,7 +135,7 @@ function App() {
         <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
         <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
-        <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
+        {/* <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} /> */}
         <Route path="/MyBidRequest" element={<OpenBidPage />} />
     </Routes>
       </MainContent>
