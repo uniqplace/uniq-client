@@ -142,12 +142,3 @@
     padding: 0.6em 0;
   }
 }
-@media (max-width: 500px) {
-  body::after {
-    content: "MOBILE";
-    display: block;
-    text-align: center;
-    background: red;
-    color: white;
-  }
-}

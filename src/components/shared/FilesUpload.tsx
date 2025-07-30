@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { FileUpload, type FileUploadSelectEvent } from 'primereact/fileupload';
 import { Message } from 'primereact/message';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -28,6 +28,18 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
 }) => {
   const [uploadFiles, { isLoading }] = useUploadImagesMutation();
   const [deleteFiles, { isLoading: isDeleting }] = useDeleteImagesMutation();
+  const objectUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    objectUrlsRef.current = files
+      .filter(file => file.type.startsWith('image/'))
+      .map(file => URL.createObjectURL(file));
+    return () => {
+      objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      objectUrlsRef.current = [];
+    };
+  }, [files]);
 
   const handleUploadToServer = async () => {
     if (!files.length) return;
@@ -64,10 +76,11 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
         const isImage = file.type.startsWith('image/');
         const isVideo = file.type.startsWith('video/');
         const isPdf = file.type === 'application/pdf';
+        const objectUrl = isImage ? objectUrlsRef.current[idx] : undefined;
         return (
           <div key={idx} className="file-preview-item">
             {isImage ? (
-              <img src={URL.createObjectURL(file)} alt={file.name} className="file-preview-img" />
+              <img src={objectUrl} alt={file.name} className="file-preview-img" />
             ) : isVideo ? (
               <i className="pi pi-video file-preview-icon video" />
             ) : isPdf ? (
@@ -136,11 +149,13 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
       {files.length > 0 && renderFilePreview()}
       {fileError && <Message severity="error" text={fileError} className="mt-2 w-full text-center" />}
       <div className="files-upload-info">
-        Max file size: {(maxFileSize / 1000000).toFixed(1)} MB
+        Max file size: {maxFileSize ? (maxFileSize / 1000000).toFixed(1) : 'N/A'} MB
       </div>
-      <div className="files-upload-info">
-        Accepted types: {accept}
-      </div>
+      {accept && (
+        <div className="files-upload-info">
+          Accepted types: {accept}
+        </div>
+      )}
     </div>
   );
 };
