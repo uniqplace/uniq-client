@@ -147,10 +147,14 @@ export interface Manufacturer {
   location?: string;
   availableFrom?: string;
 }
+interface BidRequestId {
+  productId: ({ title: string }) & { _id?: string }& { description?: string };
+  categoryId: string;
+}
 // 12. BidOffer
 export interface BidOffer {
-  bidRequestId: any;
-  manufacturerId: any; // Manufacturer can be an object or just an ID string
+  bidRequestId: BidRequestId;
+  manufacturerId: Manufacturer; // Manufacturer can be an object or just an ID string
   price: number;
   estimatedDelivery: string;
   note?: string;

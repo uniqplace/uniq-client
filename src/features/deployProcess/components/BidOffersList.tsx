@@ -23,7 +23,8 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
-    { label: 'By Rating', value: 'rating' }
+    { label: 'By Rating', value: 'rating' },
+    { label: 'By Date', value: 'date' }
   ];
 
   useEffect(() => {
@@ -33,30 +34,36 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
     }
   }, [dispatch, bidRequestId, sortOption]);
 
-  const sortedOffers = offers;
+  // Client-side sorting logic
+  function sortOffers(offers: BidOffer[], sortOption: 'date' | 'price' | 'rating') {
+    if (!offers) return [];
+    const offersCopy = [...offers];
+    switch (sortOption) {
+      case 'price':
+        return offersCopy.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      case 'rating':
+        return offersCopy.sort((a, b) => ((b.manufacturerId?.rating ?? 0) - (a.manufacturerId?.rating ?? 0)));
+      case 'date':
+      default:
+        return offersCopy; // No date field, so keep original order
+    }
+  }
+
+  const sortedOffers = sortOffers(offers, sortOption);
 
   return (
     <Card className="p-4 shadow-2 border-round">
-      {offers && offers.length > 0 && <h1 className="text-xl font-bold mb-4">Bid Offers for Request #{offers[0]?.bidRequestId.productId.title}</h1>}
+      {offers && offers.length > 0 && <h1 className="text-xl font-bold mb-4">Bid Offers for Request #{offers[0]?.bidRequestId?.productId?.title}</h1>}
       <div className="flex justify-between align-items-center mb-3">
         <h2 className="text-2xl font-bold">Received Bids</h2>
-        {offers && offers.length > 0 ? (
-          <Dropdown
-            value={sortOption}
-            options={sortOptions}
-            onChange={(e) => setSortOption(e.value)}
-            placeholder="Sort by"
-            className="w-12rem"
-          />
-        ) : (
-          <Dropdown
-            value={null}
-            options={sortOptions}
-            placeholder="Sort by"
-            className="w-12rem opacity-50 cursor-not-allowed bg-gray-100"
-            disabled
-          />
-        )}
+        <Dropdown
+          value={offers && offers.length > 0 ? sortOption : null}
+          options={sortOptions}
+          onChange={offers && offers.length > 0 ? (e) => setSortOption(e.value) : undefined}
+          placeholder="Sort by"
+          className={`w-12rem ${!(offers && offers.length > 0) ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
+          disabled={!(offers && offers.length > 0)}
+        />
       </div>
 
       <Message
@@ -104,7 +111,15 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
                 <div
                   className="grid grid-cols-12 gap-2 items-center py-4 px-4 border-b border-gray-100 text-sm"
                   style={{ fontFamily: 'Arial, sans-serif' }}
-                  key={offer.bidRequestId + '-' + offer.manufacturerId._id + '-' + idx}
+                  key={
+                    offer.bidRequestId +
+                    '-' +
+                    (offer.manufacturerId && typeof offer.manufacturerId === 'object' && '_id' in offer.manufacturerId
+                      ? offer.manufacturerId._id
+                      : 'unknown') +
+                    '-' +
+                    idx
+                  }
                 >
                   {/* Manufacturer */}
                   <div className="col-span-3 flex items-center gap-3">
