@@ -76,3 +76,6 @@ button:focus-visible {
   display: block;
 }
 
+.p-tabview .p-tabview-panels{
+  background: none !important;
+}

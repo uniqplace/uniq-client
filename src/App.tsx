@@ -32,7 +32,7 @@ import socket from './services/socket';
 import { toast } from 'react-toastify';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
-import BidRequestDetails from './pages/BidRequestDetails';
+import BidRequestDetails from './features/deployProcess/components/BidRequestDetails';
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 
 
