@@ -68,13 +68,13 @@ const BidRequestDetails = () => {
                     <Divider />
                     <div className="mb-2"><b>Delivery Method:</b> {bidRequest.deliveryMethod === 'pickup' ? 'Pickup' : 'Shipping'}</div>
                     <Divider />
-                    {/* <div className="mb-2"><b>Manufacturers:</b> {Array.isArray(bidRequest.manufacturers)
+                    <div className="mb-2"><b>Manufacturers:</b> {Array.isArray(bidRequest.manufacturers)
             ? bidRequest.manufacturers.map((m, i) => (
-                <span key={i}>{m.manufacturer} ({m.status}){i < bidRequest.manufacturers.length - 1 ? ', ' : ''}</span>
+                <span key={i}>{m.manufacturer.name} ({m.status}){bidRequest.manufacturers && i < bidRequest.manufacturers.length - 1 ? ', ' : ''}</span>
               ))
             : 'N/A'}
           </div>
-          <Divider /> */}
+          <Divider />
                     <div className="mb-2"><b>Created At:</b> {new Date(bidRequest.createdAt).toLocaleString('en-US')}</div>
                     <Divider />
                     <div className="mb-2"><b>Updated At:</b> {new Date(bidRequest.updatedAt).toLocaleString('en-US')}</div>

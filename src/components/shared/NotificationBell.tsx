@@ -152,6 +152,12 @@ const NotificationBell = () => {
                         getUnreadCount()
                           .then((res) => setCount(res.data.count))
                           .catch(() => { });
+                        setIsOpen(false);
+                        if (n.type === 'NEW_BID' && n.bidRequestId) {
+                          navigate(`/MyBidRequests/${n.bidRequestId}`);
+                        } else if (n.link) {
+                          navigate(n.link);
+                        }
                       } catch (err) {
                         if (toastRef.current) {
                           toastRef.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to mark notification as read', life: 3000 });
@@ -185,7 +191,7 @@ const NotificationBell = () => {
                 className="w-full p-button-sm p-button-info"
                 onClick={() => {
                   setIsOpen(false);
-                  navigate('/my-bid-requests-notifications');
+                  navigate('/myBidRequestsNotifications');
                 }}
               />
             </div>

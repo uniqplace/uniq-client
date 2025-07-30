@@ -117,18 +117,23 @@ export interface Category {
   name: string;
 }
 
+export interface ManufacturerProfile {
+  _id: string;
+  name: string;
+}
+
 // Bid Manufacturer
 export interface BidManufacturer {
-  manufacturer: string; // ManufacturerProfile ID
+  manufacturer: ManufacturerProfile; // ManufacturerProfile ID
   status: 'read' | 'unread';
 }
 
 // Bid Request
 export interface BidRequest {
   _id: string;
-  creatorId: string;
-  productId: string;
-  categoryId: string;
+  creatorId: string | User; // Creator ID or User object
+  productId: Product | string; // Product ID or Product object
+  categoryId: string | Category; // Category ID or Category object
   locationPreference: string;
   priceRange: { min: number; max: number };
   deliveryTimeframe: string;
