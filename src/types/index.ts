@@ -169,3 +169,11 @@ export interface BidOfferResponse {
   note?: string;
   attachmentUrl?: string;
 }
+
+export interface ManufacturerProfile {
+  userId: string;
+  name: string;
+  categories: string[];
+  location: string;
+  availableFrom: string;
+}

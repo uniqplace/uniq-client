@@ -1,0 +1,19 @@
+/* Sidebar smooth expand/collapse animation */
+.p-sidebar-fade-enter {
+  opacity: 0.7;
+  transform: scaleX(0.98);
+}
+.p-sidebar-fade-enter-active {
+  opacity: 1;
+  transform: scaleX(1);
+  transition: opacity 250ms, transform 250ms;
+}
+.p-sidebar-fade-exit {
+  opacity: 1;
+  transform: scaleX(1);
+}
+.p-sidebar-fade-exit-active {
+  opacity: 0.7;
+  transform: scaleX(0.98);
+  transition: opacity 250ms, transform 250ms;
+}
