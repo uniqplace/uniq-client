@@ -12,7 +12,6 @@ import 'primeicons/primeicons.css';
 import './App.css';
 import './index.css';
 import Marketplace from './pages/Marketplace';
-import Orders from './pages/Orders';
 import ProductPage from './pages/ProductPage';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -31,6 +30,7 @@ import socket from './services/socket';
 import { toast } from 'react-toastify';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
+import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 
 
 
@@ -115,7 +115,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/account/orders" element={<MyOrdersWrapper />} />
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
