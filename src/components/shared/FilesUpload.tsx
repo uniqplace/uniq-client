@@ -3,6 +3,7 @@ import { FileUpload, type FileUploadSelectEvent } from 'primereact/fileupload';
 import { Message } from 'primereact/message';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useDeleteImagesMutation, useUploadImagesMutation } from '../../api/apiSlice';
+import './FilesUpload.css';
 
 interface FilesUploadProps {
   files: File[];
@@ -11,7 +12,7 @@ interface FilesUploadProps {
   setFileError?: (msg: string | null) => void;
   onUploaded?: (urls: string[]) => void;
   fileUrls?: string[];
-  accept?: string; // e.g. "image/*,video/*,application/pdf"
+  accept?: string;
   maxFileSize?: number;
 }
 
@@ -57,35 +58,24 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
     }
   };
 
-  // Preview for files
   const renderFilePreview = () => (
-    <div className="flex flex-wrap gap-2 mt-2">
+    <div className="file-preview">
       {files.map((file, idx) => {
         const isImage = file.type.startsWith('image/');
         const isVideo = file.type.startsWith('video/');
         const isPdf = file.type === 'application/pdf';
         return (
-          <div
-            key={idx}
-            className="flex flex-col items-center p-2 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
-            style={{ width: '90px', height: '90px', overflow: 'hidden', position: 'relative' }}
-          >
+          <div key={idx} className="file-preview-item">
             {isImage ? (
-              <img
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
-              />
+              <img src={URL.createObjectURL(file)} alt={file.name} className="file-preview-img" />
             ) : isVideo ? (
-              <i className="pi pi-video" style={{ fontSize: '30px', color: '#1976d2' }} />
+              <i className="pi pi-video file-preview-icon video" />
             ) : isPdf ? (
-              <i className="pi pi-file-pdf" style={{ fontSize: '30px', color: '#d32f2f' }} />
+              <i className="pi pi-file-pdf file-preview-icon pdf" />
             ) : (
-              <i className="pi pi-file" style={{ fontSize: '30px', color: '#1976d2' }} />
+              <i className="pi pi-file file-preview-icon" />
             )}
-            <span className="text-xs text-center mt-1 text-gray-700 truncate w-full absolute bottom-1 px-1">
-              {file.name}
-            </span>
+            <span className="file-preview-name">{file.name}</span>
           </div>
         );
       })}
@@ -93,13 +83,10 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
   );
 
   return (
-    <div className="relative border border-gray-300 rounded-lg p-4 bg-gray-50">
+    <div className="files-upload-container">
       {(isLoading || isDeleting) && (
-        <div
-          className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-lg"
-          style={{ zIndex: 10 }}
-        >
-          <ProgressSpinner style={{ width: 50, height: 50 }} />
+        <div className="files-upload-spinner">
+          <ProgressSpinner style={{ width: 40, height: 40 }} />
         </div>
       )}
       <FileUpload
@@ -112,29 +99,48 @@ const FilesUpload: React.FC<FilesUploadProps> = ({
         onSelect={(e: FileUploadSelectEvent) => setFiles(e.files as File[])}
         accept={accept}
         maxFileSize={maxFileSize}
-        emptyTemplate={<p className="m-0 text-gray-500">גרור ושחרר קבצים לכאן או לחץ/י לבחירה.</p>}
+        emptyTemplate={
+          <p className="files-upload-empty">
+            Drag and drop files here or click to select.
+          </p>
+        }
         disabled={isLoading || isDeleting}
-        // הוספת סגנונות מותאמים אישית לכפתורים של Primereact
-        // שימו לב: ייתכן שתצטרכו לשחק עם הקלאסים והסלקטורים ב-CSS שלכם
-        // כדי לדרוס את סגנונות ברירת המחדל של Primereact בצורה אפקטיבית
         headerTemplate={(options) => {
           const { className, chooseButton, uploadButton, cancelButton } = options;
           return (
-            <div className={className} style={{backgroundColor: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
-              {chooseButton}
-              {uploadButton}
-              {cancelButton}
+            <div className={`files-upload-header ${className}`}>
+              <div className="files-upload-header-inner">
+                <div className="files-upload-btn">{chooseButton}</div>
+                <div className="files-upload-btn">{uploadButton}</div>
+                <div className="files-upload-btn">{cancelButton}</div>
+              </div>
             </div>
           );
         }}
-        // הוספת קלאסים עבור גודל קטן יותר של כפתורים
-        // נדרש להגדיר את הקלאסים האלו בקובץ CSS גלובלי או בקובץ CSS מודולרי
-        chooseOptions={{ icon: 'pi pi-fw pi-plus', label: 'בחר', className: 'p-button-sm' }}
-        uploadOptions={{ icon: 'pi pi-fw pi-cloud-upload', label: 'העלה', className: 'p-button-sm' }}
-        cancelOptions={{ icon: 'pi pi-fw pi-times', label: 'בטל', className: 'p-button-sm p-button-danger' }}
+        chooseOptions={{
+          icon: 'pi pi-fw pi-plus',
+          label: 'Choose',
+          className: 'p-button-sm p-button-rounded files-upload-btn'
+        }}
+        uploadOptions={{
+          icon: 'pi pi-fw pi-cloud-upload',
+          label: 'Upload',
+          className: 'p-button-sm p-button-rounded p-button-success files-upload-btn'
+        }}
+        cancelOptions={{
+          icon: 'pi pi-fw pi-times',
+          label: 'Cancel',
+          className: 'p-button-sm p-button-rounded p-button-danger files-upload-btn'
+        }}
       />
       {files.length > 0 && renderFilePreview()}
-      {fileError && <Message severity="error" text={fileError} className="mt-2 w-full" />}
+      {fileError && <Message severity="error" text={fileError} className="mt-2 w-full text-center" />}
+      <div className="files-upload-info">
+        Max file size: {(maxFileSize / 1000000).toFixed(1)} MB
+      </div>
+      <div className="files-upload-info">
+        Accepted types: {accept}
+      </div>
     </div>
   );
 };
