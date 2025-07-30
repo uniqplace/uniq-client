@@ -9,7 +9,7 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
-import { fetchProducts } from '../thunks';
+import { useGetProductsQuery } from '../slices/productApiSlice';
 import { fetchSubCategories } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
@@ -144,13 +144,6 @@ const FiltersBar: React.FC = () => {
         const hasAnyUrlFilter = urlFilters.creator || urlFilters.priceRange[0] !== minProductPrice || urlFilters.priceRange[1] !== maxProductPrice;
         if (hasAnyUrlFilter && !filtersMatch) {
             dispatch(updateFilters({ ...filters, ...urlFilters }));
-            dispatch(fetchProducts({
-                ...filters,
-                ...urlFilters,
-                minPrice: urlFilters.priceRange[0],
-                maxPrice: urlFilters.priceRange[1],
-                page: 1,
-            }));
         }
     }, [location.search, creators]);
     useEffect(() => {
@@ -162,10 +155,30 @@ const FiltersBar: React.FC = () => {
             priceRange[0] !== minProductPrice ||
             priceRange[1] !== maxProductPrice;
     };
-    const handleFilter = () => {
+    // Build filters for RTK Query
+    const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
+    const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
+    const queryFilters = React.useMemo(() => ({
+        q: searchValue || undefined,
+        category: mainCategory,
+        subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
+        creator: creator?.value || undefined,
+        minPrice: priceRange[0] !== minProductPrice ? priceRange[0] : undefined,
+        maxPrice: priceRange[1] !== maxProductPrice ? priceRange[1] : undefined,
+        page: 1,
+    }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
+
+    // Use RTK Query hook
+    const { data: productsData, refetch } = useGetProductsQuery(queryFilters);
+    useEffect(() => {
+        if (productsData && Array.isArray(productsData)) {
+            dispatch({ type: 'marketplace/setProducts', payload: productsData });
+        }
+    }, [productsData, dispatch]);
+
+    // Helper to build filter params
+    const buildFilterParams = () => {
         const params = new URLSearchParams(location.search);
-        const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
-        const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
         if (mainCategory) {
             params.set('category', mainCategory);
         } else {
@@ -192,20 +205,14 @@ const FiltersBar: React.FC = () => {
         } else {
             params.delete('creator');
         }
-        const qParam = params.get('q') || '';
-        const pageParam = params.get('page') ? Number(params.get('page')) : 1;
-        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creatorId, priceRange }));
-        dispatch(fetchProducts({
-            ...filters,
-            category: mainCategory,
-            subCategories: mainCategory ? subCategoriesArr : undefined,
-            creator: creatorId,
-            minPrice: priceRange[0],
-            maxPrice: priceRange[1],
-            q: qParam,
-            page: pageParam,
-        }));
+        return params;
+    };
+
+    const handleFilter = () => {
+        const params = buildFilterParams();
+        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+        refetch();
     };
     const searchCreator = useRef(
         debounce((event: { query: string }) => {
@@ -220,14 +227,20 @@ const FiltersBar: React.FC = () => {
 
 
     const handleReset = () => {
+    // Helper to build reset params
+    const buildResetParams = () => {
         const params = new URLSearchParams(location.search);
         params.delete('creator');
         params.delete('category');
         params.delete('subCategories');
         params.delete('minPrice');
         params.delete('maxPrice');
-        setCategoryFilters([]);
-        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+        params.set('page', '1');
+        return params;
+    };
+    const params = buildResetParams();
+    setCategoryFilters([]);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
     return (

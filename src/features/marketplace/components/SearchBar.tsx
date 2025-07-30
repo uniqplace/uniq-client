@@ -4,10 +4,9 @@ import { Button } from 'primereact/button';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
-import { fetchProducts } from '../thunks';
+import { useGetProductsQuery } from '../slices/productApiSlice';
 import { updateFilters } from '../slices/marketplaceSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
-import type { CategoryFiltersType } from '../../../types';
 
 const SearchBar: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
@@ -23,27 +22,25 @@ const SearchBar: React.FC = () => {
         dispatch(updateFilters({ ...filters, searchTerm: urlSearch }));
     }, [location.search]);
 
+    // Build filters for RTK Query
+    const params = new URLSearchParams(location.search);
+    const categoryParam = params.get('category');
+    // Treat category as a string ID
+    const urlCategory: string | undefined = categoryParam || undefined;
+    const queryFilters = React.useMemo(() => ({
+        ...filters,
+        q: searchTerm.trim(),
+        category: urlCategory,
+        page: 1,
+    }), [filters, searchTerm, urlCategory]);
+    const { refetch } = useGetProductsQuery(queryFilters);
+
     const handleSearch = () => {
         const trimmedSearch = searchTerm.trim();
-        const params = new URLSearchParams(location.search);
         if (trimmedSearch) params.set('q', trimmedSearch); else params.delete('q');
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
         dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
-        let urlCategory: CategoryFiltersType | undefined = undefined;
-        const categoryParam = params.get('category');
-        if (categoryParam) {
-            try {
-                urlCategory = JSON.parse(categoryParam);
-            } catch {
-                urlCategory = undefined;
-            }
-        }
-        dispatch(fetchProducts({
-            ...filters,
-            q: trimmedSearch,
-            subCategories: urlCategory,
-            page: 1,
-        }));
+        refetch();
     };
 
 

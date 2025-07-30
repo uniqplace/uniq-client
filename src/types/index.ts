@@ -151,6 +151,7 @@ interface BidRequestId {
   productId: ({ title: string }) & { _id?: string }& { description?: string };
   categoryId: string;
 }
+
 // 12. BidOffer
 export interface BidOffer {
   bidRequestId: BidRequestId;
