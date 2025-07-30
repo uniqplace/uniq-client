@@ -32,13 +32,13 @@ const BidRequestsTabs = () => {
             >
                 <TabPanel 
                     header={<span className={`text-base font-medium px-2 pb-2 ${activeIndex === 0 ? "text-gray-900" : "text-gray-400"}`}>Bid Requests I Created</span>}
-                    className="bg-transparent m-0 p-0 mt-4"
+                    className="bg-none m-0 p-0 mt-4"
                 >
                     <OpenBidPage />
                 </TabPanel>
                 <TabPanel 
                     header={<span className={`text-base font-medium px-2 pb-2 ${activeIndex === 1 ? "text-gray-900" : "text-gray-400"}`}>Bid Requests Sent To Me</span>}
-                    className="bg-transparent m-0 p-0 mt-4"
+                    className="bg-none m-0 p-0 mt-4"
                 >
                     <ManufacturerBidRequests />
                 </TabPanel>

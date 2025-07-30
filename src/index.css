@@ -79,3 +79,17 @@ button:focus-visible {
 .p-tabview .p-tabview-panels{
   background: none !important;
 }
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link{
+  background: none !important;
+  border-bottom: 2px solid #242424 !important;
+  color: #646cff !important;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link{
+  background: none !important;
+}
+
+.p-tabview-nav{
+  border: none !important;
+}
