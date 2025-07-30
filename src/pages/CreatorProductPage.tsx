@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {  useGetUserProductsQuery } from '../features/marketplace/slices/marketplaceApiSlice';
+import {  useGetUserProductsQuery } from '../features/marketplace/slices/productApiSlice';
 import ProductUploadForm from '../features/marketplace/components/ProductUploadForm';
 import { Button } from 'primereact/button';
 import ProductCard from '../features/marketplace/components/ProductCard';
