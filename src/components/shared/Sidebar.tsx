@@ -24,9 +24,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const menuItems = [
     { icon: 'pi pi-home', label: 'Home', href: '/' },
     { icon: 'pi pi-star', label: 'Marketplace', href: '/marketplace' },
-    { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/orders' },
+    { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/account/orders' },
     { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
     { icon: 'pi pi-info-circle', label: 'About', href: '/about' },
+    { icon: 'pi pi-briefcase', label: 'My Bidrequest', href:'/MyBidRequest' },
     { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
   ];
 

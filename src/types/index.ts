@@ -40,20 +40,42 @@ export interface Product {
 
 
 // 4. Order
+// export interface Order {
+//   id: string;
+//   productId: string;
+//   buyerId: string;
+//   creatorId: string;
+//   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+//   totalAmount: number;
+//   paymentMethod: string;
+//   shippingAddress: Address;
+//   notes?: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
+
 export interface Order {
   id: string;
   productId: string;
   buyerId: string;
-  creatorId: string;
+  creator: {name:string, _id:string};
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   totalAmount: number;
   paymentMethod: string;
   shippingAddress: Address;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  product: {
+    _id: string;
+    title: string;
+    images: string[];
+    creatorName: string;
+  },
+  notes?: string; 
 }
 
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+ 
 // 5. Address (used by Order)
 export interface Address {
   street: string;
