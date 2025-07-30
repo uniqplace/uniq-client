@@ -13,12 +13,12 @@ export const fetchCurrentUser = createAsyncThunk(
         throw new Error('No authentication token found');
       }
 
-      // Detect if it's a same-site or cross-site request
-      const isSameSite = window.location.hostname === new URL(API_BASE).hostname;
+      // Use 'omit' for production, 'include' for development
+      const isProduction = window.location.hostname !== 'localhost';
       
       const res = await fetch(`${API_BASE}/users/me`, { 
         method: 'GET',
-        credentials: isSameSite ? 'include' : 'omit', // ✅ Dynamic credentials
+        credentials: isProduction ? 'omit' : 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
