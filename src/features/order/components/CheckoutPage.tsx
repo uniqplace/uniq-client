@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
@@ -12,6 +12,7 @@ import './CheckoutPage.css';
 import { useCreateOrderMutation } from '../slices/orderApiSlice';
 import { Toast } from 'primereact/toast';
 import { useRef } from 'react';
+import { useGetProductByIdQuery } from '../../marketplace/slices/productApiSlice';
 
 interface CheckoutPageProps {
   product?: Product;
@@ -22,9 +23,21 @@ const SHIPPING_OPTIONS = [
   { label: 'Express (15$)', value: 'express', price: 15 },
 ];
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const location = useLocation();
-  const product = props.product || (location.state as { product?: Product })?.product;
+  const params = useParams();
+  const productIdFromParams = params.productId;
+  
+  const productFromState = location.state?.product;
+
+    const { 
+    data: productFromServer,
+    isLoading: productLoading,
+    isError: productError,
+  } = useGetProductByIdQuery(productIdFromParams!, { skip: !!productFromState });
+  
+  let product = productFromState || productFromServer;
+
   const [quantity, setQuantity] = useState<number>(1);
   const [shipping, setShipping] = useState<string>('standard');
   const [shippingAddress, setShippingAddress] = useState<Address>({
@@ -42,7 +55,18 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const [createOrder, { isError, isLoading }] = useCreateOrderMutation();
   const toast = useRef<Toast>(null);
 
-  if (!product) {
+  if (productLoading) {
+    return (
+      <div className="flex align-items-center justify-content-center min-h-screen">
+        <div className="text-center">
+          <i className="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4"></i>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Product...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product || productError) {
     return (
       <div className="flex align-items-center justify-content-center min-h-screen">
         <div className="text-center">
