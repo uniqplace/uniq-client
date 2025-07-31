@@ -20,7 +20,7 @@ const apiSlice = createApi({
   }),
   tagTypes: ['Product','Category','SubCategory','Order','User','ManufacturerProfile'],
   endpoints: (builder) => ({
-    // קיים
+  
     uploadImages: builder.mutation<string[], FormData>({
       query: (formData) => ({
         url: '/upload',

@@ -25,7 +25,6 @@ export const manufacturerApiSlice = apiSlice.injectEndpoints({
       providesTags: ['ManufacturerProfile'],
     }),
   }),
-  overrideExisting: false,
 });
 
 export const {

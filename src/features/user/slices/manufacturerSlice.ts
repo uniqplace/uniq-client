@@ -3,12 +3,17 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { ManufacturerProfile } from '../../../types';
 
 
+
 interface ManufacturerState {
   profile: ManufacturerProfile | null;
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: ManufacturerState = {
   profile: null,
+  loading: false,
+  error: null,
 };
 
 const manufacturerSlice = createSlice({

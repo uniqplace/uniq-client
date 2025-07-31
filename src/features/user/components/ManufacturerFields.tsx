@@ -70,7 +70,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
     const validate = () => {
       const newErrors: typeof errors = { services: '', categories: '', location: '', availableFrom: '' };
       if (!servicesOffered.some(s => s.trim())) newErrors.services = 'At least one service is required';
-      if (!categories[0] || !categories[0].trim()) newErrors.categories = 'Category is required';
+      if (categories.length === 0 || !categories[0] || !categories[0].trim()) newErrors.categories = 'Category is required';
       if (!location.trim()) newErrors.location = 'Location is required';
       if (!availableFrom) newErrors.availableFrom = 'Available from date is required';
       setErrors(newErrors);
@@ -83,7 +83,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
       if (showErrors) {
         const newErrors: typeof errors = { services: '', categories: '', location: '', availableFrom: '' };
         if (!servicesOffered.some(s => s.trim())) newErrors.services = 'At least one service is required';
-        if (!categories[0] || !categories[0].trim()) newErrors.categories = 'Category is required';
+        if (categories.length === 0 || !categories[0] || !categories[0].trim()) newErrors.categories = 'Category is required';
         if (!location.trim()) newErrors.location = 'Location is required';
         if (!availableFrom) newErrors.availableFrom = 'Available from date is required';
         setErrors(newErrors);

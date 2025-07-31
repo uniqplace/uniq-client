@@ -208,7 +208,8 @@ const ProfilePage: React.FC = () => {
       try {
         let manufacturerActionResult;
         if (user.role !== 'manufacturer') {
-          // יצירה
+          // Creation  
+
           manufacturerActionResult = await createManufacturerProfileMutation({
             userId: user.id ?? '',
             name: formData.name || user.name || '',
@@ -218,7 +219,7 @@ const ProfilePage: React.FC = () => {
             
           }).unwrap();
         } else {
-          // עדכון
+         // Update 
           manufacturerActionResult = await updateManufacturerProfileByUserIdMutation({
             userId: user.id ?? '',
             name: formData.name || user.name || '',
