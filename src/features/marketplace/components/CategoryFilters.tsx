@@ -69,10 +69,17 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
             <label
               key={cat._id}
               className={`flex items-center gap-2 cursor-pointer ${checked ? 'font-semibold text-blue-700' : ''}`}
+              
               role="checkbox"
               aria-checked={checked}
             >
-              <Checkbox
+              <Checkbox     
+  // className="p-checkbox-sm rounded-md mt-0.5"
+
+  // className="p-checkbox-sm mt-0.5"
+ 
+
+
                 inputId={`category-${cat._id}`}
                 checked={checked}
                 onChange={e => {
