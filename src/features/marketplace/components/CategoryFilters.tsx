@@ -74,12 +74,6 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
               aria-checked={checked}
             >
               <Checkbox     
-  // className="p-checkbox-sm rounded-md mt-0.5"
-
-  // className="p-checkbox-sm mt-0.5"
- 
-
-
                 inputId={`category-${cat._id}`}
                 checked={checked}
                 onChange={e => {
