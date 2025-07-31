@@ -105,7 +105,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
             </div>
             <div className="col-span-1"></div>
           </div>
-
           <div>
             {sortedOffers.map((offer: BidOffer, idx) =>
               offer.manufacturerId && offer.manufacturerId.userId ? (

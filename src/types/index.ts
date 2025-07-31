@@ -166,9 +166,10 @@ export interface Filters {
   searchTerm: string;
   creator: string;
 }
-
 // 11. Category Filters
 export type CategoryFiltersType = string[];
+
+
 
 
 interface UserToBidOffer {

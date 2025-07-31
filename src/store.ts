@@ -28,7 +28,10 @@ export const store = configureStore({
   // Add the API middleware to the store
   // temporary
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+    getDefaultMiddleware({
+      serializableCheck: false,
+      immutableCheck: false,
+    }).concat(apiSlice.middleware),
 });
 
 
