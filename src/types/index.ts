@@ -24,7 +24,7 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
+  CreationStatus?: 'Define Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'View Live Bids' |'Choose Manufacturer'|'Agree to Terms'|'Make Payment'|'Track Delivery'| 'Complete Delivery';
   //categories: string[];
   creator: Creator;
   //status: 'active' | 'sold' | 'inactive';
@@ -113,11 +113,14 @@ export interface Category {
 export interface BidRequest {
   _id: string;
   productId:  Product;
-  categoryId: {id:string, name:string};
+  categoryId: {id:string, name:string} | string;
   locationPreference: string;
   status: 'open' | 'expired' | 'closed';
   createdAt: Date;
   deliveryTimeframe : string;
+  deliveryMethod: 'pickup' | 'shipping';
+  priceRange: { min: number; max: number };
+  ratingPreference?: number | null; // Optional field for rating preference
 }
 
 export interface Filters {

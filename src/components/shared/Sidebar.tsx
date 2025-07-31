@@ -5,6 +5,7 @@ import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { clearUser } from '../../features/user/slices/userSlice';
+import { clearStepper } from '../../features/deployProcess/slices/stepperSlice';
 import { api } from '../../services/api';
 import type { RootState } from '../../store';
 
@@ -42,8 +43,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const handleLogout = async () => {
     await api.logoutApi();
     dispatch(clearUser());
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    dispatch(clearStepper());
+    localStorage.clear(); // מוחק את כל ה-localStorage
     navigate('/login');
   };
 

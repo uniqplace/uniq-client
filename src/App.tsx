@@ -55,6 +55,7 @@ function App() {
   useEffect(() => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
+  console.log('Token from auth:', localStorage.getItem('token'));
 
   useEffect(() => {
     if (loading) setWasLoading(true);
@@ -111,37 +112,37 @@ function App() {
       <NewHeader />
       <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
       <MainContent>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/user/:id" element={<UserProfile />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/uploadProduct" element={<ProductUploadForm />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
-        <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
-        <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
-        <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
-        <Route path="/MyBidRequest" element={<OpenBidPage />} />
-    </Routes>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/user/:id" element={<UserProfile />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/uploadProduct" element={<ProductUploadForm />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+          <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+          <Route path="/checkout/:productId" element={<CheckoutPage />} />
+          <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
+          <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
+          <Route path="/MyBidRequest" element={<OpenBidPage />} />
+        </Routes>
       </MainContent>
       <h5>Socket.IO + React Toastify</h5>
 
-      
 
-        <button
-          onClick={() => {
-            fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
-          }}
-        >
-          Simulate New Bid For User {user.name}
-        </button>
-     
+
+      <button
+        onClick={() => {
+          fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
+        }}
+      >
+        Simulate New Bid For User {user.name}
+      </button>
+
 
     </div>
   );
