@@ -12,7 +12,6 @@ import 'primeicons/primeicons.css';
 import './App.css';
 import './index.css';
 import Marketplace from './pages/Marketplace';
-import Orders from './pages/Orders';
 import ProductPage from './pages/ProductPage';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -25,12 +24,17 @@ import './styles/sidebar.css';
 import ProfilePage from './features/user/components/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
 import { CheckoutPage } from './features/order/components/CheckoutPage';
-import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import BidRequestsTabs from './features/deployProcess/components/BidRequestsTabs';
+import MyBidRequestsNotifications from './pages/MyBidRequestsNotifications';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
-import socket from './services/socket';
+import { initializeSocket, disconnectSocket } from './services/socket';
 import { toast } from 'react-toastify';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
+import BidRequestDetails from './features/deployProcess/components/BidRequestDetails';
+import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
+import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
+import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 
 
 
@@ -77,21 +81,30 @@ function App() {
     console.log('user state:', user);
   }, [user]);
 
+  // Initialize socket only when user is authenticated
   useEffect(() => {
-    const handleBidSentConfirmation = (data: any) => {
-      console.log('Bid sent confirmation:', data);
-      if (data.error) {
-        toast.error(data.message);
-      } else {
-        toast.success(data.message);
-      }
-    };
-    socket.on('bid_sent_confirmation', handleBidSentConfirmation);
+    if (user?.id && user?.email) {
+      const socket = initializeSocket();
+      
+      const handleBidSentConfirmation = (data: any) => {
+        console.log('Bid sent confirmation:', data);
+        if (data.error) {
+          toast.error(data.message);
+        } else {
+          toast.success(data.message);
+        }
+      };
+      
+      socket.on('bid_sent_confirmation', handleBidSentConfirmation);
 
-    return () => {
-      socket.off('bid_sent_confirmation', handleBidSentConfirmation);
-    };
-  }, []);
+      return () => {
+        socket.off('bid_sent_confirmation', handleBidSentConfirmation);
+      };
+    } else {
+      // Disconnect socket when user is not authenticated
+      disconnectSocket();
+    }
+  }, [user?.id, user?.email]);
 
   //if (loading) {
   //  return <div>Loading...</div>;
@@ -115,7 +128,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/account/orders" element={<MyOrdersWrapper />} />
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
@@ -125,8 +138,12 @@ function App() {
         <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
         <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
         <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
-        <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
+        <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
+        <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
+        <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
+        <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
+        <Route path="/BidOffer" element={<BidOfferForm />} />
+        {/* <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} /> */}
         <Route path="/MyBidRequest" element={<OpenBidPage />} />
     </Routes>
       </MainContent>

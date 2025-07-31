@@ -7,10 +7,33 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE}/users/me`, { credentials: 'include' }); 
-      if (!res.ok) throw new Error('Not authenticated');
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Set cookie for cross-site request
+      document.cookie = `token=${token}; path=/; secure; samesite=none`;
+
+      const res = await fetch(`${API_BASE}/users/me`, { 
+        method: 'GET',
+        credentials: 'include', // ✅ Include to send cookies
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }); 
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Not authenticated');
+        }
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       return await res.json();
     } catch (err: any) {
+      console.error('fetchCurrentUser error:', err);
       return rejectWithValue(err.message);
     }
   }
