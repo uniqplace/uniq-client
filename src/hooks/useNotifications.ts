@@ -51,7 +51,7 @@ export const useNotifications = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getNotifications(userId, pageNum);
+      const res = await getNotifications(userId!, pageNum); // Non-null assertion operator
       const notificationsArr = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
       const unreadNotifications = notificationsArr.filter((n: Notification) => !n.isRead);
       if (pageNum === 1) {

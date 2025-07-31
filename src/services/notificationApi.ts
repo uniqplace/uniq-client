@@ -19,7 +19,7 @@ const api = axios.create({
 api.defaults.withCredentials = true;
 
 
-export const getNotifications = async (userId: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
+export const getNotifications = async (userId?: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
   return safeFetch<NotificationsResponse>(
     async () => {
       if (!userId) {
