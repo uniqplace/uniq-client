@@ -18,13 +18,13 @@ export const fetchCurrentUser = createAsyncThunk(
       console.log('isProduction', isProduction);
       const res = await fetch(`${API_BASE}/users/me`, { 
         method: 'GET',
-        credentials:  'omit' ,
+        credentials: isProduction ? 'omit' : 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         }
       }); 
-      
+      console.log('res', res);
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error('Not authenticated');
