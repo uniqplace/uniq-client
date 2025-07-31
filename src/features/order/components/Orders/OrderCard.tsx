@@ -4,6 +4,7 @@ import { Button } from 'primereact/button';
 import type { Order, OrderStatus } from '../../../../types';
 import { getStatusTag } from './getStatusTag';
 import { OrderStatusTracker } from './OrderStatus';
+import { useNavigate } from 'react-router-dom';
 
 interface OrderCardProps {
   order: Order;
@@ -12,7 +13,7 @@ interface OrderCardProps {
 
 export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
   const [showStatusOrder, setShowStatusOrder] = useState<string | null>(null);
-
+ const navigate = useNavigate();
   return (
     <div className="border rounded-lg p-4 shadow-sm bg-white">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -49,6 +50,13 @@ export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
           size="small"
           className="p-button-sm text-xs flex-1"
           onClick={() => setShowStatusOrder(order.status)}
+        />
+        <Button
+          label="Repeat"
+          icon="pi pi-refresh"
+          size="small"
+          className="p-button-sm text-xs flex-1"
+          onClick={() => navigate(`/checkout/${order.product._id}`)}
         />
       </div>
 
