@@ -3,7 +3,6 @@ import type { UserState } from '../../user/slices/userSlice';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {

@@ -1,7 +1,5 @@
-// src/features/marketplace/marketplaceSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Category, Filters, Product, SubCategory } from '../../../types';
-import { fetchProducts, fetchProduct } from '../thunks';
 import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
 
 interface MarketplaceState {
@@ -87,6 +85,9 @@ const marketplaceSlice = createSlice({
     removeProduct(state, action: PayloadAction<string>) {
       state.products = state.products.filter(p => p._id !== action.payload);
     },
+    setProducts(state, action: PayloadAction<Product[]>) {
+      state.products = action.payload;
+    },
     setCreators: (state, action: PayloadAction<Array<{ label: string; value: string; avatar?: string }>>) => {
       state.creators = action.payload;
     },
@@ -99,21 +100,6 @@ const marketplaceSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.loading = false;
-        if (Array.isArray(action.payload?.data)) {
-          state.products = action.payload.data;
-          state.totalPages = action.payload.totalPages || 1;
-        }
-      })
-      .addCase(fetchProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       .addCase(fetchCreatorsAndManufacturers.fulfilled, (state, action) => {
         const users = Array.isArray(action.payload) ? action.payload : [];
         const creatorOptions = users.map((user: { _id: string; name: string; avatar?: string }) => ({
@@ -126,18 +112,6 @@ const marketplaceSlice = createSlice({
       .addCase(fetchSubCategories.fulfilled, (state, action: PayloadAction<Record<string, SubCategory[]>>) => {
         state.subCategories = action.payload;
       })
-      .addCase(fetchProduct.pending, (state) => {
-        state.productLoading = true;
-        state.productError = null;
-      })
-      .addCase(fetchProduct.fulfilled, (state, action) => {
-        state.productLoading = false;
-        state.selectedProduct = action.payload;
-      })
-      .addCase(fetchProduct.rejected, (state, action) => {
-        state.productLoading = false;
-        state.productError = action.payload as string;
-      });
   },
 });
 

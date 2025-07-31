@@ -85,9 +85,10 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                   } else {
                     // Uncheck category and all its subcategories
                     setOpenCategory(null);
+                    next = [];
                   }
                   updateCategoryParams(cat._id, next, !!isChecked);
-                  onChange(next);
+                  onChange(next); // next is [] if unchecked, so subCategories will be cleared in slice
                 }}
               />
               <span>{cat.name}</span>

@@ -4,7 +4,11 @@
 
 import type { Category, Product } from '../types';
 import axios from 'axios';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api';
+console.log("API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+console.log("import.meta.env:", import.meta.env);
+console.log("VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+
 
 // Generic API response interface to match your backend response format
 interface ApiResponse<T> {
@@ -46,30 +50,6 @@ const logoutApi = async () => {
 };
 
 export const api = {
-  // Fetch products with filters and pagination
-  getProducts: async (params: {
-    q?: string;
-    category?: string;
-    subCategories?: string[];
-    creator?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    page?: number;
-  } = {}): Promise<ApiResponse<{ data: Product[]; totalPages: number }>> => {
-    const query = new URLSearchParams();
-    if (params.q) query.append('q', params.q);
-    if (params.category) query.append('category', params.category);
-    if (Array.isArray(params.subCategories) && params.subCategories.length > 0) {
-      query.append('subCategories', JSON.stringify(params.subCategories));
-    }
-    if (params.creator) query.append('creator', params.creator);
-    if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
-    if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());
-    if (params.page) query.append('page', params.page.toString());
-
-    // Use generic get helper
-    return await get<{ data: Product[]; totalPages: number }>(`/products/search?${query.toString()}`);
-  },
 
   // Fetch single product by ID - used for product detail page
   getProduct: async (id: string): Promise<ApiResponse<Product>> => {

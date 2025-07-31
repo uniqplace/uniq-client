@@ -36,6 +36,7 @@
   min-width: 0;
   background: #f6f7fb;
 }
+
 .p-input-icon-left {
   position: relative;
   display: flex;
@@ -53,6 +54,7 @@
 .p-input-icon-left > input {
   padding-left: 2.2em !important;
 }
+
 @media (min-width: 992px) {
   .checkout-columns {
     flex-direction: row;
@@ -62,6 +64,8 @@
     height: auto;
     margin: 0 16px;
   }
-  /* סידור ידני של האייקון בשדה */
+}
+.p-input-icon-left .w-full {
+  margin-left: 20px;
 
 }
