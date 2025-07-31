@@ -27,8 +27,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/account/orders' },
     { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
     { icon: 'pi pi-info-circle', label: 'About', href: '/about' },
+    { icon: 'pi pi-briefcase', label: 'My Bid Requests', href: '/MyBidRequest' },
     { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
-    { icon: 'pi pi-list', label: 'My Bid Requests', href: '/MyBidRequest' },
   ];
 
   // Add auth items if user is not logged in
@@ -138,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-2">
             {allMenuItems.map((item) => (
-              <li key={item.href}>
+              <li key={item.href || item.href}>
                 <button
                   onClick={() => {
                     navigate(item.href);
