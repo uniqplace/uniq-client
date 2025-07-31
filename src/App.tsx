@@ -144,6 +144,8 @@ function App() {
         <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
         <Route path="/BidOffer" element={<BidOfferForm />} />
         {/* <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} /> */}
+        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
+        <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
         <Route path="/MyBidRequest" element={<OpenBidPage />} />
     </Routes>
       </MainContent>

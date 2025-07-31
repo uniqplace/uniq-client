@@ -13,6 +13,7 @@ import { useAppSelector } from '../../../../hooks/hooks';
 import { useEffect, useState } from 'react';
 import { getStatusTag } from './getStatusTag';
 import { OrderStatusTracker } from './OrderStatus';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   orders: Order[];
@@ -21,6 +22,7 @@ type Props = {
 export default function MyOrdersPage({ orders }: Props) {
 
   const user = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,7 +56,6 @@ export default function MyOrdersPage({ orders }: Props) {
 
   return (
     <div className="container max-w-none px-6 py-6">
-
       <div className="flex flex-wrap gap-4 mb-4 border p-4 rounded-md bg-white">
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
@@ -104,15 +105,23 @@ export default function MyOrdersPage({ orders }: Props) {
           size="small"
         >
           <Column
-            field='Product'
-            header="Product"
-            body={(rowData) => (
-              <div className="flex items-center gap-3">
-                <img src={rowData.product.images[0]} width={50} height={50} className="rounded" />
-                <span>{rowData.product.title}</span>
-              </div>
-            )}
-            sortable
+             field="Product"
+             header="Product"
+             body={(rowData) => (
+               <div className="flex items-center gap-3 w-full max-w-[240px]">
+                 <img
+                   src={rowData.product.images[0]}
+                   width={50}
+                   height={50}
+                   className="rounded flex-shrink-0"
+                   alt={rowData.product.title}
+                 />
+                 <span className="text-sm break-words whitespace-normal">
+                   {rowData.product.title}
+                 </span>
+               </div>
+             )}
+             sortable
           />
           <Column
             field="createdAt"
@@ -154,7 +163,13 @@ export default function MyOrdersPage({ orders }: Props) {
                   className="p-button-sm text-xs"
                   onClick={() => setShowStatusOrder(rowData.status)}
                 />
-                
+                <Button
+                  label="Repeat"
+                  icon="pi pi-refresh"
+                  size="small"
+                  className="p-button-sm text-xs flex-1"
+                  onClick={() => navigate(`/checkout/${rowData.product._id}`)}
+                />
               </div>
             )}
           />
