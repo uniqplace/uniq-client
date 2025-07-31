@@ -13,18 +13,24 @@ export const fetchCurrentUser = createAsyncThunk(
         throw new Error('No authentication token found');
       }
 
-      // Use 'omit' for production, 'include' for development
+      // For same-site requests (localhost), use credentials: 'include'
+      // For cross-site requests (production), we need a different approach
       const isProduction = window.location.hostname !== 'localhost';
-      console.log('isProduction', isProduction);
+      
+      if (isProduction) {
+        // For production, we need to set the cookie before making the request
+        document.cookie = `token=${token}; path=/; domain=.onrender.com; secure; samesite=none`;
+      }
+
       const res = await fetch(`${API_BASE}/users/me`, { 
         method: 'GET',
-        credentials: isProduction ? 'omit' : 'include',
+        credentials: 'include', // ✅ Always include to send cookies
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          // Remove Authorization header - backend expects cookies
         }
       }); 
-      console.log('res', res);
+      
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error('Not authenticated');
