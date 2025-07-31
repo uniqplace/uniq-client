@@ -15,12 +15,13 @@ export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
 
   return (
     <div className="border rounded-lg p-4 shadow-sm bg-white">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <img
           src={order.product.images[0]}
           alt={order.product.title}
-          className="w-16 h-16 rounded"
+          className="w-16 h-16 rounded self-start"
         />
+
         <div className="flex-1">
           <div className="font-semibold">{order.product.title}</div>
           <div className="text-sm text-gray-600">
@@ -28,7 +29,10 @@ export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
           </div>
           <div className="mt-1">{getStatusTag(order.status)}</div>
         </div>
-        <div className="text-sm font-bold">{order.totalAmount} ₪</div>
+
+        <div className="text-sm font-bold text-right sm:text-left whitespace-nowrap">
+          {order.totalAmount} ₪
+        </div>
       </div>
 
       <div className="flex justify-between gap-2 mt-4">
@@ -46,7 +50,6 @@ export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
           className="p-button-sm text-xs flex-1"
           onClick={() => setShowStatusOrder(order.status)}
         />
-        
       </div>
 
       {showStatusOrder && (
