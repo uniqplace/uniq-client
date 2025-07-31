@@ -91,7 +91,10 @@ async function addNewOrder(): Promise<void> {
       totalAmount,
       shippingAddress,
       notes,
-      creatorId: product?.creator._id,
+      /////////////////////////////////////////////////////////////////////////////////////
+      creator:{name: product?.creator.name || '', _id: product?.creator._id || ''},
+      /////////////////////////////////////////////////////////////////////////////////////
+      // creatorId: product?.creator._id,
       buyerId: JSON.parse(localStorage.getItem('user') || '{}').id,
       status: 'pending',
     }).unwrap();

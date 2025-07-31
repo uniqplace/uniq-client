@@ -7,7 +7,6 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import Cookies from 'js-cookie';
 import { setUser } from '../features/user/slices/userSlice';
 import { fetchCurrentUser } from '../features/marketplace/thunks/userThunk';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
@@ -31,10 +30,19 @@ const Login = () => {
   const handleLogin = async () => {
     setErrorMessage('');
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, 
+        { email, password },
+        { 
+          withCredentials: true, // ✅ Add this for cross-site authentication
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
 
       if (res.data.success) {
-        Cookies.set('token', res.data.token, { expires: 7 });
+        // Store token in localStorage for cross-site API calls
+        localStorage.setItem('token', res.data.token);
         const user = res.data.user;
 
         localStorage.setItem('user', JSON.stringify({
@@ -52,7 +60,7 @@ const Login = () => {
         const role = res.data.user.role;
         if (userId && role) {
           socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
-            console.log('User registered to socket:', { userId, role });
+          console.log('User registered to socket:', { userId, role });
         }
 
         navigate('/');
