@@ -4,6 +4,15 @@ import type { RootState } from '../../../store';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { OpenBidPage } from './OpenBidPage';
 import ManufacturerBidRequests from './ManufacturerBidRequests';
+import classNames from 'classnames';
+
+const DEFAULT_TAB_INDEX = 1;
+
+const getTabHeaderClass = (isActive: boolean) =>
+    classNames('text-base font-medium px-2 pb-2', {
+        'text-gray-900': isActive,
+        'text-gray-400': !isActive,
+    });
 
 const BidRequestsTabs = () => {
     const user = useSelector((state: RootState) => state.user);
@@ -17,7 +26,7 @@ const BidRequestsTabs = () => {
         );
     }
 
-    const [activeIndex, setActiveIndex] = useState(1);
+    const [activeIndex, setActiveIndex] = useState(DEFAULT_TAB_INDEX);
     return (
         <div className="max-w-6xl w-full flex flex-col items-start mt-0 ml-0">
             <TabView
@@ -31,13 +40,13 @@ const BidRequestsTabs = () => {
                 }}
             >
                 <TabPanel 
-                    header={<span className={`text-base font-medium px-2 pb-2 ${activeIndex === 0 ? "text-gray-900" : "text-gray-400"}`}>Bid Requests I Created</span>}
+                    header={<span className={getTabHeaderClass(activeIndex === 0)}>Bid Requests I Created</span>}
                     className="bg-none m-0 p-0 mt-4"
                 >
                     <OpenBidPage />
                 </TabPanel>
                 <TabPanel 
-                    header={<span className={`text-base font-medium px-2 pb-2 ${activeIndex === 1 ? "text-gray-900" : "text-gray-400"}`}>Bid Requests Sent To Me</span>}
+                    header={<span className={getTabHeaderClass(activeIndex === 1)}>Bid Requests Sent To Me</span>}
                     className="bg-none m-0 p-0 mt-4"
                 >
                     <ManufacturerBidRequests />

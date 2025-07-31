@@ -6,13 +6,7 @@ import { deduplicateNotifications } from '../utils/notificationHelpers';
 import getUserIdFromToken from '../utils/getUserIdFromToken';
 import { getNotificationsFetch } from '../services/notificationApi';
 import { useNavigate } from 'react-router-dom';
-
-interface Notification {
-  _id: string;
-  title: string;
-  isRead: boolean;
-  [key: string]: any;
-}
+import type { Notification } from '../types/notification';
 
 const MyBidRequestsNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -29,12 +23,15 @@ const MyBidRequestsNotifications = () => {
       setError(null);
       try {
         const userId = getUserIdFromToken();
-        if (!userId) throw new Error('User not authenticated');
+        if (!userId) {
+          navigate('/login');
+          return;
+        }
         const limit = 10;
         const { notifications, pages } = await getNotificationsFetch(userId, pageNum, limit);
-        const bidNotifications = deduplicateNotifications(notifications).filter(
-          n => n.type === 'NEW_BID' || n.bidRequestId
-        );
+        const bidNotifications = deduplicateNotifications(notifications)
+          .filter((n) => n.type === 'NEW_BID' || n.bidRequestId)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setNotifications(bidNotifications);
         setTotalPages(pages);
       } catch (err: any) {
@@ -43,8 +40,9 @@ const MyBidRequestsNotifications = () => {
         setLoading(false);
       }
     };
+
     fetchNotifications(page);
-  }, [page]);
+  }, [page, navigate]);
 
   return (
     <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow">
@@ -65,7 +63,8 @@ const MyBidRequestsNotifications = () => {
             optionLabel="title"
             style={{ height: '32rem', overflowY: 'auto', marginBottom: '1.5rem' }}
             itemTemplate={(n) => (
-              <div className="p-3 border-b text-base cursor-pointer"
+              <div
+                className="p-3 border-b text-base cursor-pointer"
                 onClick={() => {
                   const notificationUserId = n.userId;
                   if (n.link) {
@@ -73,7 +72,8 @@ const MyBidRequestsNotifications = () => {
                   } else if (n.bidRequestId) {
                     navigate(`/bids/${n.bidRequestId}`, { state: { userId: notificationUserId } });
                   }
-                }}>
+                }}
+              >
                 <span className={n.isRead ? '' : 'font-bold'}>{n.title}</span>
               </div>
             )}

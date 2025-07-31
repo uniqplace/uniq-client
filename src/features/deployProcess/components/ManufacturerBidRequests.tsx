@@ -9,6 +9,7 @@ import type { BidRequest } from '../../../types';
 import type { RootState } from '../../../store';
 import { Tag } from 'primereact/tag';
 import { getBidRequestsForManufacturer } from '../slices/BidRequestSlice';
+import { getNestedFieldValue } from '../../../utils/objectHelpers';
 
 const ManufacturerBidRequests = () => {
   const navigate = useNavigate();
@@ -56,10 +57,6 @@ const ManufacturerBidRequests = () => {
     return '-'; 
   };
 
-  const title = (
-    <h2 className="text-xl font-bold mb-4 mt-8"> Bid Requests Sent to Me</h2>
-  );
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -75,7 +72,7 @@ const ManufacturerBidRequests = () => {
   if (!Array.isArray(bidRequests) || bidRequests.length === 0) {
     return (
       <div className="p-4 text-center text-gray-600">
-        {title}
+        <h2 className="text-xl font-bold mb-4 mt-8"> Bid Requests Sent to Me</h2>
         <p>There are no bid requests to display at this time.</p>
       </div>
     );
@@ -83,7 +80,7 @@ const ManufacturerBidRequests = () => {
 
   return (
     <div className="p-4" style={{ margin: 0, padding: 0, background: 'none' }}>
-      {title}
+      <h2 className="text-xl font-bold mb-4 mt-8"> Bid Requests Sent to Me</h2>
       <DataTable
         value={bidRequests}
         paginator
@@ -93,21 +90,13 @@ const ManufacturerBidRequests = () => {
       >
         <Column
           field="productId"
-          body={(rowData: BidRequest) =>
-            typeof rowData.productId === 'object' && rowData.productId !== null && 'title' in rowData.productId
-              ? rowData.productId.title
-              : '-'
-          }
+          body={(rowData: BidRequest) => getNestedFieldValue(rowData, 'productId', 'title') || '-'}
           header="Product"
           sortable
         />
         <Column
           field="categoryId"
-          body={(rowData: BidRequest) =>
-            typeof rowData.categoryId === 'object' && rowData.categoryId !== null && 'name' in rowData.categoryId
-              ? (rowData.categoryId as { name?: string }).name || '-'
-              : '-'
-          }
+          body={(rowData: BidRequest) => getNestedFieldValue(rowData, 'categoryId', 'name') || '-'}
           header="Category"
           sortable
         />
@@ -123,6 +112,7 @@ const ManufacturerBidRequests = () => {
         <Column
           field="deliveryTimeframe"
           header="Delivery Date"
+          body={(row) => dateBodyTemplate(row, 'deliveryTimeframe')}
           sortable
           sortField="deliveryTimeframe"
           dataType="date"

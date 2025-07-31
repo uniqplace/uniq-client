@@ -1,99 +1,73 @@
 import { useEffect, useState } from 'react';
-import { useRef } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Bell } from 'lucide-react';
 import { ListBox } from 'primereact/listbox';
 import socket from '../../services/socket';
-import { getUnreadCount, getNotifications, markAsRead } from '../../services/notificationApi';
-import { toast } from 'react-toastify';
-import getUserIdFromToken from '../../utils/getUserIdFromToken';
+import  getUserIdFromToken from '../../utils/getUserIdFromToken';
 import { getCookie } from '../../utils/cookies';
+import { getUnreadCount, markAsRead } from '../../services/notificationApi';
 import { deduplicateNotifications } from '../../utils/notificationHelpers';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useNotifications } from '../../hooks/useNotifications';
 
-interface Notification {
-  _id: string;
-  title: string;
-  isRead: boolean;
-  [key: string]: any;
-}
-
-
+// Utility function to check if a value is an object
+const isObject = (value: any): boolean => {
+  return value !== null && typeof value === 'object';
+};
 
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const [count, setCount] = useState<number>(0);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const [authError, setAuthError] = useState<boolean>(false);
+  const {
+    count,
+    notifications,
+    hasMore,
+    authError,
+    loading,
+    error,
+    toastRef,
+    setNotifications,
+    setCount,
+    loadNotifications,
+    loadMore,
+  } = useNotifications();
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const toastRef = useRef<Toast>(null);
 
   useEffect(() => {
     // Get token from cookies
     const token = getCookie('token');
     if (!token) {
-      setAuthError(true);
       return;
     }
 
     const userId = getUserIdFromToken();
     if (!userId) {
-      setAuthError(true);
       return;
     }
 
     socket.on('new_bid', (data: any) => {
-      getUnreadCount()
-        .then((res) => setCount(res.data.count))
-        .catch(() => { });
+      setCount((prev) => prev + 1);
       setNotifications((prev) => [data.payload, ...prev]);
     });
 
-    getUnreadCount()
-      .then((res) => setCount(res.data.count))
-      .catch((err) => {
-        if (err?.response?.status === 401) setAuthError(true);
-      });
-    loadNotifications(1);
-
-
-
-
     return () => {
-      socket.off('general_notification');
+      socket.off('new_bid'); // Updated to match the listener event name
     };
   }, []);
 
-  const loadNotifications = async (pageNum: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchUnreadCount = async (setCount: (count: number) => void, toastRef: React.RefObject<Toast | null>) => {
     try {
-      const res = await getNotifications(pageNum);
-      const notificationsArr = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
-      // Filter only unread notifications
-      const unreadNotifications = notificationsArr.filter(n => !n.isRead);
-      if (pageNum === 1) {
-        setNotifications(unreadNotifications);
+      const res = await getUnreadCount();
+      setCount(res.data.count);
+    } catch (err) {
+      if (toastRef.current) {
+        toastRef.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch unread count', life: 3000 });
       } else {
-        setNotifications((prev) => [...prev, ...unreadNotifications]);
+        toast.error('Failed to fetch unread count');
       }
-      setHasMore(pageNum < (res.data?.pages ?? 1));
-      setPage(pageNum);
-    } catch (err: any) {
-      if (err?.response?.status === 401) setAuthError(true);
-      else setError('Error loading notifications');
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const loadMore = () => {
-    if (hasMore) loadNotifications(page + 1);
   };
 
   return (
@@ -144,19 +118,18 @@ const NotificationBell = () => {
                     optionLabel="title"
                     style={{ maxHeight: '16rem', overflowY: 'auto', marginTop: '1.5rem', flex: '1 1 auto' }}
                     onChange={async (e) => {
-                      const n = e.value;
-                      setNotifications((prev) => prev.filter(item => item && item._id && item._id !== n._id));
+                      if (!e.value || !isObject(e.value)) return; // Use the utility function
+                      const notification = e.value;
+                      setNotifications((prev) => prev.filter(item => item && item._id && item._id !== notification._id));
                       try {
-                        await markAsRead(n._id);
+                        await markAsRead(notification._id);
                         // Update bell counter after marking as read
-                        getUnreadCount()
-                          .then((res) => setCount(res.data.count))
-                          .catch(() => { });
+                        await fetchUnreadCount(setCount, toastRef);
                         setIsOpen(false);
-                        if (n.type === 'NEW_BID' && n.bidRequestId) {
-                          navigate(`/MyBidRequests/${n.bidRequestId}`);
-                        } else if (n.link) {
-                          navigate(n.link);
+                        if (notification.type === 'NEW_BID' && notification.bidRequestId) {
+                          navigate(`/MyBidRequests/${notification.bidRequestId}`);
+                        } else if (notification.link) {
+                          navigate(notification.link);
                         }
                       } catch (err) {
                         if (toastRef.current) {
@@ -166,9 +139,9 @@ const NotificationBell = () => {
                         }
                       }
                     }}
-                    itemTemplate={(n) => (
+                    itemTemplate={(notification) => (
                       <div className="p-2 border-b text-sm cursor-pointer">
-                        <span className={n.isRead ? '' : 'font-bold'}>{n.title}</span>
+                        <span className={notification.isRead ? '' : 'font-bold'}>{notification.title}</span>
                       </div>
                     )}
                   />
@@ -185,7 +158,7 @@ const NotificationBell = () => {
                 </div>
               )}
             </div>
-            <div className="px-4 pb-4 pt-2 border-t border-gray-200">
+            {/* <div className="px-4 pb-4 pt-2 border-t border-gray-200">
               <Button
                 label="Show all bid request notifications"
                 className="w-full p-button-sm p-button-info"
@@ -194,7 +167,7 @@ const NotificationBell = () => {
                   navigate('/myBidRequestsNotifications');
                 }}
               />
-            </div>
+            </div> */}
           </div>
         )}
       </div>
