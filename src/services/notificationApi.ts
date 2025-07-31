@@ -1,6 +1,3 @@
-
-
-
 import axios from 'axios';
 import type { NotificationsResponse } from '../types/notification';
 import getUserIdFromToken from '../utils/getUserIdFromToken';
@@ -22,11 +19,13 @@ const api = axios.create({
 api.defaults.withCredentials = true;
 
 
-export const getNotifications = async (page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
+export const getNotifications = async (userId?: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
   return safeFetch<NotificationsResponse>(
     async () => {
-      const userId = getUserIdFromToken();
-      if (!userId) throw new Error('User not authenticated');
+      if (!userId) {
+        console.error('getNotifications error: User ID is undefined. Ensure the user is authenticated.');
+        throw new Error('User not authenticated');
+      }
       const res = await api.get<NotificationsResponse>(`/notifications`, {
         params: { userId, page, limit },
         withCredentials: true,
@@ -43,8 +42,10 @@ export const getUnreadCount = async (): Promise<{ data: { count: number } }> => 
   return safeFetch<{ count: number }>(
     async () => {
       const userId = getUserIdFromToken();
-      console.log('getUnreadCount userId:', userId); // Debug log
-      if (!userId) throw new Error('User not authenticated');
+      if (!userId) {
+        console.error('getUnreadCount error: User ID is undefined. Ensure the user is authenticated.');
+        throw new Error('User not authenticated');
+      }
       const res = await api.get<{ count: number }>(`/notifications/unread-count`, {
         params: { userId },
         withCredentials: true,
@@ -70,4 +71,16 @@ export const markAsRead = async (id: string): Promise<{ data: any }> => {
   );
 };
 
-
+// Fetch notifications using fetch API (for use in React components)
+export async function getNotificationsFetch(userId: string, page: number = 1, limit: number = 10): Promise<{ notifications: any[]; pages: number }> {
+  const url = `${import.meta.env.VITE_API_BASE_URL}/notifications/${userId}?page=${page}&limit=${limit}`;
+  const response = await fetch(url, {
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Error loading notifications');
+  const data = await response.json();
+  return {
+    notifications: Array.isArray(data.notifications) ? data.notifications : [],
+    pages: data.pages || 1,
+  };
+}

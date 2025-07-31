@@ -10,7 +10,6 @@ import socketReducer from './features/socket/socketSlice';
 import apiSlice from './api/apiSlice';
 
 
-
 export const store = configureStore({
   reducer: {
     marketplace: marketplaceReducer,
@@ -24,7 +23,10 @@ export const store = configureStore({
     stepper: stepperReducer,
   },
 
+ 
 
+  // Add the API middleware to the store
+  // temporary
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,

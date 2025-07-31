@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -11,8 +10,14 @@ import type { RootState } from '../../../store';
 import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { BidOfferResponse } from '../../../types';
+import { useLocation } from 'react-router-dom';
 
-const BidOfferForm = ({ bidRequestId, manufacturerId }: { bidRequestId: string, manufacturerId: string }) => {
+const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManufacturerId }: { bidRequestId?: string, manufacturerId?: string }) => {
+  const location = useLocation();
+
+  const bidRequestId = propBidRequestId || location.state?.bidRequestId;
+  const manufacturerId = propManufacturerId || location.state?.manufacturerId;
+
   const [price, setPrice] = useState<number | null>(null);
   const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
   const [note, setNote] = useState('');
@@ -98,6 +103,10 @@ const BidOfferForm = ({ bidRequestId, manufacturerId }: { bidRequestId: string, 
   // פתרון לרינדור כשמשתמשים ב-ref:
   const [, setRerender] = useState(false);
   const forceUpdate = () => setRerender(r => !r);
+
+  if (!bidRequestId || !manufacturerId) {
+    return <div className="text-red-500 text-center">Missing required information to submit an offer.</div>;
+  }
 
   return (
     <form

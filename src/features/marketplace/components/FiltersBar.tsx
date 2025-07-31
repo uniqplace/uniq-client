@@ -284,3 +284,4 @@ const FiltersBar: React.FC = () => {
 };
 
 export default FiltersBar;
+

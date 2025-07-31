@@ -24,7 +24,7 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences'|'Send to Marketplace'| 'Select Manufacturer' |'Agreement'|'Payment & Order'|'Trucking & Delivery'|'Delivery';
+  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'Select Manufacturer' | 'Agreement' | 'Payment & Order' | 'Trucking & Delivery' | 'Delivery';
   //categories: string[];
   creator: Creator;
   //status: 'active' | 'sold' | 'inactive';
@@ -132,14 +132,31 @@ export interface Category {
   name: string;
 }
 
+export interface ManufacturerProfile {
+  _id: string;
+  name: string;
+}
+
+// Bid Manufacturer
+export interface BidManufacturer {
+  manufacturer: ManufacturerProfile; // ManufacturerProfile ID
+  status: 'read' | 'unread';
+}
+
+// Bid Request
 export interface BidRequest {
   _id: string;
-  productId:  Product;
-  categoryId: {id:string, name:string};
+  creatorId: string | User; // Creator ID or User object
+  productId: Product | string; // Product ID or Product object
+  categoryId: string | Category; // Category ID or Category object
   locationPreference: string;
-  status: 'open' | 'expired' | 'closed';
+  priceRange: { min: number; max: number };
+  deliveryTimeframe: string;
+  deliveryMethod: 'pickup' | 'shipping';
+  status: 'open' | 'closed' | 'expired';
+  manufacturers?: BidManufacturer[];
   createdAt: Date;
-  deliveryTimeframe : string;
+  updatedAt: Date;
 }
 
 export interface Filters {
@@ -149,9 +166,10 @@ export interface Filters {
   searchTerm: string;
   creator: string;
 }
-
 // 11. Category Filters
 export type CategoryFiltersType = string[];
+
+
 
 
 interface UserToBidOffer {
@@ -191,3 +209,12 @@ export interface BidOfferResponse {
   note?: string;
   attachmentUrl?: string;
 }
+
+export interface ManufacturerProfile {
+  userId: string;
+  name: string;
+  categories: string[];
+  location: string;
+  availableFrom: string;
+}
+
