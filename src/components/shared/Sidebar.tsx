@@ -1,4 +1,4 @@
-import React, {  useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Avatar } from 'primereact/avatar';
@@ -57,10 +57,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
               label={!user.avatarUrl && user.name ? user.name.charAt(0).toUpperCase() : undefined}
               shape="circle"
               size="large"
-              style={{ 
-                backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined, 
-                color: '#fff', 
-                fontSize: 20 
+              style={{
+                backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined,
+                color: '#fff',
+                fontSize: 20
               }}
             />
             <div className="flex-1 min-w-0">
@@ -90,8 +90,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
       if (isMobile && isOpen) {
         const sidebar = document.getElementById('sidebar');
         const hamburger = document.getElementById('hamburger');
-        if (sidebar && !sidebar.contains(event.target as Node) && 
-            hamburger && !hamburger.contains(event.target as Node)) {
+        if (sidebar && !sidebar.contains(event.target as Node) &&
+          hamburger && !hamburger.contains(event.target as Node)) {
           onToggle();
         }
       }
@@ -104,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const sidebarClasses = `
     fixed top-0 left-0 h-full bg-white dark:bg-gray-800 shadow-lg z-40
     transform transition-transform duration-300 ease-in-out
-    ${isMobile 
+    ${isMobile
       ? `w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`
       : 'w-64 translate-x-0'
     }
@@ -171,10 +171,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
                 shape="circle"
                 size="normal"
                 className="cursor-pointer"
-                style={{ 
-                  backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined, 
-                  color: '#fff', 
-                  fontSize: 18 
+                style={{
+                  backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined,
+                  color: '#fff',
+                  fontSize: 18
                 }}
                 onClick={(e) => menuRef.current?.toggle(e)}
               />
