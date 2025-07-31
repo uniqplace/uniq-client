@@ -19,11 +19,13 @@ const api = axios.create({
 api.defaults.withCredentials = true;
 
 
-export const getNotifications = async (page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
+export const getNotifications = async (userId?: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
   return safeFetch<NotificationsResponse>(
     async () => {
-      const userId = getUserIdFromToken();
-      if (!userId) throw new Error('User not authenticated');
+      if (!userId) {
+        console.error('getNotifications error: User ID is undefined. Ensure the user is authenticated.');
+        throw new Error('User not authenticated');
+      }
       const res = await api.get<NotificationsResponse>(`/notifications`, {
         params: { userId, page, limit },
         withCredentials: true,
@@ -40,8 +42,10 @@ export const getUnreadCount = async (): Promise<{ data: { count: number } }> => 
   return safeFetch<{ count: number }>(
     async () => {
       const userId = getUserIdFromToken();
-      console.log('getUnreadCount userId:', userId); // Debug log
-      if (!userId) throw new Error('User not authenticated');
+      if (!userId) {
+        console.error('getUnreadCount error: User ID is undefined. Ensure the user is authenticated.');
+        throw new Error('User not authenticated');
+      }
       const res = await api.get<{ count: number }>(`/notifications/unread-count`, {
         params: { userId },
         withCredentials: true,
