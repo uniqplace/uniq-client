@@ -18,8 +18,9 @@ const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Product','Category','SubCategory','Order','User'],
+  tagTypes: ['Product','Category','SubCategory','Order','User','ManufacturerProfile'],
   endpoints: (builder) => ({
+  
     uploadImages: builder.mutation<string[], FormData>({
       query: (formData) => ({
         url: '/upload',
@@ -27,14 +28,21 @@ const apiSlice = createApi({
         body: formData,
       }),
     }),
-      deleteImages: builder.mutation<any, string[]>({
+    deleteImages: builder.mutation<any, string[]>({
       query: (imageUrls) => ({
         url: '/upload',
         method: 'DELETE',
         body: imageUrls,
       }),
     }),
+
+    
   }),
 });
+
+
 export default apiSlice;
-export const { useUploadImagesMutation , useDeleteImagesMutation} = apiSlice;
+export const {
+  useUploadImagesMutation,
+  useDeleteImagesMutation,
+} = apiSlice;

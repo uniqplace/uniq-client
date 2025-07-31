@@ -1,8 +1,13 @@
 import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
-
 const socketUrl = import.meta.env.VITE_SOCKET_URL;
+// const socket = io(socketUrl, {
+//  withCredentials: true,
+//  transports: ['websocket'],
+//  path: import.meta.env.VITE_SOCKET_PATH || '/api/socket.io'
+// });
+
 
 export const initializeSocket = (): Socket => {
   if (!socket) {

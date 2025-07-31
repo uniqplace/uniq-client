@@ -11,11 +11,14 @@ import { updateUser } from '../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 import FilesUpload from '../../../components/shared/FilesUpload';
 import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slices/userApiSlice';
+import { useCreateManufacturerProfileMutation, useUpdateManufacturerProfileByUserIdMutation } from '../slices/manufacturerApiSlice';
+import { updateManufacturerProfile } from '../slices/manufacturerSlice';
+import ManufacturerFields, { type ManufacturerFieldsRef } from './ManufacturerFields';
 import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation } from '../../../api/apiSlice';
 import { useDeleteImagesMutation } from '../../../api/apiSlice';
 
-const ProfilePage = () => {
+const ProfilePage: React.FC = () => {
   const user = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -25,6 +28,8 @@ const ProfilePage = () => {
   const [uploadFilesMutation, { isLoading: isUploadingFiles, isError: isUploadFilesError, error: uploadFilesError }] = useUploadImagesMutation();
   const [updateUserAvatarMutation, { isLoading: isUpdatingAvatar, isError: isUpdateAvatarError, error: updateAvatarError }] = useUpdateUserAvatarMutation();
   const [deleteImagesMutation] = useDeleteImagesMutation();
+  const [createManufacturerProfileMutation] = useCreateManufacturerProfileMutation();
+  const [updateManufacturerProfileByUserIdMutation] = useUpdateManufacturerProfileByUserIdMutation();
 
   const [formData, setFormData] = useState({
     name: user.name || '',
@@ -44,6 +49,12 @@ const ProfilePage = () => {
   const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
   const [portfolioFileError, setPortfolioFileError] = useState<string | null>(null);
 
+  // Manufacturer fields
+  const [categories, setCategories] = useState<string[]>([]);
+  const [location, setLocation] = useState('');
+  const [availableFrom, setAvailableFrom] = useState('');
+  const manufacturerFieldsRef = useRef<ManufacturerFieldsRef>(null);
+
   useEffect(() => {
     setFormData({
       name: user.name || '',
@@ -56,7 +67,19 @@ const ProfilePage = () => {
     setServicesOffered(user.servicesOffered || []);
     setPortfolioUrls(user.portfolio || []);
     setAvatarLoadError(false);
+    setCategories([]);
+    setLocation('');
+    setAvailableFrom('');
   }, [user]);
+
+  // Reset manufacturer fields if role changes
+  useEffect(() => {
+    if (formData.role !== 'manufacturer') {
+      setCategories([]);
+      setLocation('');
+      setAvailableFrom('');
+    }
+  }, [formData.role]);
 
   useEffect(() => {
     if (isUpdateError) {
@@ -173,6 +196,45 @@ const ProfilePage = () => {
   }, [user]);
 
   const handleSave = async () => {
+    // Validate manufacturer fields if needed
+    if (formData.role === 'manufacturer' && manufacturerFieldsRef.current) {
+      const valid = manufacturerFieldsRef.current.validate();
+      if (!valid) {
+        toast.current?.show({ severity: 'error', summary: 'Validation Error', detail: 'Please fill in all required manufacturer fields.', life: 3000 });
+        return;
+      }
+    }
+    if (formData.role === 'manufacturer') {
+      try {
+        let manufacturerActionResult;
+        if (user.role !== 'manufacturer') {
+          // Creation  
+
+          manufacturerActionResult = await createManufacturerProfileMutation({
+            userId: user.id ?? '',
+            name: formData.name || user.name || '',
+            categories,
+            location,
+            availableFrom,
+            
+          }).unwrap();
+        } else {
+         // Update 
+          manufacturerActionResult = await updateManufacturerProfileByUserIdMutation({
+            userId: user.id ?? '',
+            name: formData.name || user.name || '',
+            categories,
+            location,
+            availableFrom,
+          }).unwrap();
+        }
+        dispatch(updateManufacturerProfile(manufacturerActionResult));
+      } catch (error) {
+        toast.current?.show({ severity: 'error', summary: 'Save Failed', detail: 'Failed to save manufacturer fields.', life: 3000 });
+        console.error('Failed to save manufacturer fields:', error);
+        return;
+      }
+    }
     try {
       const actionResult = await updateUserMutation({
         name: formData.name,
@@ -337,9 +399,23 @@ const ProfilePage = () => {
                   options={roleOptions}
                   optionLabel="label"
                   optionValue="value"
-                  onChange={(e) => setFormData({ ...formData, role: e.value })}
+                  onChange={(e) => {
+                    const newRole = e.value;
+                    if (newRole === 'manufacturer' && formData.role !== 'manufacturer') {
+                      // Only validate if switching to manufacturer
+                      if (manufacturerFieldsRef.current) {
+                        const valid = manufacturerFieldsRef.current.validate();
+                        if (!valid) {
+                          toast.current?.show({ severity: 'error', summary: 'Validation Error', detail: 'Please fill in all required manufacturer fields before switching to manufacturer.', life: 4000 });
+                          return;
+                        }
+                      }
+                    }
+                    setFormData({ ...formData, role: newRole });
+                  }}
                   placeholder="Select a Role"
                   className="w-full"
+                  disabled={user.role === 'manufacturer'}
                 />
               </div>
 
@@ -363,24 +439,23 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* Services for manufacturer */}
+              {/* Manufacturer fields as a separate component */}
               {formData.role === 'manufacturer' && (
-                <div className="field">
-                  <label className="block text-900 font-medium mb-2">Facilities / Services Offered</label>
-                  {servicesOffered.map((service, idx) => (
-                    <div key={idx} className="p-inputgroup mb-2">
-                      <InputText
-                        value={service}
-                        maxLength={500}
-                        onChange={(e) => handleItemChange(idx, e.target.value, setServicesOffered)}
-                        placeholder="e.g., CNC Machining, Laser Cutting"
-                        className="w-full"
-                      />
-                      <Button icon="pi pi-minus" className="p-button-danger" onClick={() => handleRemoveItem(idx, setServicesOffered)} />
-                    </div>
-                  ))}
-                  <Button label="Add Service" icon="pi pi-plus" className="p-button-text" onClick={() => handleAddItem(setServicesOffered)} />
-                </div>
+                <ManufacturerFields
+                  ref={manufacturerFieldsRef}
+                  servicesOffered={servicesOffered}
+                  setServicesOffered={setServicesOffered}
+                  categories={categories}
+                  setCategories={setCategories}
+                  location={location}
+                  setLocation={setLocation}
+                  availableFrom={availableFrom}
+                  setAvailableFrom={setAvailableFrom}
+                  handleItemChange={handleItemChange}
+                  handleAddItem={handleAddItem}
+                  handleRemoveItem={handleRemoveItem}
+                  disabled={isLoading}
+                />
               )}
 
               {/* Portfolio */}
