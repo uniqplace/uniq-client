@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -10,6 +10,7 @@ import type { RootState } from '../../../store';
 import { Tag } from 'primereact/tag';
 import { getBidRequestsForManufacturer } from '../slices/BidRequestSlice';
 import { getNestedFieldValue } from '../../../utils/objectHelpers';
+import BidRequestsFilterFields from '../../../components/shared/BidRequestsFilterFields';
 
 const ManufacturerBidRequests = () => {
   const navigate = useNavigate();
@@ -19,9 +20,28 @@ const ManufacturerBidRequests = () => {
     (state: RootState) => state.bidRequest
   );
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+
   useEffect(() => {
     dispatch(getBidRequestsForManufacturer());
   }, [dispatch]);
+
+  const statusOptions = [
+    { label: 'Open', value: 'open' },
+    { label: 'Expired', value: 'expired' },
+    { label: 'Closed', value: 'closed' },
+  ];
+
+  const filteredBidRequests = bidRequests.filter((bid) => {
+    const productTitle =
+      typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
+        ? bid.productId.title.toLowerCase()
+        : '';
+    const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
+    const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
+    return matchesSearch && matchesStatus;
+  });
 
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
@@ -81,8 +101,17 @@ const ManufacturerBidRequests = () => {
   return (
     <div className="p-4" style={{ margin: 0, padding: 0, background: 'none' }}>
       <h2 className="text-xl font-bold mb-4 mt-8"> Bid Requests Sent to Me</h2>
+
+      <BidRequestsFilterFields
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+        statusOptions={statusOptions}
+      />
+
       <DataTable
-        value={bidRequests}
+        value={filteredBidRequests}
         paginator
         rows={10}
         responsiveLayout="scroll"

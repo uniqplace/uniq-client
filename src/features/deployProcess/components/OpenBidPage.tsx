@@ -1,6 +1,4 @@
-
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -12,6 +10,7 @@ import { Tag } from 'primereact/tag';
 import { getBidRequestsByCreator } from '../slices/BidRequestSlice';
 import BidOffersList from './BidOffersList';
 import { useNavigate, useParams } from 'react-router-dom';
+import BidRequestsFilterFields from '../../../components/shared/BidRequestsFilterFields';
 
 export const OpenBidPage = () => {
   const dispatch = useAppDispatch();
@@ -22,9 +21,28 @@ export const OpenBidPage = () => {
     (state: RootState) => state.bidRequest
   );
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+
   useEffect(() => {
     dispatch(getBidRequestsByCreator());
   }, [dispatch]);
+
+  const statusOptions = [
+    { label: 'Open', value: 'open' },
+    { label: 'Expired', value: 'expired' },
+    { label: 'Closed', value: 'closed' },
+  ];
+
+  const filteredBidRequests = bidRequests.filter((bid) => {
+    const productTitle =
+      typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
+        ? bid.productId.title.toLowerCase()
+        : '';
+    const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
+    const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
+    return matchesSearch && matchesStatus;
+  });
 
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
@@ -91,8 +109,17 @@ export const OpenBidPage = () => {
   return (
     <div className="p-4" style={{margin:0,padding:0,background:'none'}}>
       {title}
+
+      <BidRequestsFilterFields
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+        statusOptions={statusOptions}
+      />
+
       <DataTable
-        value={bidRequests}
+        value={filteredBidRequests}
         paginator
         rows={10}
         responsiveLayout="scroll"
