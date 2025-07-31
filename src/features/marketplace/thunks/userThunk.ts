@@ -1,20 +1,29 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { UserState } from '../../user/slices/userSlice';
+import type { RootState } from '../../../store';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('No authentication token found');
+      const state = getState() as RootState;
+      const userId = state.user?.id;
+
+      if (!userId) {
+        throw new Error('No valid user ID found in Redux state');
       }
 
-      // Set cookie for cross-site request
-      document.cookie = `token=${token}; path=/; secure; samesite=none`;
+      // Extract token from cookies
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        throw new Error('No authentication token found in cookies');
+      }
 
       const res = await fetch(`${API_BASE}/users/me`, { 
         method: 'GET',
