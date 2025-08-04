@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card } from '../../../components/shared';
+import { Card } from '../../../components/shared';
 import { Dialog } from 'primereact/dialog';
 import ProductUploadForm from './ProductUploadForm';
 import type { Product } from '../../../types';

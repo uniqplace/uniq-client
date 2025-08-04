@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Checkbox } from 'primereact/checkbox';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';

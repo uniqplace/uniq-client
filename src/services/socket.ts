@@ -14,7 +14,7 @@ export const initializeSocket = (): Socket => {
     socket = io(socketUrl, {
       withCredentials: true,
       transports: ['websocket'],
-      // path: import.meta.env.VITE_SOCKET_PATH || '/socket.io'
+       path: import.meta.env.VITE_SOCKET_PATH || '/socket.io'
     });
   }
   return socket;
