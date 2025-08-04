@@ -13,16 +13,36 @@ export const fetchCurrentUser = createAsyncThunk(
         throw new Error('No authentication token found');
       }
 
-      // Set cookie for cross-site request
-      document.cookie = `token=${token}; path=/; secure; samesite=none`;
+      
+      // Check if backend API is localhost or service
+      const isBackendLocalhost = API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1');
+      // const isBackendService = API_BASE.includes('onrender.com') || API_BASE.includes('herokuapp.com') || API_BASE.includes('vercel.app');
+      
+      let requestConfig: RequestInit;
+      
+      if (isBackendLocalhost) {
+        // Backend is localhost: Use cookies (same-site, works fine)
+        document.cookie = `token=${token}; path=/`;
+        requestConfig = {
+          method: 'GET',
+          credentials: 'include', // ✅ Include to send cookies
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        };
+      } else {
+        // Backend is service: Use Authorization header (cross-site, cookies don't work)
+        requestConfig = {
+          method: 'GET',
+          credentials: 'omit', // ✅ No CORS issues
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // ✅ Send token in header
+          }
+        };
+      } 
 
-      const res = await fetch(`${API_BASE}/users/me`, { 
-        method: 'GET',
-        credentials: 'include', // ✅ Include to send cookies
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }); 
+      const res = await fetch(`${API_BASE}/users/me`, requestConfig); 
       
       if (!res.ok) {
         if (res.status === 401) {

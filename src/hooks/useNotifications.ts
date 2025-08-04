@@ -2,10 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import { Toast } from 'primereact/toast';
 import { getUnreadCount, getNotifications } from '../services/notificationApi';
 import socket from '../services/socket';
-import getUserIdFromToken from '../utils/getUserIdFromToken';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
 import { getCookie } from '../utils/cookies';
 import type { Notification } from '../types/notification';
-
 
 export const useNotifications = () => {
   const [count, setCount] = useState<number>(0);
@@ -17,14 +17,11 @@ export const useNotifications = () => {
   const [error, setError] = useState<string | null>(null);
   const toastRef = useRef<Toast>(null);
 
+  const userId = useSelector((state: RootState) => state.user.id);
+
   useEffect(() => {
     const token = getCookie('token');
-    if (!token) {
-      return;
-    }
-
-    const userId = getUserIdFromToken();
-    if (!userId) {
+    if (!token || !userId) {
       return;
     }
 
@@ -43,13 +40,18 @@ export const useNotifications = () => {
     return () => {
       socket.off('general_notification');
     };
-  }, []);
+  }, [userId]);
 
   const loadNotifications = async (pageNum: number) => {
+    if (!userId) {
+      setAuthError(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const res = await getNotifications(pageNum);
+      const res = await getNotifications(userId!, pageNum); // Non-null assertion operator
       const notificationsArr = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
       const unreadNotifications = notificationsArr.filter((n: Notification) => !n.isRead);
       if (pageNum === 1) {
