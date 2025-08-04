@@ -1,6 +1,8 @@
 import axios from 'axios';
 import type { NotificationsResponse } from '../types/notification';
 import getUserIdFromToken from '../utils/getUserIdFromToken';
+// import { useSelector } from 'react-redux';
+// Remove incorrect RootState import
 
 // Generic safeFetch helper for API calls
 async function safeFetch<T>(fn: () => Promise<{ data: T }>, fallback: T, errorMsg: string): Promise<{ data: T }> {
@@ -42,8 +44,7 @@ export const getUnreadCount = async (): Promise<{ data: { count: number } }> => 
       const userId = getUserIdFromToken();
       console.log('getUnreadCount userId:', userId); // Debug log
       if (!userId) throw new Error('User not authenticated');
-      const res = await api.get<{ count: number }>(`/notifications/unread-count`, {
-        params: { userId },
+      const res = await api.get<{ count: number }>(`/notifications/unread-count/user/${userId}`, {
         withCredentials: true,
       });
       return { data: res.data };

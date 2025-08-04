@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '../../../components/shared';
+import { Button, Card } from '../../../components/shared';
 import { Dialog } from 'primereact/dialog';
 import ProductUploadForm from './ProductUploadForm';
 import type { Product } from '../../../types';
@@ -81,12 +81,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <Dialog
         header="Edit Product"
         visible={showEdit}
-        style={{ width: '50vw', maxWidth: 600 }}
+        style={{ width: '60vw', maxWidth: 600 }}
         onHide={handleCloseEdit}
         modal
+        closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
+
       >
-        <ProductUploadForm product={product} onClose={handleCloseEdit} />
-      </Dialog>
+      <ProductUploadForm product={product} onClose={handleCloseEdit} />
+    </Dialog >
     </>
   );
 };

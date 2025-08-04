@@ -193,6 +193,8 @@ const GenericStepper: React.FC = () => {
         visible={showFinalPopup}
         style={{ width: '350px' }}
         onHide={() => setShowFinalPopup(false)}
+        closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
+
       >
         <div className="text-center">
           <p>Your product is completed and is on its way to you!</p>

@@ -4,7 +4,8 @@ import type { RootState } from '../../../store';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { OpenBidPage } from './OpenBidPage';
 import ManufacturerBidRequests from './ManufacturerBidRequests';
-import classNames from 'classnames';
+import { classNames } from 'primereact/utils';
+
 
 const DEFAULT_TAB_INDEX = 1;
 
