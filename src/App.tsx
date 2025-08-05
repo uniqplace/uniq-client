@@ -55,7 +55,6 @@ function App() {
   useEffect(() => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
-  console.log('Token from auth:', localStorage.getItem('token'));
 
   useEffect(() => {
     if (loading) setWasLoading(true);
@@ -69,13 +68,11 @@ function App() {
       location.pathname !== '/login' &&
       location.pathname !== '/register'
     ) {
-      console.log('Redirecting to login', { user, loading });
       navigate('/login');
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
 
   useEffect(() => {
-    console.log('user state:', user);
   }, [user]);
 
   useEffect(() => {

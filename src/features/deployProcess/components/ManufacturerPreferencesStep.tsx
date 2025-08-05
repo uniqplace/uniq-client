@@ -51,7 +51,9 @@ const hardcodedLocations = [
   { label: 'General', value: 'general' },
 ];
 
-const ManufacturerPreferencesStep: React.FC = () => {
+import type { StepProps } from "./Stepper/steps";
+
+const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);
 
   // Redux stepper state (must be above localStorage logic)
@@ -221,9 +223,9 @@ const ManufacturerPreferencesStep: React.FC = () => {
 
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
     // Mark this step as completed in Redux (so it will be in completedSteps)
-    if (typeof currentStepIndex === 'number') {
-      dispatch({ type: 'stepper/markStepCompleted', payload: currentStepIndex });
-    }
+    // if (typeof currentStepIndex === 'number') {
+    //   dispatch({ type: 'stepper/markStepCompleted', payload: currentStepIndex });
+    // }
 
     try {
       // קריאה לשרת דרך thunk של Redux
@@ -236,6 +238,9 @@ const ManufacturerPreferencesStep: React.FC = () => {
           detail: 'Bid request opened successfully.',
           life: 4000,
         });
+        // אפשר לעבור לשלב הבא רק אחרי הצלחה
+        setCanGoNext && setCanGoNext(true);
+        onComplete && onComplete();
       } else {
         toast.current?.show({
           severity: 'error',

@@ -7,14 +7,12 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('Fetching current user...');
       const res = await fetch(`${API_BASE}/users/me`, { credentials: 'include' });
       if (!res.ok) {
         console.error('Fetch user failed with status:', res.status);
         throw new Error('Not authenticated');
       }
       const data = await res.json();
-      console.log('User data fetched:', data);
       return data;
     } catch (err: any) {
       console.error('Fetch current user error:', err);
@@ -72,7 +70,6 @@ export const updateUserAvatar = createAsyncThunk<
       }
 
       const data = await res.json();
-      console.log('Response from backend:', data);
       return data.avatarUrl;
     } catch (error) {
       return rejectWithValue('Failed to upload avatar');
