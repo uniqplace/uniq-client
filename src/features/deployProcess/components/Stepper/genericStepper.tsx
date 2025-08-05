@@ -200,11 +200,20 @@ const GenericStepper: React.FC = () => {
   }
 
 
-  const stepProps = {
+  // Pass bidRequestId only to BidOffersList, all other steps get only the base props
+  const bidRequestId = product?._id;
+  const baseStepProps = {
     product,
     onComplete: () => setCanGoNext(true),
     setCanGoNext,
   };
+
+  let renderedStep = null;
+  if (CurrentStepComponent && CurrentStepComponent.displayName === 'BidOffersList') {
+    renderedStep = <CurrentStepComponent {...baseStepProps} bidRequestId={bidRequestId} />;
+  } else if (CurrentStepComponent) {
+    renderedStep = <CurrentStepComponent {...baseStepProps} />;
+  }
 
   return (
     <div className="card max-w-5xl mx-auto p-6 shadow-lg rounded-xl bg-white">
@@ -229,7 +238,7 @@ const GenericStepper: React.FC = () => {
             pointerEvents: isStepCompleted ? 'none' : 'auto',
           }}
         >
-          {CurrentStepComponent && React.createElement(CurrentStepComponent, stepProps)}
+          {renderedStep}
         </div>
       )}
 

@@ -3,6 +3,7 @@ import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
 import FakeUploadStep from '../FakeUploadStep';
+import BidOffersList from '../BidOffersList';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
@@ -21,10 +22,15 @@ export const productFormRef = createRef<ProductUploadFormHandle>();
 export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
-      <span role="img" aria-label="send">📤</span>
-      Send to Marketplace
+      <span role="img" aria-label="auction">📤</span>
+      New Bid Process Opened
     </h2>
-    <p className="text-gray-700 text-base mb-4">We'll send your product to the marketplace so manufacturers can place bids.</p>
+    <p className="text-gray-700 text-base mb-4">
+      A new auction has been opened for your product!<br />
+      Your product will now be sent to the most relevant manufacturers based on your preferences.<br />
+      You will receive an email notification for every offer submitted by a manufacturer.<br />
+      <span className="text-sm text-gray-500">Stay tuned and review offers as they arrive.</span>
+    </p>
     <FinishStepButton onClick={() => {
       onComplete();
       setCanGoNext && setCanGoNext(true);
@@ -32,19 +38,6 @@ export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCa
   </div>
 );
 
-export const LiveBidsViewerStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
-  <div className="p-4 text-center">
-    <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
-      <span role="img" aria-label="bids">📈</span>
-      View Live Bids
-    </h2>
-    <p className="text-gray-700 text-base mb-4">Track who’s bidding to manufacture your product.</p>
-    <FinishStepButton onClick={() => {
-      onComplete();
-      setCanGoNext && setCanGoNext(true);
-    }} />
-  </div>
-);
 
 export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
   <div className="p-4 text-center">
@@ -138,7 +131,7 @@ export const stepsConfig: StepDefinition[] = [
   {
     key: 'viewLiveBids',
     title: 'View Live Bids',
-    component: LiveBidsViewerStep,
+    component: BidOffersList,
     validateStep: () => Promise.resolve(true),
   },
   {
