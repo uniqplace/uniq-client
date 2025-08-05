@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { NotificationsResponse } from '../types/notification';
-import getUserIdFromToken from '../utils/getUserIdFromToken';
+// import getUserIdFromToken from '../utils/getUserIdFromToken';
 // import { useSelector } from 'react-redux';
 // Remove incorrect RootState import
 
@@ -21,7 +21,7 @@ const api = axios.create({
 api.defaults.withCredentials = true;
 
 
-export const getNotifications = async (userId?: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
+export const getNotifications = async (userId: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
   return safeFetch<NotificationsResponse>(
     async () => {
       if (!userId) {
@@ -40,16 +40,15 @@ export const getNotifications = async (userId?: string, page = 1, limit = 10): P
 };
 
 
-export const getUnreadCount = async (): Promise<{ data: { count: number } }> => {
+export const getUnreadCount = async (userId: string): Promise<{ data: { count: number } }> => {
   return safeFetch<{ count: number }>(
     async () => {
-      const userId = getUserIdFromToken();
+   
       if (!userId) {
         console.error('getUnreadCount error: User ID is undefined. Ensure the user is authenticated.');
         throw new Error('User not authenticated');
       }
-      const res = await api.get<{ count: number }>(`/notifications/unread-count`, {
-        params: { userId },
+      const res = await api.get<{ count: number }>(`/notifications/unread-count/user/${userId}`, {
         withCredentials: true,
       });
       return { data: res.data };

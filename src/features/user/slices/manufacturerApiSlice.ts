@@ -21,7 +21,8 @@ export const manufacturerApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['ManufacturerProfile'],
     }),
     getManufacturerProfileByUserId: builder.query<ManufacturerProfile, string>({
-      query: (userId) => `/manufacturers/${userId}`,
+      query: (userId) => `/manufacturers/user/${userId}`,
+      transformResponse: (response: { data: ManufacturerProfile }) => response.data, // Extract only the `data` field
       providesTags: ['ManufacturerProfile'],
     }),
   }),
