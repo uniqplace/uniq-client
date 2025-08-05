@@ -1,4 +1,4 @@
-import React, {  useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Avatar } from 'primereact/avatar';
@@ -25,11 +25,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const menuItems = [
     { icon: 'pi pi-home', label: 'Home', href: '/' },
     { icon: 'pi pi-star', label: 'Marketplace', href: '/marketplace' },
-    { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/orders' },
+    { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/account/orders' },
     { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
     { icon: 'pi pi-info-circle', label: 'About', href: '/about' },
+    { icon: 'pi pi-briefcase', label: 'My Bid Requests', href: '/MyBidRequest' },
     { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
-    { icon: 'pi pi-list', label: 'My Bid Requests', href: '/MyBidRequest' },
   ];
 
   // Add auth items if user is not logged in
@@ -58,10 +58,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
               label={!user.avatarUrl && user.name ? user.name.charAt(0).toUpperCase() : undefined}
               shape="circle"
               size="large"
-              style={{ 
-                backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined, 
-                color: '#fff', 
-                fontSize: 20 
+              style={{
+                backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined,
+                color: '#fff',
+                fontSize: 20
               }}
             />
             <div className="flex-1 min-w-0">
@@ -91,8 +91,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
       if (isMobile && isOpen) {
         const sidebar = document.getElementById('sidebar');
         const hamburger = document.getElementById('hamburger');
-        if (sidebar && !sidebar.contains(event.target as Node) && 
-            hamburger && !hamburger.contains(event.target as Node)) {
+        if (sidebar && !sidebar.contains(event.target as Node) &&
+          hamburger && !hamburger.contains(event.target as Node)) {
           onToggle();
         }
       }
@@ -105,7 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const sidebarClasses = `
     fixed top-0 left-0 h-full bg-white dark:bg-gray-800 shadow-lg z-40
     transform transition-transform duration-300 ease-in-out
-    ${isMobile 
+    ${isMobile
       ? `w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`
       : 'w-64 translate-x-0'
     }
@@ -139,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-2">
             {allMenuItems.map((item) => (
-              <li key={item.href}>
+              <li key={item.href || item.href}>
                 <button
                   onClick={() => {
                     navigate(item.href);
@@ -172,10 +172,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
                 shape="circle"
                 size="normal"
                 className="cursor-pointer"
-                style={{ 
-                  backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined, 
-                  color: '#fff', 
-                  fontSize: 18 
+                style={{
+                  backgroundColor: !user.avatarUrl ? '#1d4ed8' : undefined,
+                  color: '#fff',
+                  fontSize: 18
                 }}
                 onClick={(e) => menuRef.current?.toggle(e)}
               />

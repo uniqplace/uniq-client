@@ -86,11 +86,12 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
       ) : (
         <>
           
+          {/* Table header - desktop only */}
           <div
-            className="grid grid-cols-12 gap-2 py-4 px-4 border-b border-gray-200 text-xl font-bold text-900 font-sans"
+            className="hidden md:grid grid-cols-12 gap-2 py-4 px-4 border-b border-gray-200 text-xl font-bold text-900 font-sans"
             style={{ fontFamily: 'Inter, Arial, sans-serif' }}
           >
-            <div className="col-span-3 flex items-center text-left justify-start">
+            <div className="col-span-2 flex items-center text-left justify-start">
               <span className="w-full">Manufacturer</span>
             </div>
             <div className="col-span-2 flex items-center justify-center">
@@ -99,18 +100,15 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
             <div className="col-span-3 flex items-center justify-center">
               <span className="w-full text-center">Lead Time</span>
             </div>
-            <div className="col-span-3 flex items-center justify-center">
+            <div className="col-span-4 flex items-center justify-center">
               <span className="w-full text-center">Response</span>
             </div>
             <div className="col-span-1"></div>
           </div>
-         
           <div>
             {sortedOffers.map((offer: BidOffer, idx) =>
               offer.manufacturerId && offer.manufacturerId.userId ? (
                 <div
-                  className="grid grid-cols-12 gap-2 items-center py-4 px-4 border-b border-gray-100 text-sm"
-                  style={{ fontFamily: 'Arial, sans-serif' }}
                   key={
                     offer.bidRequestId +
                     '-' +
@@ -120,37 +118,48 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
                     '-' +
                     idx
                   }
+                  className="md:grid md:grid-cols-12 md:gap-2 md:items-center md:py-2 md:px-2 md:border-b md:border-gray-100 md:text-sm flex flex-col bg-gray-50 rounded-xl shadow-md p-1 mb-2 transition hover:shadow-lg focus-within:shadow-lg"
+                  style={{ fontFamily: 'Arial, sans-serif', WebkitTapHighlightColor: 'rgba(0,0,0,0.03)' }}
                 >
                   {/* Manufacturer */}
-                  <div className="col-span-3 flex items-center gap-3">
+                  <div className="md:col-span-2 flex items-center gap-1 md:gap-2 mb-1 md:mb-0">
                     <Avatar
                       image={offer.manufacturerId.userId.avatarUrl || '/default-avatar.png'}
                       shape="circle"
-                      style={{ width: '56px', height: '56px' }}
+                      style={{ width: '48px', height: '48px' }}
+                      className="md:w-14 md:h-14 w-8 h-8 border border-gray-300"
                     />
-                    <span className="font-semibold text-gray-800 text-xl">
+                    <span className="font-semibold text-gray-800 text-sm md:text-base truncate">
                       {offer.manufacturerId.userId.name}
                     </span>
                   </div>
                   {/* Price */}
-                  <div className="col-span-2 text-center text-gray-900 font-medium text-xl">${offer.price}</div>
+                  <div className="md:col-span-2 flex flex-col items-center text-gray-900 font-medium text-xs md:text-base text-center mb-0.5 md:mb-0">
+                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Price</span>
+                    <span>${offer.price}</span>
+                  </div>
                   {/* Lead Time */}
-                  <div className="col-span-3 text-center text-gray-600">{offer.estimatedDelivery} days</div>
+                  <div className="md:col-span-3 flex flex-col items-center text-gray-600 text-xs md:text-base text-center mb-0.5 md:mb-0">
+                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Lead Time</span>
+                    <span>{offer.estimatedDelivery} days</span>
+                  </div>
                   {/* Note */}
-                  <div className="col-span-3 text-center text-gray-500 truncate">
-                    {offer.note || 'No note provided'}
+                  <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
+                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
+                    <span>{offer.note || 'No note provided'}</span>
                   </div>
                   {/* Chat Button */}
-                  <div className="col-span-1 flex justify-end">
+                  <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
                     <Button
-                      label="Chat"
-                      className="p-button-sm p-button-outlined"
-                      style={{
-                        padding: '4px 12px',
-                        fontSize: '13px',
-                        borderColor: '#007BFF',
-                        color: '#007BFF',
-                      }}
+                      className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
+                     icon="pi pi-comments"
+                      aria-label="Chat"
+                    ></Button>
+                    <Button
+                      className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
+                      icon="pi pi-comments"
+                      aria-label="Chat"
+                      
                     />
                   </div>
                 </div>

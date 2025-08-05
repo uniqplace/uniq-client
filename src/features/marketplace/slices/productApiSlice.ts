@@ -96,7 +96,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
 
     getProductById: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
-
+      transformResponse:(response : {data:Product})=>response.data,
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
   }),
