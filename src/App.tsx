@@ -19,6 +19,7 @@ import About from './pages/About';
 import Home from './pages/Home';
 import ProductUploadForm from './features/marketplace/components/ProductUploadForm';
 import NewHeader from './components/shared/NewHeader';
+import Sidebar from './components/shared/Sidebar';
 import MainContent from './components/shared/MainContent';
 import './styles/sidebar.css';
 import ProfilePage from './features/user/components/ProfilePage';
@@ -33,10 +34,37 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
 import BidRequestDetails from './features/deployProcess/components/BidRequestDetails';
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
-import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 
+// Sidebar wrapper component to manage state
+const SidebarWrapper: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  return (
+    <Sidebar 
+      isOpen={isOpen} 
+      onToggle={toggleSidebar} 
+      isMobile={isMobile} 
+    />
+  );
+};
 
 function UserProfile() {
   return (
@@ -122,6 +150,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NewHeader />
+      <SidebarWrapper />
       <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
       <MainContent>
       <Routes>
@@ -155,15 +184,26 @@ function App() {
 
         <button
           onClick={() => {
-            fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
+            const socket = initializeSocket();
+            socket.emit('test_event', { message: 'Hello from React!' });
+            toast.success('Test event sent!');
           }}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          Simulate New Bid For User {user.name}
+          Send Test Event
         </button>
-     
 
-    </div>
-  );
-}
+        <button
+          onClick={() => {
+            disconnectSocket();
+            toast.info('Socket disconnected!');
+          }}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2"
+        >
+          Disconnect Socket
+        </button>
+      </div>
+    );
+  }
 
 export default App;

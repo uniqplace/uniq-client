@@ -1,22 +1,33 @@
+// MainContent Component - Wrapper for main content area
+// Features: responsive layout, sidebar integration, consistent spacing
 import React from 'react';
-import type { ReactNode } from 'react';
 
 interface MainContentProps {
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
+  fullWidth?: boolean;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ children, className = '' }) => {
+const MainContent: React.FC<MainContentProps> = ({ 
+  children, 
+  className = '', 
+  fullWidth = false 
+}) => {
   return (
     <main className={`
-      min-h-screen bg-gray-50 dark:bg-gray-900
-      pt-14 md:ml-64
+      min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50
+      pt-16 lg:pt-20
       transition-all duration-300 ease-in-out
+      ${fullWidth ? '' : 'md:ml-64'}
       ${className}
     `}>
-      <div className="p-4 md:p-6">
-        {children}
-      </div>
+      {fullWidth ? (
+        children
+      ) : (
+        <div className="container-responsive">
+          {children}
+        </div>
+      )}
     </main>
   );
 };

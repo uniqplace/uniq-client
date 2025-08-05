@@ -26,12 +26,12 @@ const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: registerUser,
       }),
-        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           dispatch(setCredentials({ accessToken: data.accessToken, id: data.id, user: data.user }));
         } catch (error) {
-          console.error("Login failed:", error);
+          console.error("Registration failed:", error);
         }
       },
     }),

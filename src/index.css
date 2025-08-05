@@ -1,95 +1,336 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  /* margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh; */
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
+@layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    font-family: 'Inter', 'Poppins', 'Rubik', system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    font-weight: 400;
+    color-scheme: light;
+    color: #1a1a1a; /* Text Primary */
+    background-color: #f8f9fa; /* Light background */
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  a:hover {
-    color: #747bff;
+
+  body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+    min-height: 100vh;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', 'Inter', 'Rubik', system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #1a1a1a; /* Text Primary */
+  }
+
   button {
-    background-color: #f9f9f9;
+    background-color: #c8941c; /* Primary Warm Gold */
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #b8860b; /* Darker Gold */
+    box-shadow: 0 4px 20px -4px rgba(200, 148, 28, 0.3);
+  }
+
+  button:focus, button:focus-visible {
+    outline: 2px solid #c8941c;
+    outline-offset: 2px;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: #c8941c;
+    box-shadow: 0 0 0 3px rgba(200, 148, 28, 0.1);
+  }
+
+  a {
+    color: #c8941c;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+  }
+
+  a:hover {
+    color: #b8860b;
   }
 }
-.p-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+
+@layer components {
+  /* Luxury Card Component */
+  .luxury-card {
+    @apply bg-white rounded-2xl shadow-soft border border-neutral-200/50 backdrop-blur-sm;
+  }
+
+  /* Button Components */
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-gold hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-medium hover:scale-105 focus:outline-none focus:ring-4 focus:ring-neutral-100 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+
+  .btn-accent {
+    @apply bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-gold hover:scale-105 focus:outline-none focus:ring-4 focus:ring-accent-100 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-medium hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+
+  .btn-ghost {
+    @apply text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 font-medium py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-soft focus:outline-none focus:ring-4 focus:ring-neutral-100 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none;
+  }
+
+  /* Form Components */
+  .form-input {
+    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 placeholder-neutral-400;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-neutral-700 mb-2;
+  }
+
+  .form-error {
+    @apply text-error-500 text-sm mt-1;
+  }
+
+  /* Navigation Components */
+  .nav-link {
+    @apply text-neutral-600 hover:text-primary-500 font-medium transition-colors duration-200;
+  }
+
+  .nav-link-active {
+    @apply text-primary-500 font-semibold;
+  }
+
+  /* Badge Components */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-primary-100 text-primary-600;
+  }
+
+  .badge-accent {
+    @apply bg-accent-100 text-accent-600;
+  }
+
+  .badge-success {
+    @apply bg-success-100 text-success-600;
+  }
+
+  .badge-warning {
+    @apply bg-warning-100 text-warning-600;
+  }
+
+  .badge-error {
+    @apply bg-error-100 text-error-600;
+  }
+
+  /* Loading Skeleton */
+  .loading-skeleton {
+    @apply animate-pulse bg-neutral-200 rounded;
+  }
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  /* Gradients */
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary-500 to-primary-600;
+  }
+
+  .gradient-accent {
+    @apply bg-gradient-to-br from-accent-500 to-accent-600;
+  }
+
+  .gradient-neutral {
+    @apply bg-gradient-to-br from-neutral-50 to-neutral-100;
+  }
+
+  .gradient-navy {
+    @apply bg-gradient-to-br from-navy-800 to-navy-900;
+  }
+
+  /* Sidebar Components */
+  .sidebar-item {
+    @apply w-full flex items-center gap-3 py-2 px-4 text-left rounded-lg transition-all duration-200;
+  }
+
+  .sidebar-item-active {
+    @apply bg-accent-500 text-navy-900 shadow-medium border-l-4 border-primary-500;
+  }
+
+  .sidebar-item-inactive {
+    @apply text-white hover:bg-navy-700 hover:shadow-soft;
+  }
+
+  .sidebar-icon {
+    @apply text-lg;
+  }
+
+  .sidebar-icon-active {
+    @apply text-navy-900;
+  }
+
+  .sidebar-icon-inactive {
+    @apply text-white;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    @apply bg-primary-500 text-white py-12 lg:py-16;
+  }
+
+  .hero-title {
+    @apply text-4xl font-bold text-navy-900 mb-4;
+  }
+
+  .hero-subtitle {
+    @apply text-lg text-white/90 mb-8;
+  }
+
+  /* Search Components */
+  .search-bar {
+    @apply bg-white rounded-lg shadow-medium border border-neutral-200;
+  }
+
+  .search-button {
+    @apply bg-navy-900 text-white rounded-lg hover:bg-navy-800 transition-colors duration-200;
+  }
+
+  /* Filter Card */
+  .filter-card {
+    @apply bg-navy-900 text-white rounded-xl shadow-navy p-6;
+  }
+
+  .filter-title {
+    @apply text-lg font-semibold text-white mb-4;
+  }
+
+  .filter-button {
+    @apply bg-navy-700 text-white border border-navy-600 rounded-lg hover:bg-navy-600 transition-colors duration-200;
+  }
+
+  /* Product Card */
+  .product-card {
+    @apply bg-white rounded-xl shadow-medium p-4 lg:p-6 hover:shadow-large transition-all duration-300;
+  }
+
+  .product-tag {
+    @apply bg-accent-100 text-navy-900 px-3 py-1 rounded-full text-sm font-medium;
+  }
 }
 
-.p-tabview .p-tabview-panels{
-  background: none !important;
+@layer utilities {
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent;
+  }
+
+  /* Animation Utilities */
+  .animate-fade-in {
+    @apply animate-[fadeIn_0.5s_ease-in-out];
+  }
+
+  .animate-slide-up {
+    @apply animate-[slideUp_0.5s_ease-out];
+  }
+
+  .animate-scale-in {
+    @apply animate-[scaleIn_0.3s_ease-out];
+  }
+
+  .animate-bounce-soft {
+    @apply animate-[bounceSoft_0.6s_ease-in-out];
+  }
+
+  .animate-glow {
+    @apply animate-[glow_2s_ease-in-out_infinite_alternate];
+  }
+
+  /* Responsive Utilities */
+  .container-responsive {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-8 lg:py-12;
+  }
+
+
 }
 
-.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link{
-  background: none !important;
-  border-bottom: 2px solid #242424 !important;
-  color: #646cff !important;
+/* PrimeReact Overrides */
+.p-avatar {
+  @apply rounded-full;
 }
 
-.p-tabview .p-tabview-nav li .p-tabview-nav-link{
-  background: none !important;
+.p-avatar.p-avatar-lg {
+  @apply w-16 h-16;
 }
 
-.p-tabview-nav{
-  border: none !important;
+.p-avatar.p-avatar-xl {
+  @apply w-20 h-20;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  border-bottom: 3px solid #c8941c !important;
+  color: #c8941c !important;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
+  color: #c8941c !important;
+  background-color: #fefce8 !important;
+}
+
+.p-button.p-button-primary {
+  @apply bg-primary-500 border-primary-500 hover:bg-primary-600 hover:border-primary-600;
+}
+
+.p-button.p-button-secondary {
+  @apply bg-navy-900 border-navy-900 hover:bg-navy-800 hover:border-navy-800;
+}
+
+.p-inputtext:focus {
+  @apply border-primary-500 ring-4 ring-primary-100;
+}
+
+.p-card {
+  @apply luxury-card;
+}
+
+.p-dialog .p-dialog-header {
+  @apply bg-navy-900 text-white;
+}
+
+.p-dialog .p-dialog-content {
+  @apply bg-white;
+}
+
+.p-menu {
+  @apply bg-white border border-neutral-200 shadow-medium;
+}
+
+.p-menu .p-menuitem-link:hover {
+  @apply bg-neutral-50;
+}
+
+.p-menu .p-menuitem-link:focus {
+  @apply bg-primary-50 ring-2 ring-primary-200;
 }
