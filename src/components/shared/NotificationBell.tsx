@@ -191,7 +191,9 @@ import { deduplicateNotifications } from '../../utils/notificationHelpers';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useNotifications } from '../../hooks/useNotifications';
-import { useSelector } from 'react-redux';
+
+import { useAppSelector } from '../../hooks/hooks';
+import type { RootState } from '../../store';
 
 // Utility function to check if a value is an object
 const isObject = (value: any): boolean => {
@@ -216,19 +218,19 @@ const NotificationBell = () => {
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
-  const user = useSelector((state: any) => state.user);
+  const user = useAppSelector((state: RootState) => state.user);
 
   // Ref למיכל התראות (scroll container)
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!user?._id && !user?.id) return;
+    if (!user?.id) return;
 
     // טוען את מספר ההתראות הלא נקראות מהשרת בהתחלת הקומפוננטה
     const fetchCount = async () => {
       try {
-        const res = await getUnreadCount(user._id || user.id);
+        const res = await getUnreadCount(user?.id ?? '');
         setCount(res.data.count);
       } catch (err) {
         if (toastRef.current) {
@@ -252,13 +254,13 @@ const NotificationBell = () => {
     };
   }, [user, setCount, setNotifications, toastRef]);
 
-  // מאזין לגלילה במיכל ההתראות לטעינת עמוד נוסף אוטומטית
+  
   useEffect(() => {
     const onScroll = () => {
       if (!listRef.current || !loading || !hasMore) return; // Stop if no more notifications
 
       const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-      // אם הגולל הגיע ל-90% מהתחתית, טען עוד
+      // Check if scrolled to the bottom (90% of scroll height)
       if (scrollTop + clientHeight >= scrollHeight * 0.9) {
         loadMore();
       }
@@ -337,8 +339,6 @@ const NotificationBell = () => {
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Notifications</h3>
               {authError ? (
                 <div className="p-4 text-center text-red-500 text-sm">Please login to view notifications</div>
-              ) : loading ? (
-                <div className="p-4 text-center text-gray-500 text-sm">Loading notifications...</div>
               ) : error ? (
                 <div className="p-4 text-center text-red-500 text-sm">{error}</div>
               ) : (
@@ -354,7 +354,7 @@ const NotificationBell = () => {
                       try {
                         await markAsRead(notification._id);
                         // עדכון הספירה לאחר סימון כה נקראה
-                        const res = await getUnreadCount(user._id || user.id);
+                        const res = await getUnreadCount(user?.id ?? '');
                         setCount(res.data.count);
                         setIsOpen(false);
                         if (notification.type === 'NEW_BID' && notification.bidRequestId) {
@@ -381,6 +381,18 @@ const NotificationBell = () => {
                   )}
                 </div>
               )}
+              <div className="px-4 pb-4 pt-2 border-t border-gray-200">
+                {(user.role === 'admin' || user.role === 'manufacturer') && (
+                  <Button
+                    label="Show all bid request notifications"
+                    className="w-full p-button-sm p-button-info"
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate('/myBidRequestsNotifications');
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -85,7 +85,7 @@ function App() {
     const socket = getSocket();
     if (socket) {
       try {
-        const response = await fetch(`http://localhost:5002/api/test-bid/687cf0e4f2e8ed1cf5545add/${user.id}`);
+        const response = await fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);
         console.log('API response:', response);
 
         socket.emit(SOCKET_EVENTS.NEW_BID, { userId: user.id, message: `New bid for user pnini` });

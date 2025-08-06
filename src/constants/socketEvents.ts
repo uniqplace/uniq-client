@@ -4,5 +4,5 @@ export const SOCKET_EVENTS = {
   BID_RESPONSE: 'bid_response',
   GENERAL_NOTIFICATION: 'general_notification',
   BID_SENT_CONFIRMATION: 'bid_sent_confirmation',
-   CONNECT: 'connect',
+  CONNECT: 'connect',
 };

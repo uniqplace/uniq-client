@@ -40,7 +40,7 @@ export const getNotifications = async (userId: string, page = 1, limit = 10): Pr
 };
 
 
-export const getUnreadCount = async (userId: string): Promise<{ data: { count: number } }> => {
+export const getUnreadCount = async (userId: string | undefined): Promise<{ data: { count: number } }> => {
   return safeFetch<{ count: number }>(
     async () => {
    
