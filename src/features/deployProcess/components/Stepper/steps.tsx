@@ -1,7 +1,7 @@
 import React, { createRef } from 'react';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
-import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
+// import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
 import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
 
@@ -17,7 +17,7 @@ export interface StepDefinition {
   validateStep?: () => Promise<boolean>;
 }
 
-export const productFormRef = createRef<ProductUploadFormHandle>();
+// export const productFormRef = createRef<ProductUploadFormHandle>();
 
 export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
   <div className="p-4 text-center">
