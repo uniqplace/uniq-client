@@ -29,6 +29,7 @@ export const OrderDetailsModal = ({ order, onClose }: OrderDetailsModalProps) =>
             onHide={onClose}
             style={{ width: '90%', maxWidth: '30rem' }}
             modal
+        closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
         >
             <div className="p-fluid">
 

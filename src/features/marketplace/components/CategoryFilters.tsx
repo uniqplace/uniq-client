@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Checkbox } from 'primereact/checkbox';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
@@ -66,34 +65,45 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
         const checked = selected[0] === cat._id;
         return (
           <div key={cat._id}>
-            <label
-              key={cat._id}
-              className={`flex items-center gap-2 cursor-pointer ${checked ? 'font-semibold text-blue-700' : ''}`}
-              
-              role="checkbox"
-              aria-checked={checked}
+            <div className={`flex items-center gap-2 cursor-pointer select-none ${checked ? 'font-semibold text-blue-700' : ''}`}
+                 onClick={() => {
+                   if (checked) {
+                     setOpenCategory(null);
+                     updateCategoryParams(cat._id, [], false);
+                     onChange([]);
+                   } else {
+                     setOpenCategory(cat._id);
+                     updateCategoryParams(cat._id, [cat._id], true);
+                     onChange([cat._id]);
+                   }
+                 }}
+                 style={{ userSelect: 'none' }}
             >
-              <Checkbox     
-                inputId={`category-${cat._id}`}
-                checked={checked}
-                onChange={e => {
-                  const isChecked = e.checked;
-                  let next: string[] = [];
-                  if (isChecked) {
-                    // Only allow one category at a time
-                    next = [cat._id];
-                    setOpenCategory(cat._id);
-                  } else {
-                    // Uncheck category and all its subcategories
-                    setOpenCategory(null);
-                    next = [];
-                  }
-                  updateCategoryParams(cat._id, next, !!isChecked);
-                  onChange(next); // next is [] if unchecked, so subCategories will be cleared in slice
-                }}
-              />
+              {/* Custom checkbox for main category */}
+              <span style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}>
+                <span
+                  style={{
+                    width: 18,
+                    height: 18,
+                    border: `2px solid ${checked ? '#2563eb' : '#bbb'}`,
+                    borderRadius: 4,
+                    background: checked ? '#2563eb' : '#fff',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginLeft: 4,
+                    transition: 'background 0.2s, border 0.2s',
+                  }}
+                >
+                  {checked && (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 6.5L5.5 9L9 4.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+              </span>
               <span>{cat.name}</span>
-            </label>
+            </div>
             {/* Show subCategories if category is checked and loaded, grouped by type */}
             {checked && openCategory === cat._id && (
               <div className="ml-6 flex flex-col gap-4">
@@ -110,29 +120,43 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
                       {subs.map((sub: SubCategory) => {
                         const subChecked = selected.includes(sub._id);
                         return (
-                          <label
+                          <div
                             key={sub._id}
-                            className={`flex items-center gap-2 cursor-pointer ${subChecked ? 'font-semibold text-blue-700' : ''}`}
-                            role="checkbox"
-                            aria-checked={subChecked}
+                            className={`flex items-center gap-2 cursor-pointer select-none ${subChecked ? 'font-semibold text-blue-700' : ''}`}
+                            style={{ userSelect: 'none', flexDirection: 'row', justifyContent: 'flex-start' }}
+                            onClick={() => {
+                              let next: string[];
+                              if (!subChecked) {
+                                next = [selected[0], ...selected.slice(1), sub._id];
+                              } else {
+                                next = selected.filter(v => v !== sub._id);
+                              }
+                              onChange(next);
+                            }}
                           >
-                            <Checkbox
-                              inputId={`subCategory-${sub._id}`}
-                              checked={subChecked}
-                              onChange={e => {
-                                const isChecked = e.checked;
-                                let next: string[];
-                                if (isChecked) {
-                                  // Add subcategory only if main category is selected
-                                  next = [selected[0], ...selected.slice(1), sub._id];
-                                } else {
-                                  next = selected.filter(v => v !== sub._id);
-                                }
-                                onChange(next);
+                            {/* Custom square for subcategory, now left aligned */}
+                            <span
+                              style={{
+                                width: 18,
+                                height: 18,
+                                border: `2px solid ${subChecked ? '#2563eb' : '#bbb'}`,
+                                borderRadius: 4,
+                                background: subChecked ? '#2563eb' : '#fff',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginRight: 4,
+                                transition: 'background 0.2s, border 0.2s',
                               }}
-                            />
+                            >
+                              {subChecked && (
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M3 6.5L5.5 9L9 4.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </span>
                             <span>{sub.name}</span>
-                          </label>
+                          </div>
                         );
                       })}
                     </div>

@@ -52,6 +52,7 @@ export const OrderStatusTracker: React.FC<Props> = ({ visible, status, onHide })
       style={{ width: '40vw' }}
       modal
       footer={<Button label="סגור" icon="pi pi-times" onClick={onHide} />}
+      closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
     >
       <Steps
             model={steps}

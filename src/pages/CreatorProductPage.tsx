@@ -29,6 +29,7 @@ const CreatorProductPage: React.FC = () => {
                     visible={showUploadForm}
                     style={{ width: '50vw' }}
                     onHide={() => setShowUploadForm(false)}
+                    closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
                 >
                     <ProductUploadForm />
                 </Dialog>
