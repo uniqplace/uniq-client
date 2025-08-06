@@ -7,6 +7,7 @@ import { useRef } from 'react';
 import { clearUser } from '../../features/user/slices/userSlice';
 import { api } from '../../services/api';
 import type { RootState } from '../../store';
+import type { User } from '../../types';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user) as User;
   const menuRef = useRef<Menu>(null);
 
   const menuItems = [

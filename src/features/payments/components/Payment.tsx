@@ -19,6 +19,7 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) 
     <Dialog
       visible={isVisible}
       onHide={onHide}
+      closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
       header="Payment"
       modal
       style={{ width: '400px' }}

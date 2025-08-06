@@ -1,13 +1,14 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { BidRequest, BidResponse, SocketNotification } from '../../types/socket';
+import type { BidRequest, BidResponse } from '../../types/socket';
+import type { Notification } from '../../types/notification';
 
 
 interface SocketState {
   bids: BidRequest[];
   bidResponses: BidResponse[];
-  notifications: SocketNotification[];
+  notifications: Notification[];
 }
 
 const initialState: SocketState = {
@@ -26,7 +27,7 @@ const socketSlice = createSlice({
     appendSocketBidResponse(state, action: PayloadAction<BidResponse>) {
       state.bidResponses.push(action.payload);
     },
-    appendSocketNotification(state, action: PayloadAction<SocketNotification>) {
+    appendSocketNotification(state, action: PayloadAction<Notification>) {
       state.notifications.push(action.payload);
     },
     clearBids(state) {

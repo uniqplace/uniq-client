@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,7 +14,8 @@ import { SelectButton } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Message } from 'primereact/message';
-import { TreeSelect } from 'primereact/treeselect';
+import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+
 import { useAddProductMutation, useUpdateProductMutation } from '../slices/productApiSlice';
 import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
 import type { Product } from '../../../types';
@@ -21,7 +25,7 @@ import FilesUpload from '../../../components/shared/FilesUpload';
 interface ProductFormData {
   title: string;
   description: string;
-  categories: { [key: string]: true }; // TreeSelect value: object of selected subCategory ids
+  categories: { [key: string]: true };
   price: number;
   tags: string[];
   status: 'draft' | 'published' | 'hidden';
@@ -32,7 +36,7 @@ interface ProductFormData {
 export interface ProductUploadFormProps {
   product?: Product;
   onClose?: () => void;
-  onComplete?: () => void; // Callback when product is successfully created/updated
+  onComplete?: () => void;
 }
 
 const statusOptions = [
@@ -71,7 +75,6 @@ function getDefaultCategories(product?: Product): { [key: string]: true } {
   );
 }
 
-
 const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose, onComplete }) => {
   const [images, setImages] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>(product?.images ?? []);
@@ -81,6 +84,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
   const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [deleteImages] = useDeleteImagesMutation();
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
   const {
     control,
@@ -88,30 +92,34 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
     reset,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch
   } = useForm<ProductFormData>({
     resolver: yupResolver(schema),
     defaultValues: product
       ? {
-        title: product.title,
-        description: product.description,
-        categories: getDefaultCategories(product),
-        price: product.price,
-        tags: product.tags,
-        status: product.status,
-        condition: product.condition,
-        location: product.location,
-      }
+          title: product.title,
+          description: product.description,
+          categories: getDefaultCategories(product),
+          price: product.price,
+          tags: product.tags,
+          status: product.status,
+          condition: product.condition,
+          location: product.location,
+        }
       : {
-        title: '',
-        description: '',
-        categories: {},
-        price: 0,
-        tags: [],
-        status: 'draft',
-        condition: 'new',
-        location: '',
-      },
+          title: '',
+          description: '',
+          categories: {},
+          price: 0,
+          tags: [],
+          status: 'draft',
+          condition: 'new',
+          location: '',
+        },
   });
+
+  const selectedCategories = watch('categories');
 
   useEffect(() => {
     if (product) {
@@ -130,6 +138,23 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
     }
   }, [product, categoriesTree, reset]);
 
+  const toggleCategory = (categoryId: string) => {
+    setOpenCategories((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
+  };
+
+  const handleCategoryCheckboxChange = (subId: string, checked: boolean) => {
+    const updated = { ...selectedCategories };
+    if (checked) {
+      updated[subId] = true;
+    } else {
+      delete updated[subId];
+    }
+    setValue('categories', updated);
+  };
+
   const handleRemoveImageUrl = async (url: string) => {
     try {
       await deleteImages([url]);
@@ -140,7 +165,6 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    console.log('Form data:', data);
     if (imageUrls.length === 0) {
       setImageError('You must upload at least one image');
       return;
@@ -148,7 +172,6 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
 
     try {
       const selectedCategories = Object.keys(data.categories || {});
-      // Send all as subCategories objects
       const subCategories = selectedCategories.map(key => ({
         _id: key.replace(/^sub_/, ''),
         name: '',
@@ -156,7 +179,6 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
         category: '',
       }));
 
-      // Build productData without categories
       const { categories, ...rest } = data;
       const productData = {
         ...rest,
@@ -169,7 +191,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
       } else {
         await addProduct(productData).unwrap();
       }
-    
+
       onComplete?.();
       reset();
       setImages([]);
@@ -202,24 +224,64 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
         <InputTextarea {...register('description')} placeholder="Description" rows={4} className={errors.description ? 'p-invalid w-full' : 'w-full'} />
         {renderError('description')}
 
-        <Controller
-          name="categories"
-          control={control}
-          render={({ field }) => (
-            <TreeSelect
-              {...field}
-              value={field.value}
-              onChange={(e) => field.onChange(e.value)}
-              options={categoriesTree}
-              placeholder="Select Categories"
-              className={errors.categories ? 'p-invalid w-full' : 'w-full'}
-              filter
-              selectionMode="checkbox"
-              display="chip"
-            />
-          )}
-        />
-        {renderError('categories')}
+        <div>
+          <label className="font-bold block mb-2">Select Categories</label>
+          <div className={errors.categories ? 'p-invalid' : ''}>
+            {categoriesTree?.map((cat: any) => (
+              <div key={cat.key} className="mb-2">
+                <div
+                  className="flex items-center cursor-pointer"
+                  onClick={() => toggleCategory(cat.key)}
+                >
+                  {openCategories[cat.key] ? (
+                    <FaChevronDown className="mr-2" />
+                  ) : (
+                    <FaChevronRight className="mr-2" />
+                  )}
+                  <span className="font-semibold">{cat.label}</span>
+                </div>
+                {openCategories[cat.key] && cat.children?.length > 0 && (
+                  <div className="ml-6 mt-2 flex flex-col gap-2">
+                    {cat.children.map((sub: any) => (
+                      <div key={sub.key} className="flex items-center gap-2">
+                        <div
+                          style={{
+                            width: 20,
+                            height: 20,
+                            border: '2px solid #111',
+                            borderRadius: 4,
+                            background: selectedCategories[sub.key] ? '#111' : '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            transition: 'background 0.15s, border 0.15s',
+                          }}
+                          tabIndex={0}
+                          role="checkbox"
+                          aria-checked={!!selectedCategories[sub.key]}
+                          onClick={() => handleCategoryCheckboxChange(sub.key, !selectedCategories[sub.key])}
+                          onKeyDown={e => {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCategoryCheckboxChange(sub.key, !selectedCategories[sub.key]);
+                            }
+                          }}
+                        >
+                          {selectedCategories[sub.key] && (
+                            <span style={{ color: '#fff', fontSize: 16, fontWeight: 'bold', pointerEvents: 'none' }}>✔</span>
+                          )}
+                        </div>
+                        <label htmlFor={sub.key}>{sub.label}</label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {renderError('categories')}
+        </div>
 
         <Controller
           name="price"
