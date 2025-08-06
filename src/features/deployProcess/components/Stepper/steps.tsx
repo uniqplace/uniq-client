@@ -1,4 +1,5 @@
-import React, { createRef } from 'react';
+// import React, { createRef } from 'react';
+import React from 'react';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 // import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
