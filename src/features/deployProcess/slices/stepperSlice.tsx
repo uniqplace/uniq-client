@@ -2,10 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Log all axios requests for debugging
-axios.interceptors.request.use((config) => {
-  return config;
-});
+
 import { stepsConfig } from '../components/Stepper/steps';
 import type { BidRequest } from '../../../types';
 
