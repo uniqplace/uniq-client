@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     await api.logoutApi();
     dispatch(clearUser());
     dispatch(clearStepper());
-    localStorage.clear(); // מוחק את כל ה-localStorage
+    localStorage.clear(); 
     navigate('/login');
   };
 

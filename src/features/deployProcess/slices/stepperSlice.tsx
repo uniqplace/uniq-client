@@ -128,9 +128,13 @@ export const updateProductStep = createAsyncThunk<
   { productId: string; stepNumber: number }
 >(
   'stepper/updateProductStep',
-  async ({ productId, stepNumber }, thunkAPI) => {
-    try {
-      const stepName = stepsConfig[stepNumber - 1]?.title || stepsConfig[0].title;
+async ({ productId, stepNumber }, thunkAPI) => {
+  try {
+    const stepIndex = stepNumber - 1;
+    if (stepIndex < 0 || stepIndex >= stepsConfig.length) {
+      throw new Error(`Invalid stepNumber: ${stepNumber}`);
+    }
+    const stepName = stepsConfig[stepIndex].title;
       const response = await axios.patch(
         `${apiBaseUrl}/create-product/${productId}/step-${stepNumber}`,
         { step: stepName },
@@ -240,7 +244,6 @@ const stepperSlice = createSlice({
         state.product = action.payload;
         const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
         state.currentStepIndex = idx;
-        // מסמן כל שלב עד idx כגמור
         state.completedSteps = state.completedSteps.map((_, i) => i < idx);
       })
       .addCase(fetchProductByUserID.rejected, (state, action) => {
@@ -256,7 +259,6 @@ const stepperSlice = createSlice({
         state.product = action.payload;
         const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
         state.currentStepIndex = idx;
-        // מסמן כל שלב עד idx כגמור
         state.completedSteps = state.completedSteps.map((_, i) => i < idx);
       })
       .addCase(fetchProductStatus.rejected, (state, action) => {

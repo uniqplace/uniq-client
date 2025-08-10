@@ -58,17 +58,7 @@ const GenericStepper: React.FC = () => {
 
   const { loading: initLoading, createNewProduct } = useInitProduct();
 
-  // Debug: Log state on every render
-  useEffect(() => {
-    console.log('', {
-      stepKey,
-      currentStepIndex,
-      completedSteps,
-      product,
-      loading,
-      error,
-    });
-  });
+
 
   // Synchronizes between the current step in the URL and the currentStepIndex
   useEffect(() => {
@@ -122,49 +112,43 @@ const GenericStepper: React.FC = () => {
   // Render the current step component based on currentStepIndex  
   const CurrentStepComponent = currentStepIndex !== null ? stepsConfig[currentStepIndex]?.component : null;
 
-  const handleCompleteStep = useCallback(async () => {
-    if (currentStepIndex === null) {
-      return;
-    }
-
+  // --- Refactored helpers ---
+  const validateCurrentStep = async () => {
+    if (currentStepIndex === null) return false;
     const validateStepFn = stepsConfig[currentStepIndex]?.validateStep;
-
     if (validateStepFn) {
       try {
         const valid = await validateStepFn();
-        if (!valid) {
-          return;
-        }
-      } catch (err) {
-        return;
+        return !!valid;
+      } catch {
+        return false;
       }
     }
+    return true;
+  };
 
-    
-// Retrieve the latest productId for the current user from localStorage.
-// This ensures that all step actions are associated with the correct, up-to-date product instance.
-// If no productId is found, prevent step completion and log a warning.
-    let productId: string | undefined = product?._id;
-    const key = getUserProductKey(userId);
-    const storedId = localStorage.getItem(key);
-    productId = storedId !== null ? storedId : undefined;
-    if (!productId) {
-      console.warn('[Stepper] No productId in localStorage, cannot complete step');
-      return;
-    }
+  const getCurrentProductId = () => {
+    let productId: string | undefined;
+    // If you want to use localStorage, use your helper here
+    // const storedId = getProductIdFromLocalStorage(userId);
+    // productId = storedId !== null ? storedId : undefined;
+    productId = product?._id;
+    return productId;
+  };
 
-    if (!productId) {
-      console.error('[Stepper] No productId, cannot complete step');
-      return;
-    }
-    // Mark the previous step as complete (if not on the first step)
-    if (currentStepIndex > 0) {
+  const updateStepOnServer = (productId: string) => {
+    if (typeof currentStepIndex === 'number' && currentStepIndex > 0) {
       dispatch(markStepCompleted(currentStepIndex - 1));
     }
-    dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
+    if (typeof currentStepIndex === 'number') {
+      dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
+    }
+  };
 
+  const navigateToNextStep = () => {
+    if (typeof currentStepIndex !== 'number') return;
     if (currentStepIndex === stepsConfig.length - 1) {
-      setShowFinalPopup(true)
+      setShowFinalPopup(true);
     } else {
       const nextKey = stepsConfig[currentStepIndex + 1]?.key;
       if (nextKey) {
@@ -173,7 +157,23 @@ const GenericStepper: React.FC = () => {
         console.warn('[Stepper] No nextKey found, not navigating');
       }
     }
-  }, [currentStepIndex, dispatch, navigate, product?._id]);
+  };
+
+  const handleCompleteStep = useCallback(async () => {
+    if (typeof currentStepIndex !== 'number') return;
+    const valid = await validateCurrentStep();
+    if (!valid) {
+      window.alert('Please complete all required fields before continuing.');
+      return;
+    }
+    const productId = getCurrentProductId();
+    if (!productId) {
+      console.warn('[Stepper] No productId, cannot complete step');
+      return;
+    }
+    updateStepOnServer(productId);
+    navigateToNextStep();
+  }, [currentStepIndex, dispatch, navigate, product?._id, userId]);
 
 
   // Go back without updating server or completedSteps (do not regress status)
@@ -208,12 +208,13 @@ const GenericStepper: React.FC = () => {
     setCanGoNext,
   };
 
-  let renderedStep = null;
-  if (CurrentStepComponent && CurrentStepComponent.displayName === 'BidOffersList') {
-    renderedStep = <CurrentStepComponent {...baseStepProps} bidRequestId={bidRequestId} />;
-  } else if (CurrentStepComponent) {
-    renderedStep = <CurrentStepComponent {...baseStepProps} />;
-  }
+let renderedStep = null;
+const currentStepKey = currentStepIndex !== null ? stepsConfig[currentStepIndex]?.key : undefined;
+if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
+  renderedStep = <CurrentStepComponent {...baseStepProps} bidRequestId={bidRequestId} />;
+} else if (CurrentStepComponent) {
+  renderedStep = <CurrentStepComponent {...baseStepProps} />;
+}
 
   return (
     <div className="card max-w-5xl mx-auto p-6 shadow-lg rounded-xl bg-white">

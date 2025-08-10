@@ -27,7 +27,6 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
         const key = getUserProductKey(userId);
         try {
             // 0. Clear previous product from Redux and localStorage
-            console.log('[createNewProduct] Removing previous product from localStorage and Redux', { key });
             localStorage.removeItem(key);
             localStorage.removeItem('currentStep');
             dispatch(clearStepper());
@@ -35,13 +34,10 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
 
             let product, productId, attempts = 0;
             do {
-                console.log(`[createNewProduct] Attempt #${attempts + 1}: Creating new product...`);
                 const newProduct = await dispatch(createProduct()).unwrap();
                 productId = newProduct._id;
-                console.log(`[createNewProduct] New product created`, { productId, newProduct });
                 localStorage.setItem(key, productId);
                 product = await dispatch(fetchProductStatus(productId)).unwrap();
-                console.log(`[createNewProduct] Fetched product status`, { product });
                 if (product.CreationStatus === 'Complete Delivery') {
                     console.warn(`[createNewProduct] Product returned as 'Complete Delivery', deleting...`, { productId });
                     try {
@@ -49,7 +45,6 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
                             method: 'DELETE',
                             credentials: 'include',
                         });
-                        console.log(`[createNewProduct] Deleted completed product`, { productId, deleteRes });
                     } catch (e) {
                         console.warn('Failed to delete completed product', e);
                     }
@@ -63,7 +58,6 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
             } while (product.CreationStatus === 'Complete Delivery');
 
             const index = stepsConfig.findIndex((s) => s.title === product.CreationStatus);
-            console.log('[createNewProduct] Setting currentStepIndex', { index, CreationStatus: product.CreationStatus });
             dispatch(setCurrentStepIndex(index !== -1 ? index : 0));
         } catch (err) {
             console.error('Error creating new product:', err);
