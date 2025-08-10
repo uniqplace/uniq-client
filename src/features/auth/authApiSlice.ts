@@ -3,7 +3,7 @@
 import apiSlice from '../../api/apiSlice';
 import { type User } from '../../types/index';
 import { setCredentials } from './authSlice';
-import { setUser } from '../user/slices/userSlice'; // ← ייבוא של setUser מה-userSlice
+import { setUser } from '../user/slices/userSlice';
 
 interface AuthResponse {
   accessToken: string;
