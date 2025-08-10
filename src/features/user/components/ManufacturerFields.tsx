@@ -1,9 +1,12 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import type { DropdownChangeEvent } from 'primereact/dropdown';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
+import { useSelector } from 'react-redux';
+import { useGetManufacturerProfileByUserIdQuery } from '../slices/manufacturerApiSlice';
+
 
 export interface ManufacturerFieldsRef {
   validate: () => boolean;
@@ -49,21 +52,37 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
       location: '',
       availableFrom: '',
     });
+    const user = useSelector((state: any) => state.user);
+    const manufacturerData = useSelector((state: any) => state.manufacturer); // Use state.manufacturer directly
+    const { data: manufacturerProfile } = useGetManufacturerProfileByUserIdQuery(user.id); // Use hook at the top level
+    console.log('manufacturerData ', manufacturerData);
+    useEffect(() => {
+      if (disabled) return; // Skip if the form is disabled
+
+      console.log('ManufacturerFields ', manufacturerProfile);
+
+      if (!manufacturerProfile) return;
+
+      setServicesOffered(user.servicesOffered || []); // Update services offered
+      setCategories(manufacturerProfile.categories || []); // Update categories
+      setLocation(manufacturerProfile.location || ''); // Map and update location
+      setAvailableFrom(manufacturerProfile.availableFrom?.split('T')[0] || ''); // Format and update availableFrom
+    }, [manufacturerProfile, setCategories, setLocation, setAvailableFrom, disabled]);
 
     // Main Israeli cities in Hebrew for dropdown
     const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
     const categoryOptions = (categoriesData?.data || []).map((cat: any) => ({ label: cat.name, value: cat.name }));
     const mainCities = [
-      { label: 'תל אביב', value: 'תל אביב' },
-      { label: 'ירושלים', value: 'ירושלים' },
-      { label: 'חיפה', value: 'חיפה' },
-      { label: 'באר שבע', value: 'באר שבע' },
-      { label: 'ראשון לציון', value: 'ראשון לציון' },
-      { label: 'פתח תקווה', value: 'פתח תקווה' },
-      { label: 'אשדוד', value: 'אשדוד' },
-      { label: 'נתניה', value: 'נתניה' },
-      { label: 'חולון', value: 'חולון' },
-      { label: 'בני ברק', value: 'בני ברק' }
+      { label: 'תל אביב', value: 'tel_aviv' },
+      { label: 'ירושלים', value: 'jerusalem' },
+      { label: 'חיפה', value: 'haifa' },
+      { label: 'באר שבע', value: 'beer_sheva' },
+      { label: 'ראשון לציון', value: 'rishon_letzion' },
+      { label: 'פתח תקווה', value: 'petah_tikva' },
+      { label: 'אשדוד', value: 'ashdod' },
+      { label: 'נתניה', value: 'netanya' },
+      { label: 'חולון', value: 'holon' },
+      { label: 'בני ברק', value: 'bnei_brak' }
     ];
     const [showErrors, setShowErrors] = useState(false);
 
@@ -107,10 +126,10 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
         <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">Manufacturer Details</h2>
         <div className="field mb-8 border border-gray-200 rounded-lg p-6">
           <label className="block text-900 font-semibold mb-3 text-lg">Services / Facilities</label>
-          {servicesOffered.map((service, idx) => (
+          {servicesOffered?.map((service, idx) => (
             <div key={idx} className="flex items-center gap-2 mb-3">
               <InputText
-                value={service}
+                value={service || ''} // Ensure value is always a string
                 maxLength={500}
                 onChange={e => handleItemChange(idx, e.target.value, setServicesOffered)}
                 placeholder="e.g. CNC Machining, Laser Cutting"
@@ -127,7 +146,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
           <label className="block text-900 font-semibold mb-3 text-lg">Categories</label>
           <div className="flex items-center gap-2 mb-3">
             <Dropdown
-              value={categories[0] || ''}
+              value={categories?.[0] || ''} // Ensure value is always a string
               onChange={(e: DropdownChangeEvent) => setCategories(cats => {
                 const arr = [...cats];
                 arr[0] = e.value;
@@ -141,7 +160,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
               className="w-full p-inputtext-lg"
             />
           </div>
-          {categories.slice(1).map((cat, idx) => (
+          {categories?.slice(1).map((cat, idx) => (
             <div key={idx + 1} className="flex items-center gap-2 mb-3">
               <Dropdown
                 value={cat}
@@ -149,7 +168,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
                 options={categoryOptions}
                 optionLabel="label"
                 optionValue="value"
-                placeholder={categoriesLoading ? 'Loading...' : 'Select category'}
+                placeholder={categoriesLoading ? 'Loading...' : categories?.[idx + 1] || 'Select category'}
                 disabled={disabled || categoriesLoading}
                 className="w-full p-inputtext-lg"
               />
@@ -162,7 +181,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
         <div className="field mb-8 border border-gray-200 rounded-lg p-6">
           <label className="block text-900 font-semibold mb-3 text-lg">City</label>
           <Dropdown
-            value={location}
+            value={location || ''} // Ensure value is always a string
             onChange={(e: DropdownChangeEvent) => setLocation(e.value)}
             options={mainCities}
             optionLabel="label"
@@ -175,7 +194,13 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
         </div>
         <div className="field mb-4 border border-gray-200 rounded-lg p-6">
           <label className="block text-900 font-semibold mb-3 text-lg">Available From</label>
-          <input type="date" value={availableFrom} onChange={e => setAvailableFrom(e.target.value)} className="w-full p-inputtext p-inputtext-lg" disabled={disabled} />
+          <input
+            type="date"
+            value={availableFrom || ''} // Ensure value is always a string
+            onChange={e => setAvailableFrom(e.target.value)}
+            className="w-full p-inputtext p-inputtext-lg"
+            disabled={disabled}
+          />
           {showErrors && errors.availableFrom && <div className="text-red-500 text-sm mt-1">{errors.availableFrom}</div>}
         </div>
       </div>
@@ -183,3 +208,4 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
   }
 );
 export default ManufacturerFields;
+

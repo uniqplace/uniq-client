@@ -3,10 +3,11 @@ import { ListBox } from 'primereact/listbox';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Paginator } from 'primereact/paginator';
 import { deduplicateNotifications } from '../utils/notificationHelpers';
-import getUserIdFromToken from '../utils/getUserIdFromToken';
+// import getUserIdFromToken from '../utils/getUserIdFromToken';
 import { getNotificationsFetch } from '../services/notificationApi';
 import { useNavigate } from 'react-router-dom';
 import type { Notification } from '../types/notification';
+import { useAppSelector } from '../hooks/hooks';
 
 const MyBidRequestsNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -14,6 +15,7 @@ const MyBidRequestsNotifications = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const getUserId = useAppSelector((state) => state.user.id);
 
   const navigate = useNavigate();
 
@@ -22,13 +24,13 @@ const MyBidRequestsNotifications = () => {
       setLoading(true);
       setError(null);
       try {
-        const userId = getUserIdFromToken();
-        if (!userId) {
+
+        if (!getUserId) {
           navigate('/login');
           return;
         }
         const limit = 10;
-        const { notifications, pages } = await getNotificationsFetch(userId, pageNum, limit);
+        const { notifications, pages } = await getNotificationsFetch(getUserId, pageNum, limit);
         const bidNotifications = deduplicateNotifications(notifications)
           .filter((n) => n.type === 'NEW_BID' || n.bidRequestId)
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -42,7 +44,7 @@ const MyBidRequestsNotifications = () => {
     };
 
     fetchNotifications(page);
-  }, [page, navigate]);
+  }, [page, navigate, getUserId]);
 
   return (
     <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow">

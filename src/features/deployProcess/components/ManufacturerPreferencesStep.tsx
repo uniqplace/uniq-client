@@ -231,6 +231,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       // קריאה לשרת דרך thunk של Redux
       // @ts-ignore
       const resultAction = await dispatch(saveBidRequest(preferences));
+      // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
         toast.current?.show({
           severity: 'success',

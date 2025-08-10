@@ -74,6 +74,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, productTitle }) => 
         modal
         style={{ width: '80vw', maxWidth: '800px' }}
         contentStyle={{ padding: '0' }}
+        closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
+
       >
         <div className="relative">
           <img

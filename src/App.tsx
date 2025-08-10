@@ -2,7 +2,6 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import useSocketListeners from './hooks/useSocketListeners';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
 import type { AppDispatch, RootState } from './store';
@@ -27,14 +26,15 @@ import { CheckoutPage } from './features/order/components/CheckoutPage';
 import BidRequestsTabs from './features/deployProcess/components/BidRequestsTabs';
 import MyBidRequestsNotifications from './pages/MyBidRequestsNotifications';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
-import { initializeSocket, disconnectSocket } from './services/socket';
-import { toast } from 'react-toastify';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
 import BidRequestDetails from './features/deployProcess/components/BidRequestDetails';
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import { SOCKET_EVENTS } from './constants/socketEvents';
+import { getSocket } from './services/socket';
+
 
 
 
@@ -54,7 +54,7 @@ function App() {
   const user = useSelector((state: RootState) => state.user);
   const loading = user.loading;
   const [wasLoading, setWasLoading] = useState(false);
-  useSocketListeners({ userId: user?.id ?? undefined, role: user?.role ?? undefined });
+
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -79,89 +79,74 @@ function App() {
   useEffect(() => {
   }, [user]);
 
-  // Initialize socket only when user is authenticated
-  useEffect(() => {
-    if (user?.id && user?.email) {
-      const socket = initializeSocket();
-      
-      const handleBidSentConfirmation = (data: any) => {
-        console.log('Bid sent confirmation:', data);
-        if (data.error) {
-          toast.error(data.message);
-        } else {
-          toast.success(data.message);
-        }
-      };
-      
-      socket.on('bid_sent_confirmation', handleBidSentConfirmation);
+  const sendSocket = async () => {
+    const socket = getSocket();
+    if (socket) {
+      try {
+        const response = await fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);
+        console.log('API response:', response);
 
-      return () => {
-        socket.off('bid_sent_confirmation', handleBidSentConfirmation);
-      };
+        socket.emit(SOCKET_EVENTS.NEW_BID, { userId: user.id, message: `New bid for user pnini` });
+        console.log('New bid event emitted:', { userId: user.id, message: `New bid for user pnini` });
+      } catch (error) {
+        console.error('Error while sending socket event:', error);
+      }
     } else {
-      // Disconnect socket when user is not authenticated
-      disconnectSocket();
+      console.error('Socket is not initialized');
     }
-  }, [user?.id, user?.email]);
 
-  //if (loading) {
-  //  return <div>Loading...</div>;
-  // }
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <ProgressSpinner />
-        <span style={{ marginTop: '1rem' }}>Loading...</span>
-      </div>
-    );
+    if (loading) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <ProgressSpinner />
+          <span style={{ marginTop: '1rem' }}>Loading...</span>
+        </div>
+      );
+    }
   }
 
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <NewHeader />
-      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
-      <MainContent>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/product/:id" element={<ProductPage />} />
-        <Route path="/account/orders" element={<MyOrdersWrapper />} />
-        <Route path="/user/:id" element={<UserProfile />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/uploadProduct" element={<ProductUploadForm />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
-        <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
-        <Route path="/checkout/:productId" element={<CheckoutPage />} />
-        <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
-        <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
-        <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
-        <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
-        <Route path="/BidOffer" element={<BidOfferForm />} />
-        {/* <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} /> */}
-        <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
-        <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
-        <Route path="/MyBidRequest" element={<OpenBidPage />} />
-    </Routes>
-      </MainContent>
-      <h5>Socket.IO + React Toastify</h5>
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <NewHeader />
+        <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
+        <MainContent>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/account/orders" element={<MyOrdersWrapper />} />
+            <Route path="/user/:id" element={<UserProfile />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/uploadProduct" element={<ProductUploadForm />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+            <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+            <Route path="/checkout/:productId" element={<CheckoutPage />} />
+            <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
+            <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
+            <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
+            <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
+            <Route path="/BidOffer" element={<BidOfferForm />} />
+            <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
+            <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
+            <Route path="/MyBidRequest" element={<OpenBidPage />} />
+          </Routes>
+        </MainContent>
+        <h5>Socket.IO + React Toastify</h5>
 
+        <button
+          onClick={() =>
+            sendSocket()
+          }
+        >
+          Simulate New Bid For User {user.name}
+        </button>
 
-
-      <button
-        onClick={() => {
-          fetch(`http://localhost:5002/api/test-bid/6885d9317e124ee3aaebfafe/${user.id}`);///api/test-bid/:userId/:senderUserId
-        }}
-      >
-        Simulate New Bid For User {user.name}
-      </button>
-
-
-    </div>
-  );
-}
+      </div>
+    );
+  }
 
 export default App;

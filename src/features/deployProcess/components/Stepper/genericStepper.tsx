@@ -263,14 +263,17 @@ if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
         visible={showFinalPopup}
         style={{ width: '350px' }}
         onHide={() => setShowFinalPopup(false)}
-        closeIcon={
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="5" y1="5" x2="15" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
-              <line x1="15" y1="5" x2="5" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </span>
-        }
+       // closeIcon={
+       //   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
+       //     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+       //       <line x1="5" y1="5" x2="15" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
+       //       <line x1="15" y1="5" x2="5" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
+       //     </svg>
+       //   </span>
+       // }
+
+        closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
+
       >
         <div className="text-center">
           <p>
