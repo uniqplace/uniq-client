@@ -30,7 +30,7 @@ const NewHeader: React.FC = () => {
   return (
     <>
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-800 shadow-md z-50 flex items-center justify-between px-4">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-gradient-to-r from-emerald-600 via-teal-700 to-cyan-600 backdrop-blur-lg shadow-xl border-b border-emerald-400/20 z-50 flex items-center justify-between px-6">
         {/* Left side - Hamburger and Logo */}
         <div className="flex items-center space-x-4">
           {/* Hamburger Menu (Mobile) */}
@@ -38,19 +38,21 @@ const NewHeader: React.FC = () => {
             <Button
               id="hamburger"
               icon="pi pi-bars"
-              className="p-button-text p-button-rounded"
+              className="p-button-text p-button-rounded text-white hover:bg-white/10 transition-all duration-200"
               onClick={toggleSidebar}
               aria-label="Toggle menu"
+              style={{ color: 'white', border: 'none' }}
             />
           )}
 
           {/* Logo */}
           <div
-            className="flex items-center cursor-pointer font-bold text-xl text-blue-700 dark:text-blue-400"
+            className="flex items-center cursor-pointer font-bold text-2xl bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
             onClick={() => navigate('/')}
             style={{ userSelect: 'none' }}
           >
-            <span style={{ fontWeight: 700, letterSpacing: 1 }}>UniqPlace</span>
+            <i className="pi pi-star-fill mr-2 text-yellow-300 text-xl"></i>
+            <span style={{ fontWeight: 800, letterSpacing: 1.2 }}>UniqPlace</span>
           </div>
         </div>
 
