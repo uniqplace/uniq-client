@@ -9,12 +9,12 @@ interface MainContentProps {
 const MainContent: React.FC<MainContentProps> = ({ children, className = '' }) => {
   return (
     <main className={`
-      min-h-screen bg-gray-50 dark:bg-gray-900
-      pt-14 md:ml-64
+      min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10
+      pt-16 md:ml-72
       transition-all duration-300 ease-in-out
       ${className}
     `}>
-      <div className="p-4 md:p-6">
+      <div className="p-6 md:p-8">
         {children}
       </div>
     </main>
