@@ -12,7 +12,7 @@ export const deployApiSlice = apiSlice.injectEndpoints({
     }),
     saveBidRequest: builder.mutation<{ id: string; status: 'open'; createdAt: string }, ManufacturerPreferences & { productId: string }>({
       query: (bidRequest) => ({
-        url: '/bid-requests',
+        url: '/bidRequests',
         method: 'POST',
         body: bidRequest,
       }),

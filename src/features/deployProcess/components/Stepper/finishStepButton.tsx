@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from 'primereact/button';
 
@@ -10,3 +11,4 @@ const FinishStepButton: React.FC<FinishStepButtonProps> = ({ onClick }) => (
 );
 
 export default FinishStepButton;
+
