@@ -1,141 +1,220 @@
 import React, { useEffect, useCallback, useState } from 'react';
+import { getUserProductKey } from '../../../../utils/productStorageKey';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
 import { Steps } from 'primereact/steps';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { stepsConfig } from '../../../../config/stepsConfig';
+import { useAppDispatch, useAppSelector } from '../../../../hooks/hooks';
 import {
-  goToPrevStep,
-  goToNextStep,
-  setCurrentStepIndex,
   markStepCompleted,
-  // createProduct,
-  fetchProductStatus,
   updateProductStep,
+  setCurrentStepIndex,
 } from '../../slices/stepperSlice';
-import type { RootState, AppDispatch } from '../../../../store';
+import { stepsConfig } from './steps';
+import useInitProduct from '../../../../hooks/useInitProduct';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import '../../../../styles/genericStepper.css';
-import { steps } from './steps';
+import 'primeicons/primeicons.css';
 
 const GenericStepper: React.FC = () => {
-  const { stepKey } = useParams<{ stepKey: string }>();
+
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const [showFinalPopup, setShowFinalPopup] = useState(false);
-  const [forceCreate, setForceCreate] = useState(false);
+  const { stepKey } = useParams<{ stepKey: string }>();
 
-  const { currentStepIndex, completedSteps, product, loading, error } = useSelector(
-    (state: RootState) => state.stepper
+  // Get stepper state from Redux
+  const { currentStepIndex, completedSteps, product, loading, error } = useAppSelector(
+    (state) => state.stepper
   );
+  const userId = useAppSelector((state) => state.user?.id);
 
-  const CurrentStepComponent = steps[currentStepIndex]?.component;
 
-  const getUserProductKey = (): string => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user?.id ? `productId_${user.id}` : 'productId_guest';
-  };
-
-  const getStepKeyByIndex = (index: number): string | null => {
-    return stepsConfig[index]?.key || null;
-  };
-
+  // On mount or when product changes, update completedSteps and currentStepIndex from server status if needed
+  // Auto-navigate to last completed step only on initial mount or when product._id changes
   useEffect(() => {
-    // Only fetch product status or create product if not on the first step
-    if (currentStepIndex === 0) return;
-    const handleProductLoading = async () => {
-      const userProductKey = getUserProductKey();
-      const productId = localStorage.getItem(userProductKey);
-      try {
-        if (!productId || forceCreate) {
-          // const created = await dispatch(createProduct()).unwrap();
-          // if (created?._id) {
-          //   localStorage.setItem(userProductKey, created._id);
-          //   dispatch(fetchProductStatus(created._id));
-          //   setForceCreate(false);
-          // }
-        } else {
-          await dispatch(fetchProductStatus(productId)).unwrap();
+    if (!product || !product.CreationStatus) return;
+    const idx = stepsConfig.findIndex(s => s.title === product.CreationStatus);
+
+    if (idx >= 0) {
+      const completedArr = stepsConfig.map(
+        (_, i) => {
+          return i < idx
         }
-      } catch (err: any) {
-        if (err?.status === 404) {
-          localStorage.removeItem(userProductKey);
-          setForceCreate(true);
-        } else {
-          console.error('Product handling error:', err);
-        }
+      );
+
+      dispatch({ type: 'stepper/setCompletedSteps', payload: completedArr });
+      dispatch(setCurrentStepIndex(idx));
+
+      if (stepKey !== stepsConfig[idx].key) {
+        navigate(`/create-your-own-product/${stepsConfig[idx].key}`, { replace: true });
       }
-    };
-    handleProductLoading();
-  }, [dispatch, forceCreate, currentStepIndex]);
+    } else {
+      console.warn('[Stepper] No matching step title found for CreationStatus:', product.CreationStatus);
+    }
+  }, [product?._id]);
 
+
+  const [showFinalPopup, setShowFinalPopup] = useState(false);
+
+  const { loading: initLoading, createNewProduct } = useInitProduct();
+
+
+
+  // Synchronizes between the current step in the URL and the currentStepIndex
   useEffect(() => {
+    if (!stepKey || loading) return;
     const index = stepsConfig.findIndex((s) => s.key === stepKey);
     if (index !== -1) {
       dispatch(setCurrentStepIndex(index));
     }
-  }, [dispatch, stepKey]);
+  }, [dispatch, stepKey, loading]);
 
+  // Sync the server's product step with the current step in the stepper.
+  // If the user has advanced further in the stepper than the server's recorded step (CreationStatus),
+  // update the server to reflect the new
   useEffect(() => {
-    const userProductKey = getUserProductKey();
-    const productId = localStorage.getItem(userProductKey);
+    if (currentStepIndex === null) return;
+
+    // Ensure there is a product and ID before proceeding
+    const key = getUserProductKey(userId);
+    const productId = localStorage.getItem(key);
+    if (!productId || !product) {
+      return;
+    }
 
     const serverStepIndex = stepsConfig.findIndex(
-      (s) => s.label === product?.CreationStatus
+      (s) => s.title === product.CreationStatus
     );
 
-    if (
-      productId &&
-      product &&
-      currentStepIndex > serverStepIndex
-    ) {
+    if (currentStepIndex > serverStepIndex) {
+      console.log('[Stepper] Advancing product step on server', {
+        productId,
+        from: serverStepIndex,
+        to: currentStepIndex,
+      });
+      // Update server with new step index
       dispatch(updateProductStep({
         productId,
         stepNumber: currentStepIndex + 1
       }));
+    } else {
     }
   }, [currentStepIndex, dispatch, product]);
 
-  const handleCompleteStep = useCallback(() => {
-    const userProductKey = getUserProductKey();
-    const productId = localStorage.getItem(userProductKey);
-    if (!productId) return;
 
-    dispatch(markStepCompleted(currentStepIndex));
-    dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
+  const [canGoNext, setCanGoNext] = useState(false);
 
+  // Reset canGoNext on every new step
+  useEffect(() => {
+    setCanGoNext(false);
+  }, [currentStepIndex]);
+
+  // Render the current step component based on currentStepIndex  
+  const CurrentStepComponent = currentStepIndex !== null ? stepsConfig[currentStepIndex]?.component : null;
+
+  // --- Refactored helpers ---
+  const validateCurrentStep = async () => {
+    if (currentStepIndex === null) return false;
+    const validateStepFn = stepsConfig[currentStepIndex]?.validateStep;
+    if (validateStepFn) {
+      try {
+        const valid = await validateStepFn();
+        return !!valid;
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const getCurrentProductId = () => {
+    let productId: string | undefined;
+    // If you want to use localStorage, use your helper here
+    // const storedId = getProductIdFromLocalStorage(userId);
+    // productId = storedId !== null ? storedId : undefined;
+    productId = product?._id;
+    return productId;
+  };
+
+  const updateStepOnServer = (productId: string) => {
+    if (typeof currentStepIndex === 'number' && currentStepIndex > 0) {
+      dispatch(markStepCompleted(currentStepIndex - 1));
+    }
+    if (typeof currentStepIndex === 'number') {
+      dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
+    }
+  };
+
+  const navigateToNextStep = () => {
+    if (typeof currentStepIndex !== 'number') return;
     if (currentStepIndex === stepsConfig.length - 1) {
       setShowFinalPopup(true);
-    }
-  }, [dispatch, currentStepIndex]);
-
-  const handleNext = () => {
-     if (completedSteps[currentStepIndex] && currentStepIndex < stepsConfig.length - 1) 
-    {
-      const nextKey = getStepKeyByIndex(currentStepIndex + 1);
+    } else {
+      const nextKey = stepsConfig[currentStepIndex + 1]?.key;
       if (nextKey) {
         navigate(`/create-your-own-product/${nextKey}`);
-        dispatch(goToNextStep());
+      } else {
+        console.warn('[Stepper] No nextKey found, not navigating');
       }
     }
   };
 
+  const handleCompleteStep = useCallback(async () => {
+    if (typeof currentStepIndex !== 'number') return;
+    const valid = await validateCurrentStep();
+    if (!valid) {
+      window.alert('Please complete all required fields before continuing.');
+      return;
+    }
+    const productId = getCurrentProductId();
+    if (!productId) {
+      console.warn('[Stepper] No productId, cannot complete step');
+      return;
+    }
+    updateStepOnServer(productId);
+    navigateToNextStep();
+  }, [currentStepIndex, dispatch, navigate, product?._id, userId]);
+
+
+  // Go back without updating server or completedSteps (do not regress status)
   const handleBack = () => {
-    if (currentStepIndex > 0) {
-      const prevKey = getStepKeyByIndex(currentStepIndex - 1);
+    if (currentStepIndex !== null && currentStepIndex > 0) {
+      const prevKey = stepsConfig[currentStepIndex - 1]?.key;
       if (prevKey) {
         navigate(`/create-your-own-product/${prevKey}`);
-        dispatch(goToPrevStep());
       }
     }
   };
 
+  // Always use completedSteps from Redux (restored from localStorage) for V icons
   const stepsModel = stepsConfig.map((step, index) => ({
-    label: step.label,
-    icon: completedSteps[index] ? 'pi pi-check' : undefined,
-  }));
+    label: step.title,
+    icon: completedSteps && completedSteps[index] ? 'pi pi-check' : undefined,
+  })
+  );
+  // Check if the current step is completed for styling and interaction
+  const isStepCompleted = currentStepIndex !== null ? completedSteps[currentStepIndex] : false;
 
-  const isStepCompleted = completedSteps[currentStepIndex];
+  if (loading || currentStepIndex === null) {
+    return <ProgressSpinner />;
+  }
+
+
+  // Pass bidRequestId only to BidOffersList, all other steps get only the base props
+  const bidRequestId = product?._id;
+  const baseStepProps = {
+    product,
+    onComplete: () => setCanGoNext(true),
+    setCanGoNext,
+  };
+
+let renderedStep = null;
+const currentStepKey = currentStepIndex !== null ? stepsConfig[currentStepIndex]?.key : undefined;
+if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
+  renderedStep = <CurrentStepComponent {...baseStepProps} bidRequestId={bidRequestId} />;
+} else if (CurrentStepComponent) {
+  renderedStep = <CurrentStepComponent {...baseStepProps} />;
+}
 
   return (
     <div className="card max-w-5xl mx-auto p-6 shadow-lg rounded-xl bg-white">
@@ -150,40 +229,31 @@ const GenericStepper: React.FC = () => {
         className="custom-steps mb-6"
       />
 
-      {loading ? (
-        <div className="text-center text-gray-600">Loading product status...</div>
-      ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
+      {error ? (
+        <div className="text-center text-red-500 mb-4">{error}</div>
       ) : (
-        <>
-          <div
-            className="step-content text-center p-4 border rounded-lg bg-gray-50"
-            style={{
-              opacity: isStepCompleted ? 0.5 : 1,
-              pointerEvents: isStepCompleted ? 'none' : 'auto',
-            }}
-          >
-            {CurrentStepComponent && (
-              <CurrentStepComponent product={product} onComplete={handleCompleteStep} />
-            )}
-          </div>
-        </>
+        <div
+          className="step-content text-center p-4 border rounded-lg bg-gray-50"
+          style={{
+            opacity: isStepCompleted ? 0.5 : 1,
+            pointerEvents: isStepCompleted ? 'none' : 'auto',
+          }}
+        >
+          {renderedStep}
+        </div>
       )}
 
       <div className="flex justify-between mt-6">
         <Button
           label="Back"
           onClick={handleBack}
-          disabled={currentStepIndex === 0}
+          disabled={currentStepIndex === 0 || currentStepIndex === null}
           className="p-button-secondary"
         />
         <Button
-          label="Next"
-          onClick={handleNext}
-          disabled={
-            !completedSteps[currentStepIndex] ||
-            currentStepIndex === stepsConfig.length - 1
-          }
+          label={currentStepIndex === stepsConfig.length - 1 ? 'Finish' : 'Next'}
+          onClick={handleCompleteStep}
+          disabled={loading || !product || !product._id || !canGoNext}
           className="p-button-primary"
         />
       </div>
@@ -193,15 +263,33 @@ const GenericStepper: React.FC = () => {
         visible={showFinalPopup}
         style={{ width: '350px' }}
         onHide={() => setShowFinalPopup(false)}
+       // closeIcon={
+       //   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
+       //     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+       //       <line x1="5" y1="5" x2="15" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
+       //       <line x1="15" y1="5" x2="5" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
+       //     </svg>
+       //   </span>
+       // }
+
         closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
 
       >
         <div className="text-center">
-          <p>Your product is completed and is on its way to you!</p>
+          <p>
+            <span role="img" aria-label="delivered" style={{ fontSize: '1.5em' }}>🎉</span><br />
+            Congratulations! Your product has been successfully delivered.<br />
+            We hope you enjoy your unique creation.<br />
+            <span className="text-gray-500 text-sm">Thank you for choosing us!</span>
+          </p>
           <Button
-            label="Close"
-            onClick={() => setShowFinalPopup(false)}
+            label={initLoading ? "create new product..." : " create new product"}
+            onClick={async () => {
+              setShowFinalPopup(false);
+              await createNewProduct();
+            }}
             className="p-button-success mt-3"
+            disabled={initLoading}
           />
         </div>
       </Dialog>
@@ -210,3 +298,10 @@ const GenericStepper: React.FC = () => {
 };
 
 export default GenericStepper;
+
+
+
+
+
+
+

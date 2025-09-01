@@ -72,13 +72,11 @@ function App() {
       location.pathname !== '/login' &&
       location.pathname !== '/register'
     ) {
-      console.log('Redirecting to login', { user, loading });
       navigate('/login');
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
 
   useEffect(() => {
-    console.log('user state:', user);
   }, [user]);
 
   const sendSocket = async () => {
@@ -106,6 +104,7 @@ function App() {
       );
     }
   }
+
 
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -145,7 +144,6 @@ function App() {
         >
           Simulate New Bid For User {user.name}
         </button>
-
 
       </div>
     );

@@ -14,8 +14,9 @@ export const useAuthUser = () => {
         const user = JSON.parse(userStr);
         dispatch(setUser(user));
       } catch (err) {
-        console.error('Failed to parse user from localStorage:', err);
+        console.error('[useAuthUser] Failed to parse user from localStorage:', err);
       }
+    } else {
     }
   }, [dispatch]);
 };
