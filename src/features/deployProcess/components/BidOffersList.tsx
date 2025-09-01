@@ -12,9 +12,14 @@ import { Avatar } from 'primereact/avatar';
 
 interface BidOffersListProps {
   bidRequestId: string;
+  setCanGoNext?: (canGo: boolean) => void;
 }
 
-const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId }) => {
+const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNext }) => {
+  // Always allow next step (for now)
+  useEffect(() => {
+    if (setCanGoNext) setCanGoNext(true);
+  }, [setCanGoNext]);
   const dispatch = useDispatch<AppDispatch>();
   const [sortOption, setSortOption] = useState<'date' | 'price' | 'rating'>('date');
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
