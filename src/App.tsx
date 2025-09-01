@@ -86,8 +86,8 @@ function App() {
         const response = await fetch(`http://localhost:5002/api/test-bid/68b554499ff29d1e893dca02/${user.id}`);
         console.log('API response:', response);
 
-        socket.emit(SOCKET_EVENTS.NEW_BID, { userId: user.id, message: `New bid for user pnini` });
-        console.log('New bid event emitted:', { userId: user.id, message: `New bid for user pnini` });
+        socket.emit(SOCKET_EVENTS.NEW_BID, { userId: user.id, message: `New bid for user ${user.name}` });
+        
       } catch (error) {
         console.error('Error while sending socket event:', error);
       }

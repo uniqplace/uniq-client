@@ -35,6 +35,11 @@ const useSocketListeners = () => {
           style: { background: "#d1ecf1", color: "#0c5460" }
         });
       };
+      const handleNewOrder = (orderData: Notification) => {
+        toast(React.createElement(CustomToast, { icon: "🛒", message: `New order placed: ${orderData.payload.message || 'No title'}`, color: "#155724", background: "#d4edda" }), {
+          style: { background: "#d4edda", color: "#155724" }
+        });
+      };
       const handleGeneralNotification = (data: Notification) => {
         console.log('General notification:', data);
         if (data.error) {
@@ -60,12 +65,14 @@ const useSocketListeners = () => {
       socket.on(SOCKET_EVENTS.NEW_BID, handleNewBid);
       socket.on(SOCKET_EVENTS.GENERAL_NOTIFICATION, handleGeneralNotification);
       socket.on(SOCKET_EVENTS.BID_SENT_CONFIRMATION, handleBidSentConfirmation);
+      socket.on(SOCKET_EVENTS.NEW_ORDER, handleNewOrder);
       socket.on(SOCKET_EVENTS.CONNECT, handleCONNECT);
 
       return () => {
         socket.off(SOCKET_EVENTS.NEW_BID, handleNewBid);
         socket.off(SOCKET_EVENTS.GENERAL_NOTIFICATION, handleGeneralNotification);
         socket.off(SOCKET_EVENTS.BID_SENT_CONFIRMATION, handleBidSentConfirmation);
+        socket.off(SOCKET_EVENTS.NEW_ORDER, handleNewOrder);
         socket.off(SOCKET_EVENTS.CONNECT, handleCONNECT);
       };
     } else {
