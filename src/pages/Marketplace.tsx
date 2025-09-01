@@ -108,14 +108,15 @@ const Marketplace: React.FC = () => {
                   <span className="text-gray-600 mt-4 block">loading products...</span>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-4">
                   {products.length === 0 ? (
-                    <div className="col-span-3 text-center text-gray-500 py-8">No products found</div>
+                    <div className="text-center text-gray-500 py-8">No products found</div>
                   ) : (
                     products.map(product => (
                       <ProductCard
                         key={product._id}
                         product={product}
+                        isHorizontal={true}
                       />
                     ))
                   )}
