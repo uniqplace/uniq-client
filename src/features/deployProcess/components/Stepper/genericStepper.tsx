@@ -22,15 +22,13 @@ const GenericStepper: React.FC = () => {
   const navigate = useNavigate();
   const { stepKey } = useParams<{ stepKey: string }>();
 
-  // Get stepper state from Redux
   const { currentStepIndex, completedSteps, product, loading, error } = useAppSelector(
     (state) => state.stepper
   );
   const userId = useAppSelector((state) => state.user?.id);
 
 
-  // On mount or when product changes, update completedSteps and currentStepIndex from server status if needed
-  // Auto-navigate to last completed step only on initial mount or when product._id changes
+  
   useEffect(() => {
     if (!product || !product.CreationStatus) return;
     const idx = stepsConfig.findIndex(s => s.title === product.CreationStatus);
@@ -60,7 +58,6 @@ const GenericStepper: React.FC = () => {
 
 
 
-  // Synchronizes between the current step in the URL and the currentStepIndex
   useEffect(() => {
     if (!stepKey || loading) return;
     const index = stepsConfig.findIndex((s) => s.key === stepKey);
@@ -69,13 +66,10 @@ const GenericStepper: React.FC = () => {
     }
   }, [dispatch, stepKey, loading]);
 
-  // Sync the server's product step with the current step in the stepper.
-  // If the user has advanced further in the stepper than the server's recorded step (CreationStatus),
-  // update the server to reflect the new
+
   useEffect(() => {
     if (currentStepIndex === null) return;
 
-    // Ensure there is a product and ID before proceeding
     const key = getUserProductKey(userId);
     const productId = localStorage.getItem(key);
     if (!productId || !product) {
@@ -92,7 +86,6 @@ const GenericStepper: React.FC = () => {
         from: serverStepIndex,
         to: currentStepIndex,
       });
-      // Update server with new step index
       dispatch(updateProductStep({
         productId,
         stepNumber: currentStepIndex + 1
@@ -104,15 +97,12 @@ const GenericStepper: React.FC = () => {
 
   const [canGoNext, setCanGoNext] = useState(false);
 
-  // Reset canGoNext on every new step
   useEffect(() => {
     setCanGoNext(false);
   }, [currentStepIndex]);
 
-  // Render the current step component based on currentStepIndex  
   const CurrentStepComponent = currentStepIndex !== null ? stepsConfig[currentStepIndex]?.component : null;
 
-  // --- Refactored helpers ---
   const validateCurrentStep = async () => {
     if (currentStepIndex === null) return false;
     const validateStepFn = stepsConfig[currentStepIndex]?.validateStep;
@@ -129,19 +119,14 @@ const GenericStepper: React.FC = () => {
 
   const getCurrentProductId = () => {
     let productId: string | undefined;
-    // If you want to use localStorage, use your helper here
-    // const storedId = getProductIdFromLocalStorage(userId);
-    // productId = storedId !== null ? storedId : undefined;
     productId = product?._id;
     return productId;
   };
 
-  const updateStepOnServer = (productId: string) => {
+
+  const updateStepOnServer = () => {
     if (typeof currentStepIndex === 'number' && currentStepIndex > 0) {
       dispatch(markStepCompleted(currentStepIndex - 1));
-    }
-    if (typeof currentStepIndex === 'number') {
-      dispatch(updateProductStep({ productId, stepNumber: currentStepIndex + 1 }));
     }
   };
 
@@ -171,12 +156,11 @@ const GenericStepper: React.FC = () => {
       console.warn('[Stepper] No productId, cannot complete step');
       return;
     }
-    updateStepOnServer(productId);
+    updateStepOnServer();
     navigateToNextStep();
   }, [currentStepIndex, dispatch, navigate, product?._id, userId]);
 
 
-  // Go back without updating server or completedSteps (do not regress status)
   const handleBack = () => {
     if (currentStepIndex !== null && currentStepIndex > 0) {
       const prevKey = stepsConfig[currentStepIndex - 1]?.key;
@@ -186,21 +170,21 @@ const GenericStepper: React.FC = () => {
     }
   };
 
-  // Always use completedSteps from Redux (restored from localStorage) for V icons
   const stepsModel = stepsConfig.map((step, index) => ({
     label: step.title,
     icon: completedSteps && completedSteps[index] ? 'pi pi-check' : undefined,
   })
   );
-  // Check if the current step is completed for styling and interaction
   const isStepCompleted = currentStepIndex !== null ? completedSteps[currentStepIndex] : false;
 
-  if (loading || currentStepIndex === null) {
+  if (loading && product && product._id) {
+    return <ProgressSpinner />;
+  }
+  if (currentStepIndex === null) {
     return <ProgressSpinner />;
   }
 
 
-  // Pass bidRequestId only to BidOffersList, all other steps get only the base props
   const bidRequestId = product?._id;
   const baseStepProps = {
     product,
@@ -263,14 +247,7 @@ if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
         visible={showFinalPopup}
         style={{ width: '350px' }}
         onHide={() => setShowFinalPopup(false)}
-       // closeIcon={
-       //   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
-       //     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-       //       <line x1="5" y1="5" x2="15" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
-       //       <line x1="15" y1="5" x2="5" y2="15" stroke="#e53935" strokeWidth="2" strokeLinecap="round" />
-       //     </svg>
-       //   </span>
-       // }
+
 
         closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
 
