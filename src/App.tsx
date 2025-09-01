@@ -22,7 +22,7 @@ import MainContent from './components/shared/MainContent';
 import './styles/sidebar.css';
 import ProfilePage from './features/user/components/ProfilePage';
 import CreatorProductPage from './pages/CreatorProductPage';
-import { CheckoutPage } from './features/order/components/CheckoutPage';
+import { CheckoutPage } from './features/order/components/Checkout/CheckoutPage';
 import BidRequestsTabs from './features/deployProcess/components/BidRequestsTabs';
 import MyBidRequestsNotifications from './pages/MyBidRequestsNotifications';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';

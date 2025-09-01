@@ -3,8 +3,9 @@
 
 import React from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Button } from '../../../components/shared';
 import type { Product } from '../../../types';
+import { Button } from '../../../components/shared';
+
 
 interface PaymentProps {
   isVisible: boolean;
