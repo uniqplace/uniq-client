@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import debounce from 'lodash/debounce';
 import CategoryFilters from './CategoryFilters';
 import CreatorFilterSection from './CreatorFilterSection';
 import PriceFilterSection from './PriceFilterSection';
@@ -169,7 +168,7 @@ const FiltersBar: React.FC = () => {
     }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
 
     // Use RTK Query hook
-    const { data: productsData, refetch } = useGetProductsQuery(queryFilters);
+    const { data: productsData, refetch } = useGetProductsQuery(queryFilters, { skip: false });
     useEffect(() => {
         if (productsData && Array.isArray(productsData)) {
             dispatch({ type: 'marketplace/setProducts', payload: productsData });
@@ -208,39 +207,43 @@ const FiltersBar: React.FC = () => {
         return params;
     };
 
-    const handleFilter = () => {
+    const handleFilter = async () => {
         const params = buildFilterParams();
         dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        refetch();
+        if (refetch) {
+            await refetch();
+        } else {
+            console.warn('Query has not been started yet.');
+        }
     };
-    const searchCreator = useRef(
-        debounce((event: { query: string }) => {
-            setFilteredCreators(
-                creators.filter((c: { label: string }) =>
-                    c.label.toLowerCase().includes(event.query.toLowerCase())
-                )
-            );
-            setSearchValue(event.query);
-        }, 100)
-    ).current;
+
+    const searchCreator = (event: { query: string }) => {
+        setFilteredCreators(
+            creators.filter((c: { label: string }) =>
+                c.label.toLowerCase().includes(event.query.toLowerCase())
+            )
+        );
+        setSearchValue(event.query);
+    };
 
 
     const handleReset = () => {
-    // Helper to build reset params
-    const buildResetParams = () => {
-        const params = new URLSearchParams(location.search);
-        params.delete('creator');
-        params.delete('category');
-        params.delete('subCategories');
-        params.delete('minPrice');
-        params.delete('maxPrice');
-        params.set('page', '1');
-        return params;
-    };
-    const params = buildResetParams();
-    setCategoryFilters([]);
-    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+        // Helper to build reset params
+        const buildResetParams = () => {
+            const params = new URLSearchParams(location.search);
+            params.delete('creator');
+            params.delete('category');
+            params.delete('subCategories');
+            params.delete('minPrice');
+            params.delete('maxPrice');
+            params.set('page', '1');
+            return params;
+        };
+        const params = buildResetParams();
+        setCategoryFilters([]);
+        setPriceRange([minProductPrice, maxProductPrice]); 
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
     return (
@@ -254,13 +257,13 @@ const FiltersBar: React.FC = () => {
                     }}
                 >
                     <FilterActionsSection
-                        handleFilter={handleFilter}
                         handleReset={handleReset}
                         hasActiveFilters={hasActiveFilters()}
                     />
                     <CategoryFilters
                         selected={categoryFilters}
                         onChange={setCategoryFilters}
+                        handleFilter={handleFilter}
                     />
                     <CreatorFilterSection
                         creator={creator}
@@ -269,6 +272,7 @@ const FiltersBar: React.FC = () => {
                         searchCreator={searchCreator}
                         setCreator={setCreator}
                         setSearchValue={setSearchValue}
+                        handleFilter={handleFilter}
                     />
                     <PriceFilterSection
                         priceRange={priceRange}
@@ -276,6 +280,7 @@ const FiltersBar: React.FC = () => {
                         minProductPrice={minProductPrice}
                         maxProductPrice={maxProductPrice}
                         pricePanelRef={pricePanelRef}
+                        handleFilter={handleFilter}
                     />
                 </aside>
             </div>

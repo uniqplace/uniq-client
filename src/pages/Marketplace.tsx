@@ -57,7 +57,7 @@ const Marketplace: React.FC = () => {
   const { data: productsData, error: productsError, isLoading } = useGetProductsQuery(queryFilters);
 
   // Use products from RTK Query
-  const products = productsData?.data || [];
+  const products = isLoading ? [] : productsData?.data || [];
   const totalPages = productsData?.totalPages || 1;
   const error = productsError;
 
@@ -69,7 +69,6 @@ const Marketplace: React.FC = () => {
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     // refetch will be triggered automatically by page state change
   };
-
 
   if (error) {
     let errorMsg = 'Unknown error';
@@ -84,6 +83,15 @@ const Marketplace: React.FC = () => {
           <i className="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
           <p className="text-gray-600">Error loading marketplace: {errorMsg}</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
+        <span className="text-gray-600 mt-4 block">Loading marketplace...</span>
       </div>
     );
   }
@@ -105,7 +113,7 @@ const Marketplace: React.FC = () => {
               {isLoading ? (
                 <div className="flex flex-col justify-center items-center py-12">
                   <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
-                  <span className="text-gray-600 mt-4 block">loading products...</span>
+                  <span className="text-gray-600 mt-4 block">Loading products...</span>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -139,4 +147,4 @@ const Marketplace: React.FC = () => {
   );
 };
 
-export default Marketplace; 
+export default Marketplace;
