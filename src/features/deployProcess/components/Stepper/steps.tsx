@@ -14,7 +14,7 @@ export interface StepProps {
 export interface StepDefinition {
   key: string;
   title: string;
-  component: React.FC<StepProps>;
+  component: React.FC<StepProps & any>;
   validateStep?: () => Promise<boolean>;
 }
 
