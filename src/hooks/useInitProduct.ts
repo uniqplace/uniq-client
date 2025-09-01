@@ -41,7 +41,7 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
                 if (product.CreationStatus === 'Complete Delivery') {
                     console.warn(`[createNewProduct] Product returned as 'Complete Delivery', deleting...`, { productId });
                     try {
-                        const deleteRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/create-product/${productId}`, {
+                        await fetch(`${import.meta.env.VITE_API_BASE_URL}/create-product/${productId}`, {
                             method: 'DELETE',
                             credentials: 'include',
                         });
