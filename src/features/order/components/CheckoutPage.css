@@ -1,3 +1,157 @@
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0f8ff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,122,217,0.08);
+  border: 2px solid #007ad9;
+}
+.field-checkbox .p-checkbox-box {
+  width: 28px;
+  height: 28px;
+  font-size: 1.5em;
+}
+.field-checkbox label {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #007ad9;
+}
+.pay-btn {
+  background: linear-gradient(90deg,#007ad9 60%,#00c6fb 100%);
+  color: #fff !important;
+  font-size: 1.2em;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px #007ad933;
+  border: none;
+  transition: background 0.2s;
+}
+.pay-btn:hover {
+  background: linear-gradient(90deg,#005fa3 60%,#00b6e6 100%);
+}
+.product-info {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.product-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-title {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}
+
+.product-desc {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.shipping-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.shipping-card {
+  flex: 1;
+  min-width: 150px;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.shipping-card:hover {
+  border-color: #007ad9;
+  box-shadow: 0 2px 8px rgba(0, 122, 217, 0.1);
+}
+
+.shipping-card.selected {
+  border-color: #007ad9;
+  background: #f0f8ff;
+}
+
+.shipping-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.shipping-estimate {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.shipping-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.shipping-field {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.divider-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.1em;
+}
+
+.summary-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin: 12px 0;
+}
+
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  font-size: 1.2em;
+}
+
+.error {
+  color: #e74c3c;
+}
+
 .checkout-root {
   min-height: 100vh;
   display: flex;
