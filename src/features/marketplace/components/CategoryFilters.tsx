@@ -31,9 +31,10 @@ function updateCategoryParams(mainCategoryId: string, selected: string[], isChec
 interface CategoryFiltersProps {
   selected: string[];
   onChange: (values: string[]) => void;
+  handleFilter: () => void;
 }
 
-const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange }) => {
+const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, handleFilter }) => {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   // Compute mainCategoryId once and reuse
@@ -45,6 +46,11 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
       setOpenCategory(mainCategoryId);
     }
   }, []);
+
+  React.useEffect(() => {
+    handleFilter();
+  }, [selected, openCategory]);
+
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetAllCategoriesQuery();
   const categories = categoriesResponse?.data || [];
 
@@ -66,18 +72,18 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange })
         return (
           <div key={cat._id}>
             <div className={`flex items-center gap-2 cursor-pointer select-none ${checked ? 'font-semibold text-blue-700' : ''}`}
-                 onClick={() => {
-                   if (checked) {
-                     setOpenCategory(null);
-                     updateCategoryParams(cat._id, [], false);
-                     onChange([]);
-                   } else {
-                     setOpenCategory(cat._id);
-                     updateCategoryParams(cat._id, [cat._id], true);
-                     onChange([cat._id]);
-                   }
-                 }}
-                 style={{ userSelect: 'none' }}
+              onClick={() => {
+                if (checked) {
+                  setOpenCategory(null);
+                  updateCategoryParams(cat._id, [], false);
+                  onChange([]);
+                } else {
+                  setOpenCategory(cat._id);
+                  updateCategoryParams(cat._id, [cat._id], true);
+                  onChange([cat._id]);
+                }
+              }}
+              style={{ userSelect: 'none' }}
             >
               {/* Custom checkbox for main category */}
               <span style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}>
