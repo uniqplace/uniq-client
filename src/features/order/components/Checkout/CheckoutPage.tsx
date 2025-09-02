@@ -29,7 +29,6 @@ export const orderSchema = yup.object().shape({
     country: yup.string().required('Country is required'),
   }),
   notes: yup.string().max(500),
-  agreed: yup.boolean().oneOf([true], 'You must agree to the terms'),
 });
 
 
@@ -70,7 +69,6 @@ console.log('productIdFromParams', productIdFromParams);
   });
 
   const [shipping, setShipping] = useState<string>('standard');
-  const [agreed, setAgreed] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
@@ -92,7 +90,7 @@ console.log('productIdFromParams', productIdFromParams);
   const handlePay = async () => {
     setSubmitted(true);
     try {
-      await orderSchema.validate({ ...order, agreed }, { abortEarly: false });
+      await orderSchema.validate({ ...order}, { abortEarly: false });
       setFormErrors({});
       setPaymentDialog(true);
     } catch (err: any) {
@@ -125,8 +123,6 @@ console.log('productIdFromParams', productIdFromParams);
           setOrder={setOrder}
           shipping={shipping}
           setShipping={setShipping}
-          agreed={agreed}
-          setAgreed={setAgreed}
           submitted={submitted}
           formErrors={formErrors}
           product={product}
