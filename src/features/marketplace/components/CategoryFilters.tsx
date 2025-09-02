@@ -54,8 +54,6 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, h
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetAllCategoriesQuery();
   const categories = categoriesResponse?.data || [];
 
-  // Only use the last selected main category's _id for subcategory fetch
-  // Assume main category is the first in selected array, subcategories are the rest
   const { data: subCategoriesData, isLoading: loadingSubCategories } = useGetSubCategoriesByCategoryQuery(mainCategoryId, { skip: !mainCategoryId });
   const subCategories = subCategoriesData || [];
 

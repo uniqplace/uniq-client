@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { useGetProductsQuery } from '../slices/productApiSlice';
-import { fetchSubCategories } from '../thunks/marketplaceThunks';
+import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
 
@@ -145,9 +145,14 @@ const FiltersBar: React.FC = () => {
             dispatch(updateFilters({ ...filters, ...urlFilters }));
         }
     }, [location.search, creators]);
+
+    useEffect(() => {
+        dispatch(fetchCreatorsAndManufacturers());
+    }, [dispatch]);
     useEffect(() => {
         dispatch(fetchSubCategories());
     }, []);
+
     const hasActiveFilters = () => {
         return Boolean(creator) ||
             (Array.isArray(categoryFilters) && categoryFilters.length > 0) ||
@@ -168,7 +173,7 @@ const FiltersBar: React.FC = () => {
     }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
 
     // Use RTK Query hook
-    const { data: productsData, refetch } = useGetProductsQuery(queryFilters, { skip: false });
+    const { data: productsData } = useGetProductsQuery(queryFilters, { skip: false });
     useEffect(() => {
         if (productsData && Array.isArray(productsData)) {
             dispatch({ type: 'marketplace/setProducts', payload: productsData });
@@ -211,11 +216,6 @@ const FiltersBar: React.FC = () => {
         const params = buildFilterParams();
         dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        if (refetch) {
-            await refetch();
-        } else {
-            console.warn('Query has not been started yet.');
-        }
     };
 
     const searchCreator = (event: { query: string }) => {
@@ -242,7 +242,7 @@ const FiltersBar: React.FC = () => {
         };
         const params = buildResetParams();
         setCategoryFilters([]);
-        setPriceRange([minProductPrice, maxProductPrice]); 
+        setPriceRange([minProductPrice, maxProductPrice]);
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 

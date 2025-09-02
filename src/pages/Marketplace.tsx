@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '../features/marketplace/components/ProductCard';
-import type { AppDispatch } from '../store';
 import { useGetProductsQuery } from '../features/marketplace/slices/productApiSlice';
 import FiltersBar from '../features/marketplace/components/FiltersBar'; import { Paginator } from 'primereact/paginator';
-import { fetchCreatorsAndManufacturers } from '../features/marketplace/thunks/marketplaceThunks';
 import SearchBar from '../features/marketplace/components/SearchBar';
 
 // Helper to parse subCategories from URLSearchParams
@@ -28,7 +25,6 @@ function parseSubCategoriesFromParams(params: URLSearchParams): string[] | undef
 }
 
 const Marketplace: React.FC = () => {
-  const dispatch: AppDispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -37,7 +33,6 @@ const Marketplace: React.FC = () => {
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
 
   useEffect(() => {
-    dispatch(fetchCreatorsAndManufacturers());
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
   }, [location.search, params]);

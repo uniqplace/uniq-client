@@ -19,11 +19,9 @@ interface Props {
 
 const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredCreators, searchCreator, setCreator, setSearchValue, handleFilter }) => {
 
-  React.useEffect(() => {
-    if (creator) {
-      handleFilter();
-    }
-  }, [creator]);
+  const handleCreatorFocus = () => {
+    setSearchValue('');
+  };
 
   return (
     <span className="p-float-label w-full">
@@ -35,8 +33,14 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredC
         onChange={e => {
           setCreator(e.value);
           setTimeout(() => setSearchValue(null), 0);
+          handleFilter();
         }}
-        onFocus={() => setSearchValue('')}
+        onSelect={e => {
+          setCreator(e.value);
+          setTimeout(() => setSearchValue(null), 0);
+          handleFilter();
+        }}
+        onFocus={handleCreatorFocus}
         onBlur={() => setSearchValue(null)}
         field="label"
         itemTemplate={option => option ? (
