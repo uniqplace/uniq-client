@@ -13,15 +13,13 @@ interface OrderDetailsProps {
     setOrder: (order: Order) => void;
     shipping: string;
     setShipping: (value: string) => void;
-    agreed: boolean;
-    setAgreed: (value: boolean) => void;
     submitted: boolean;
     formErrors: { [key: string]: string };
     product: Product;
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({
-    order, setOrder, shipping, setShipping, agreed, setAgreed, submitted, formErrors
+    order, setOrder, shipping, setShipping, submitted, formErrors
 }) => {
     return (
         <div>
@@ -103,13 +101,6 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
                     maxLength={500}
                     className="w-full"
                 />
-            </div>
-
-            {/* Checkbox */}
-            <div className="field-checkbox mb-4">
-                <Checkbox inputId="agreed" checked={agreed} onChange={e => setAgreed(e.checked!)} />
-                <label htmlFor="agreed" className="ml-2">I agree to the terms and conditions</label>
-                {submitted && formErrors.agreed && <small className="p-error block">{formErrors.agreed}</small>}
             </div>
         </div>
     );
