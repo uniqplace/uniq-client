@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { RefObject } from 'react';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { Slider } from 'primereact/slider';
@@ -10,11 +10,9 @@ interface Props {
   minProductPrice: number;
   maxProductPrice: number;
   pricePanelRef: RefObject<OverlayPanel>;
-  handleFilter?: () => void;
 }
 
-const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minProductPrice, maxProductPrice, pricePanelRef, handleFilter }) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minProductPrice, maxProductPrice, pricePanelRef }) => {
 
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
 
@@ -50,9 +48,6 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
       ? [tempPriceRange[1], tempPriceRange[0]]
       : tempPriceRange;
     setPriceRange(sortedRange);
-    if (handleFilter) {
-      handleFilter();
-    }
   }
 
   return (
@@ -84,8 +79,6 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
               },
             }}
             className="mb-2 shadow-sm"
-            // @ts-ignore
-            inputRef={inputRef}
             // @ts-ignore
             onKeyDown={handleSliderKeyDown}
           />
