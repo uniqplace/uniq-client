@@ -40,6 +40,8 @@ export const CheckoutPage: React.FC = () => {
   const productIdFromParams = params.productId;
   const productFromState = location.state?.product;
   const toast = useRef<Toast>(null);
+console.log('productFromState', productFromState);
+console.log('productIdFromParams', productIdFromParams);
 
   const { data: productFromServer, isLoading: productLoading, isError: productError } =
     useGetProductByIdQuery(productIdFromParams!, { skip: !!productFromState });
@@ -75,7 +77,7 @@ export const CheckoutPage: React.FC = () => {
 
   const [createOrder] = useCreateOrderMutation();
 
-  // עדכון סכום כולל
+  //Update total amount
   useEffect(() => {
     if (product) {
       const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;

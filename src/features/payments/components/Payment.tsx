@@ -15,7 +15,7 @@ interface PaymentProps {
   price?: number;
 }
 
-const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, onSave,product, price }) => {
+const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, onSave, product, price }) => {
   return (
     <Dialog
       visible={isVisible}
