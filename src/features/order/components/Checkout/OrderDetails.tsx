@@ -1,7 +1,6 @@
 import React from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
-import { Checkbox } from 'primereact/checkbox';
 import { Tag } from 'primereact/tag';
 import { Divider } from 'primereact/divider';
 import { SHIPPING_OPTIONS } from './CheckoutPage';
