@@ -1,20 +1,22 @@
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
 import type { BidRequest } from '../../../types';
+import { useSelector } from 'react-redux';
 
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
     const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
+
 
     useEffect(() => {
         const fetchBidRequestDetails = async () => {
@@ -64,8 +66,8 @@ const BidRequestDetails = () => {
     // Handler function for navigation
     const handleNavigation = () => {
         if (bidRequestId) {
-            const userId = location.state?.userId;
-            navigate('/BidOffer', { state: { bidRequestId, manufactorerId: userId } });
+            // const userId = location.state?.userId;
+            navigate('/BidOffer', { state: { bidRequestId, manufacturerId: manufacturerId } });
         }
     };
 

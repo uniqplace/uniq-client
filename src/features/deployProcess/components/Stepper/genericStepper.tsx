@@ -202,6 +202,7 @@ const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsC
   const bidRequestId = product?._id;
   const baseStepProps = {
     product,
+    
     onComplete: () => setCanGoNext(true),
     setCanGoNext,
   };
