@@ -152,6 +152,9 @@ const FiltersBar: React.FC = () => {
     useEffect(() => {
         dispatch(fetchSubCategories());
     }, []);
+    useEffect(() => {
+        handleFilter();
+    }, [priceRange, creator]);;
 
     const hasActiveFilters = () => {
         return Boolean(creator) ||
@@ -272,7 +275,6 @@ const FiltersBar: React.FC = () => {
                         searchCreator={searchCreator}
                         setCreator={setCreator}
                         setSearchValue={setSearchValue}
-                        handleFilter={handleFilter}
                     />
                     <PriceFilterSection
                         priceRange={priceRange}
@@ -280,7 +282,6 @@ const FiltersBar: React.FC = () => {
                         minProductPrice={minProductPrice}
                         maxProductPrice={maxProductPrice}
                         pricePanelRef={pricePanelRef}
-                        handleFilter={handleFilter}
                     />
                 </aside>
             </div>

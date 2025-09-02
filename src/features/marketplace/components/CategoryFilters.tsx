@@ -54,7 +54,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, h
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetAllCategoriesQuery();
   const categories = categoriesResponse?.data || [];
 
-  const { data: subCategoriesData, isLoading: loadingSubCategories } = useGetSubCategoriesByCategoryQuery(mainCategoryId, { skip: !mainCategoryId });
+  const { data: subCategoriesData, isLoading: loadingSubCategories } = useGetSubCategoriesByCategoryQuery(mainCategoryId, { skip: mainCategoryId === '' });
   const subCategories = subCategoriesData || [];
 
   return (

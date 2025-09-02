@@ -14,13 +14,20 @@ interface Props {
   searchCreator: (event: { query: string }) => void;
   setCreator: (creator: Creator | null) => void;
   setSearchValue: (value: string | null) => void;
-  handleFilter: () => void;
 }
 
-const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredCreators, searchCreator, setCreator, setSearchValue, handleFilter }) => {
+const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredCreators, searchCreator, setCreator, setSearchValue }) => {
 
-  const handleCreatorFocus = () => {
-    setSearchValue('');
+  const handleCreatorBlur = () => {
+    if (!creator) {
+      const params = new URLSearchParams(window.location.search);
+      const creatorFromUrl = params.get('creator');
+      if (creatorFromUrl) {
+        setSearchValue(creatorFromUrl);
+      } else {
+        setSearchValue('');
+      }
+    }
   };
 
   return (
@@ -33,15 +40,13 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredC
         onChange={e => {
           setCreator(e.value);
           setTimeout(() => setSearchValue(null), 0);
-          handleFilter();
         }}
         onSelect={e => {
           setCreator(e.value);
           setTimeout(() => setSearchValue(null), 0);
-          handleFilter();
         }}
-        onFocus={handleCreatorFocus}
-        onBlur={() => setSearchValue(null)}
+        onFocus={() => setSearchValue('')}
+        onBlur={handleCreatorBlur}
         field="label"
         itemTemplate={option => option ? (
           <div className="flex items-center gap-2">
@@ -53,7 +58,6 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredC
         ) : null}
         dropdown
         forceSelection
-        placeholder="Select Creator"
         className="w-full"
       />
       <label htmlFor="creator">Creator</label>
