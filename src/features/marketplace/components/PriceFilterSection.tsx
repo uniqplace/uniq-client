@@ -19,13 +19,7 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
 
   useEffect(() => {
-    setTempPriceRange(priceRange); 
-  }, [priceRange]);
-
-  useEffect(() => {
-    if (handleFilter) {
-      handleFilter();
-    }
+    setTempPriceRange(priceRange);
   }, [priceRange]);
 
   useEffect(() => {
@@ -79,7 +73,16 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
             min={minProductPrice}
             max={maxProductPrice}
             step={10}
-            style={{ width: '70%', backgroundColor: '#f0f4f8', borderRadius: '8px', padding: '5px' }}
+            style={{ width: '70%', backgroundColor: '#f0f4f8', borderRadius: '8px' }}
+            pt={{
+              handle: {
+                className: `
+                bg-blue-600 border-2 border-white w-7 h-7 rounded-full shadow-lg
+                transition-colors duration-200 hover:bg-blue-800
+                absolute -translate-y-1/4
+                `
+              },
+            }}
             className="mb-2 shadow-sm"
             // @ts-ignore
             inputRef={inputRef}
