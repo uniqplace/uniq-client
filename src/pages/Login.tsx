@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import socket from '../services/socket';
-import { SOCKET_EVENTS } from '../constants/socketEvents';
+import {socket_events } from '../constants/socketEvents';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { InputText } from 'primereact/inputtext';
@@ -66,7 +66,7 @@ const Login = () => {
         const userId = res.data.user._id || res.data.user.id;
         const role = res.data.user.role;
         if (userId && role) {
-          socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId, role });
+          socket.emit(socket_events.register_user, { userId, role });
           console.log('User registered to socket:', { userId, role });
         }
 

@@ -6,6 +6,7 @@ import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clearUser } from '../../features/user/slices/userSlice';
+import { clearStepper } from '../../features/deployProcess/slices/stepperSlice';
 import { api } from '../../services/api';
 import { clearManufacturerProfile } from '../../features/user/slices/manufacturerSlice';
 
@@ -23,6 +24,8 @@ const UserGreeting = () => {
     dispatch(clearManufacturerProfile());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    dispatch(clearStepper());
+    localStorage.clear(); 
     navigate('/login');
   };
 

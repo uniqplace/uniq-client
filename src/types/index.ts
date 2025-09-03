@@ -24,10 +24,8 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'Select Manufacturer' | 'Agreement' | 'Payment & Order' | 'Trucking & Delivery' | 'Delivery';
-  //categories: string[];
+  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'View Live Bids' | 'Choose Manufacturer' | 'Agree to Terms' | 'Make Payment' | 'Track Delivery' | 'Complete Delivery';
   creator: Creator;
-  //status: 'active' | 'sold' | 'inactive';
   category: Category;
   subCategories: SubCategory[];
   status: 'draft' | 'published' | 'hidden';
@@ -39,26 +37,11 @@ export interface Product {
 }
 
 
-// 4. Order
-// export interface Order {
-//   id: string;
-//   productId: string;
-//   buyerId: string;
-//   creatorId: string;
-//   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
-//   totalAmount: number;
-//   paymentMethod: string;
-//   shippingAddress: Address;
-//   notes?: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-// }
-
 export interface Order {
   id: string;
   productId: string;
   buyerId: string;
-  creator: {name:string, _id:string};
+  creator: { name: string, _id: string };
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   totalAmount: number;
   paymentMethod: string;
@@ -71,11 +54,11 @@ export interface Order {
     images: string[];
     creatorName: string;
   },
-  notes?: string; 
+  notes?: string;
 }
 
 export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
- 
+
 // 5. Address (used by Order)
 export interface Address {
   street: string;
@@ -152,6 +135,7 @@ export interface BidRequest {
   manufacturers?: BidManufacturer[];
   createdAt: Date;
   updatedAt: Date;
+  ratingPreference?: number;
 }
 
 export interface Filters {
@@ -183,7 +167,7 @@ export interface Manufacturer {
   availableFrom?: string;
 }
 interface BidRequestId {
-  productId: ({ title: string }) & { _id?: string }& { description?: string };
+  productId: ({ title: string }) & { _id?: string } & { description?: string };
   categoryId: string;
 }
 

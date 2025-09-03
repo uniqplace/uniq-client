@@ -132,8 +132,8 @@ const Register: React.FC = () => {
 
         // Register user to Socket.IO
         import('../services/socket').then(({ default: socket }) => {
-          import('../constants/socketEvents').then(({ SOCKET_EVENTS }) => {
-            socket.emit(SOCKET_EVENTS.REGISTER_USER, {
+          import('../constants/socketEvents').then(({ socket_events }) => {
+            socket.emit(socket_events.register_user, {
               userId: user._id || user.id,
               role: user.role
             });

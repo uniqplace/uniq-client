@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 // import { getCookie } from '../utils/cookies';
 import type { Notification } from '../types/notification';
-import { SOCKET_EVENTS } from '../constants/socketEvents';
+import {socket_events } from '../constants/socketEvents';
 import useSocketListeners from './useSocketListeners';
 
 export const useNotifications = () => {
@@ -28,7 +28,7 @@ export const useNotifications = () => {
       return;
     }
 
-    socket.on(SOCKET_EVENTS.GENERAL_NOTIFICATION, (data: any) => {
+    socket.on(socket_events.general_notification, (data: any) => {
       setCount((prev) => prev + 1);
       setNotifications((prev) => [data.payload, ...prev]);
     });
@@ -41,7 +41,7 @@ export const useNotifications = () => {
     loadNotifications(1);
 
     return () => {
-      socket.off(SOCKET_EVENTS.GENERAL_NOTIFICATION);
+      socket.off(socket_events.general_notification);
     };
   }, [userId]);
 
