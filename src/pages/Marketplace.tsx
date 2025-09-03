@@ -51,7 +51,7 @@ const Marketplace: React.FC = () => {
     q: params.get('q') || '',
     page,
   };
-  const { data: productsData, error: productsError, isLoading } = useGetProductsQuery(queryFilters);
+  const { data: productsData, error: productsError, isLoading, isFetching } = useGetProductsQuery(queryFilters);
 
   // Use products from RTK Query
   const products = isLoading ? [] : productsData?.data || [];
@@ -107,7 +107,7 @@ const Marketplace: React.FC = () => {
           <div className="flex-1">
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
               <h2 className="text-xl font-semibold mb-4">Products</h2>
-              {isLoading || loading ? (
+              {isLoading || isFetching || loading ? (
                 <div className="flex flex-col justify-center items-center py-12">
                   <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
                   <span className="text-gray-600 mt-4 block">Loading products...</span>
