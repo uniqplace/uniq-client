@@ -5,6 +5,7 @@ import ProductCard from '../features/marketplace/components/ProductCard';
 import { useGetProductsQuery } from '../features/marketplace/slices/productApiSlice';
 import FiltersBar from '../features/marketplace/components/FiltersBar'; import { Paginator } from 'primereact/paginator';
 import SearchBar from '../features/marketplace/components/SearchBar';
+import { useSelector } from 'react-redux';
 
 // Helper to parse subCategories from URLSearchParams
 function parseSubCategoriesFromParams(params: URLSearchParams): string[] | undefined {
@@ -31,6 +32,7 @@ const Marketplace: React.FC = () => {
   const initialPage = Number(params.get('page')) || 1;
   const [page, setPage] = useState(initialPage);
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
+  const loading = useSelector((state: any) => state.marketplace.loading);
 
   useEffect(() => {
     const pageParam = Number(params.get('page')) || 1;
@@ -105,7 +107,7 @@ const Marketplace: React.FC = () => {
           <div className="flex-1">
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
               <h2 className="text-xl font-semibold mb-4">Products</h2>
-              {isLoading ? (
+              {isLoading || loading ? (
                 <div className="flex flex-col justify-center items-center py-12">
                   <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
                   <span className="text-gray-600 mt-4 block">Loading products...</span>
@@ -127,13 +129,31 @@ const Marketplace: React.FC = () => {
               )}
             </section>
             <div className="flex justify-center mt-8">
-              <Paginator
-                first={((page - 1) * limit)}
-                rows={limit}
-                totalRecords={totalPages ? totalPages * limit : 0}
-                onPageChange={onPageChange}
-                template="PrevPageLink PageLinks NextPageLink"
-              />
+              <div className="flex justify-center mt-8">
+                <Paginator
+                  first={((page - 1) * limit)}
+                  rows={limit}
+                  totalRecords={totalPages ? totalPages * limit : 0}
+                  onPageChange={onPageChange}
+                  template="PrevPageLink PageLinks NextPageLink"
+                  className="!bg-transparent !shadow-none !border-0 !p-0"
+                  pt={{
+                    pageButton: (options) => {
+                      const isActive = options?.context?.active ?? false;
+                      return {
+                        className: `!rounded-full !mx-1 !w-9 !h-9 !text-base font-semibold transition-all duration-200 border-2
+                            ${isActive
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg border-blue-500 ring-2 ring-purple-400'
+                            : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-700 hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800 dark:hover:to-purple-800 hover:text-blue-700'
+                          }`
+                      };
+                    },
+                    prevPageButton: { className: '!rounded-full !w-9 !h-9 !mx-1 border-2 border-blue-200 dark:border-blue-700' },
+                    nextPageButton: { className: '!rounded-full !w-9 !h-9 !mx-1 border-2 border-blue-200 dark:border-blue-700' },
+                    root: { className: '!border-0 !bg-transparent !shadow-none !p-0' },
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
