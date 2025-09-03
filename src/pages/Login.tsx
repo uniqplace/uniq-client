@@ -45,6 +45,13 @@ const Login = () => {
         localStorage.setItem('token', res.data.token);
         const user = res.data.user;
 
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Registered',
+          detail: 'You have successfully logged in.',
+          life: 3000
+        });
+
         localStorage.setItem('user', JSON.stringify({
           name: user.name,
           avatar: user.avatar || null
@@ -60,10 +67,8 @@ const Login = () => {
         const role = res.data.user.role;
         if (userId && role) {
           socket.emit(socket_events.register_user, { userId, role });
-          console.log('User registered to socket:', { userId, role });
         }
 
-        navigate('/');
       }
     } catch (error: unknown) {
       let message = 'Login failed. Please try again.';
@@ -110,7 +115,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Toast ref={toast} />
+      <Toast ref={toast} onHide={() => navigate('/')} />
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
         <div className="space-y-6">
           {/* Username Input */}
