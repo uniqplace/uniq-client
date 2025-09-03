@@ -64,6 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
                 color: '#fff',
                 fontSize: 20
               }}
+              className='w-12 h-12 [&>img]:w-full [&>img]:h-full [&>img]:object-cover'
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
