@@ -1,54 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import type { RefObject } from 'react';
-import { OverlayPanel } from 'primereact/overlaypanel';
+import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from 'primereact/slider';
-import { Button } from 'primereact/button';
 
 interface Props {
   priceRange: [number, number];
   setPriceRange: (range: [number, number]) => void;
   minProductPrice: number;
   maxProductPrice: number;
-  pricePanelRef: RefObject<OverlayPanel>;
 }
 
-const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minProductPrice, maxProductPrice, pricePanelRef }) => {
-
+const PriceFilterSection: React.FC<Props> = ({
+  priceRange,
+  setPriceRange,
+  minProductPrice,
+  maxProductPrice,
+}) => {
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
-
+  const debounceTimeout = useRef<number | null>(null);
   useEffect(() => {
     setTempPriceRange(priceRange);
   }, [priceRange]);
 
+  // Debounce: update priceRange only after user stops dragging
   useEffect(() => {
-    if (pricePanelRef.current) {
-      const panelEl = pricePanelRef.current.getElement();
-      if (panelEl) {
-        const keydownHandler = (e: KeyboardEvent) => {
-          if (e.key === 'Enter') {
-            handleApply();
-          }
-        };
-        panelEl.addEventListener('keydown', keydownHandler);
-        return () => {
-          panelEl.removeEventListener('keydown', keydownHandler);
-        };
-      }
-    }
-  }, [pricePanelRef]);
-
-  const handleSliderKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleApply();
-    }
-  };
-
-  function handleApply(): void {
-    const sortedRange: [number, number] = tempPriceRange[0] > tempPriceRange[1]
-      ? [tempPriceRange[1], tempPriceRange[0]]
-      : tempPriceRange;
-    setPriceRange(sortedRange);
-  }
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      setPriceRange(
+        tempPriceRange[0] > tempPriceRange[1]
+          ? [tempPriceRange[1], tempPriceRange[0]]
+          : tempPriceRange
+      );
+    }, 400);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [tempPriceRange, setPriceRange]);
 
   return (
     <div className="w-full">
@@ -56,7 +41,7 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
         <label id="price-slider-label" htmlFor="price-slider" className="mb-3 font-semibold text-center">
           Select a price range
         </label>
-        <div className="flex items-center gap-4 w-full justify-center">
+        <div className="flex items-center gap-7 w-full justify-center">
           <Slider
             id="price-slider"
             aria-labelledby="price-slider-label"
@@ -72,20 +57,13 @@ const PriceFilterSection: React.FC<Props> = ({ priceRange, setPriceRange, minPro
             pt={{
               handle: {
                 className: `
-                bg-blue-600 border-2 border-white w-7 h-7 rounded-full shadow-lg
-                transition-colors duration-200 hover:bg-blue-800
-                absolute -translate-y-1/4
+                  bg-blue-600 border-2 border-white w-7 h-7 rounded-full shadow-lg
+                  transition-colors duration-200 hover:bg-blue-800
+                  absolute -translate-y-1/4
                 `
               },
             }}
             className="mb-2 shadow-sm"
-            // @ts-ignore
-            onKeyDown={handleSliderKeyDown}
-          />
-          <Button
-            label="Apply"
-            className="p-button-rounded p-button-outlined p-button-sm bg-gray-100 px-3 py-1 rounded"
-            onClick={() => handleApply()}
           />
         </div>
         <div className="flex gap-2 mt-2 text-center">

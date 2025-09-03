@@ -1,10 +1,9 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CategoryFilters from './CategoryFilters';
 import CreatorFilterSection from './CreatorFilterSection';
 import PriceFilterSection from './PriceFilterSection';
 import FilterActionsSection from './FilterActionsSection';
-import { OverlayPanel } from 'primereact/overlaypanel';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
@@ -114,7 +113,6 @@ const FiltersBar: React.FC = () => {
         }
         return [minProductPrice, maxProductPrice];
     });
-    const pricePanelRef = useRef<OverlayPanel>(undefined!);
     useEffect(() => {
         if (products && products.length > 0) {
             setPriceRange(prev => {
@@ -277,7 +275,6 @@ const FiltersBar: React.FC = () => {
                         setPriceRange={setPriceRange}
                         minProductPrice={minProductPrice}
                         maxProductPrice={maxProductPrice}
-                        pricePanelRef={pricePanelRef}
                     />
                 </aside>
             </div>
