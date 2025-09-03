@@ -144,12 +144,8 @@ const Register: React.FC = () => {
           severity: 'success',
           summary: 'Registered',
           detail: 'Your account has been created',
-          life: 4000
+          life: 3000
         });
-
-        setTimeout(() => {
-          navigate('/');
-        }, 1800);
 
       } else {
         throw new Error('User data missing or invalid in response');
@@ -178,7 +174,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Toast ref={toast} />
+      <Toast ref={toast} onHide={() => navigate('/')} />
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
 
