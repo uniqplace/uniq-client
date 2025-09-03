@@ -72,7 +72,11 @@ useEffect(() => {
   setServicesOffered(profile?.servicesOffered || []);
   setCategories(profile?.categories || []);
   setLocation(profile?.location || '');
-  setAvailableFrom(profile?.availableFrom ? profile.availableFrom.split('T')[0] : '');
+  setAvailableFrom(
+        profile?.availableFrom && /^\d{4}-\d{2}-\d{2}$/.test(profile.availableFrom.split('T')[0])
+          ? profile.availableFrom.split('T')[0]
+          : ''
+      );
 }, [profile]);
 
     const updateCategory = (index: number, value: string) => {
