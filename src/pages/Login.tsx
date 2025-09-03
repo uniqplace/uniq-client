@@ -49,7 +49,7 @@ const Login = () => {
           severity: 'success',
           summary: 'Registered',
           detail: 'You have successfully logged in.',
-          life: 4000
+          life: 3000
         });
 
         localStorage.setItem('user', JSON.stringify({
@@ -69,10 +69,6 @@ const Login = () => {
           socket.emit(socket_events.register_user, { userId, role });
           console.log('User registered to socket:', { userId, role });
         }
-
-        setTimeout(() => {
-          navigate('/');
-        }, 1800);
 
       }
     } catch (error: unknown) {
@@ -120,7 +116,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Toast ref={toast} />
+      <Toast ref={toast} onHide={() => navigate('/')} />
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
         <div className="space-y-6">
           {/* Username Input */}
