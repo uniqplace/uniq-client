@@ -7,6 +7,7 @@ import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clearUser } from '../../features/user/slices/userSlice';
 import { api } from '../../services/api';
+import { clearManufacturerProfile } from '../../features/user/slices/manufacturerSlice';
 
 const UserGreeting = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -19,6 +20,7 @@ const UserGreeting = () => {
   const handleLogout = async () => {
     await api.logoutApi();
     dispatch(clearUser());
+    dispatch(clearManufacturerProfile());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     navigate('/login');

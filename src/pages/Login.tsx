@@ -45,6 +45,13 @@ const Login = () => {
         localStorage.setItem('token', res.data.token);
         const user = res.data.user;
 
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Registered',
+          detail: 'You have successfully logged in.',
+          life: 4000
+        });
+
         localStorage.setItem('user', JSON.stringify({
           name: user.name,
           avatar: user.avatar || null
@@ -63,7 +70,10 @@ const Login = () => {
           console.log('User registered to socket:', { userId, role });
         }
 
-        navigate('/');
+        setTimeout(() => {
+          navigate('/');
+        }, 1800);
+
       }
     } catch (error: unknown) {
       let message = 'Login failed. Please try again.';

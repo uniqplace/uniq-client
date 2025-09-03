@@ -132,11 +132,6 @@ export interface Category {
   name: string;
 }
 
-export interface ManufacturerProfile {
-  _id: string;
-  name: string;
-}
-
 // Bid Manufacturer
 export interface BidManufacturer {
   manufacturer: ManufacturerProfile; // ManufacturerProfile ID
@@ -214,7 +209,9 @@ export interface ManufacturerProfile {
   userId: string;
   name: string;
   categories: string[];
+  servicesOffered: string[];
   location: string;
   availableFrom: string;
+  rating?: number;
 }
 
