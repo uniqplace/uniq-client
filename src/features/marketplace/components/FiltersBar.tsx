@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CategoryFilters from './CategoryFilters';
 import CreatorFilterSection from './CreatorFilterSection';
@@ -11,6 +11,7 @@ import { useGetProductsQuery } from '../slices/productApiSlice';
 import { fetchCreatorsAndManufacturers } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
+import { Toast } from 'primereact/toast';
 
 // Helper to parse filters from URLSearchParams
 function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxProductPrice: number) {
@@ -71,6 +72,7 @@ const FiltersBar: React.FC = () => {
         }
         return mainCategory ? [mainCategory, ...subCategoriesArr] : subCategoriesArr;
     });
+    const toast = useRef<Toast>(null);
 
     // Sync categoryFilters with URL when changed
     React.useEffect(() => {
@@ -171,12 +173,30 @@ const FiltersBar: React.FC = () => {
     }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
 
     // Use RTK Query hook
-    const { data: productsData } = useGetProductsQuery(queryFilters, { skip: false });
+    const { data: productsData, isLoading, isFetching } = useGetProductsQuery(queryFilters, { skip: false });
     useEffect(() => {
         if (productsData && Array.isArray(productsData)) {
             dispatch({ type: 'marketplace/setProducts', payload: productsData });
         }
     }, [productsData, dispatch]);
+    const prevMessage = useRef<string | null>(null);
+    useEffect(() => {
+        if (
+            !isFetching &&
+            !isLoading &&
+            productsData &&
+            productsData.message &&
+            productsData.message !== prevMessage.current
+        ) {
+            toast.current?.show({
+                severity: productsData.success === false ? 'info' : 'success',
+                summary: 'Note!',
+                detail: productsData.message,
+                life: 4000,
+            });
+            prevMessage.current = productsData.message;
+        }
+    }, [isFetching, isLoading, productsData]);
 
     // Helper to build filter params
     const buildFilterParams = () => {
@@ -246,39 +266,42 @@ const FiltersBar: React.FC = () => {
     };
 
     return (
-        <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
-            <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
-                <aside
-                    className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8 relative"
-                    style={{ minWidth: 220, maxWidth: 320 }}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter') handleFilter();
-                    }}
-                >
-                    <FilterActionsSection
-                        handleReset={handleReset}
-                        hasActiveFilters={hasActiveFilters()}
-                    />
-                    <CategoryFilters
-                        selected={categoryFilters}
-                        onChange={setCategoryFilters}
-                        handleFilter={handleFilter}
-                    />
-                    <CreatorFilterSection
-                        creator={creator}
-                        filteredCreators={filteredCreators}
-                        searchCreator={searchCreator}
-                        setCreator={setCreator}
-                    />
-                    <PriceFilterSection
-                        priceRange={priceRange}
-                        setPriceRange={setPriceRange}
-                        minProductPrice={minProductPrice}
-                        maxProductPrice={maxProductPrice}
-                    />
-                </aside>
+        <>
+            <Toast ref={toast} />
+            <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
+                <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
+                    <aside
+                        className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8 relative"
+                        style={{ minWidth: 220, maxWidth: 320 }}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') handleFilter();
+                        }}
+                    >
+                        <FilterActionsSection
+                            handleReset={handleReset}
+                            hasActiveFilters={hasActiveFilters()}
+                        />
+                        <CategoryFilters
+                            selected={categoryFilters}
+                            onChange={setCategoryFilters}
+                            handleFilter={handleFilter}
+                        />
+                        <CreatorFilterSection
+                            creator={creator}
+                            filteredCreators={filteredCreators}
+                            searchCreator={searchCreator}
+                            setCreator={setCreator}
+                        />
+                        <PriceFilterSection
+                            priceRange={priceRange}
+                            setPriceRange={setPriceRange}
+                            minProductPrice={minProductPrice}
+                            maxProductPrice={maxProductPrice}
+                        />
+                    </aside>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
