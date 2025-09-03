@@ -186,7 +186,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
                   label={!user.avatarUrl && user.name ? user.name.charAt(0).toUpperCase() : undefined}
                   shape="circle"
                   size="large"
-                  className="cursor-pointer ring-2 ring-blue-300 dark:ring-purple-500 group-hover:ring-4 transition-all duration-300"
+                  className="cursor-pointer ring-2 ring-blue-300 dark:ring-purple-500 group-hover:ring-4 transition-all duration-300
+                    w-12 h-12 [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                   style={{
                     backgroundColor: !user.avatarUrl ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : undefined,
                     color: '#fff',
