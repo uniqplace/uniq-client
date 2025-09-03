@@ -62,6 +62,10 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
       value: cat.name,
     }));
     const profile = useAppSelector(state => state.manufacturer.profile);
+    if (!profile) {
+  return <div>Loading manufacturer profile...</div>;
+}
+
 useEffect(() => {
  
   // Update states with existing values
@@ -69,7 +73,12 @@ useEffect(() => {
   setCategories(profile?.categories || []);
   setLocation(profile?.location || '');
   setAvailableFrom(profile?.availableFrom ? profile.availableFrom.split('T')[0] : '');
-}, []);
+}, [profile]);
+
+    const updateCategory = (index: number, value: string) => {
+  setCategories(categories.map((c, i) => (i === index ? value : c)));
+};
+
     const mainCities = [
       { label: 'תל אביב', value: 'tel_aviv' },
       { label: 'ירושלים', value: 'jerusalem' },
@@ -141,20 +150,16 @@ useEffect(() => {
           <label className="block text-900 font-semibold mb-3 text-lg">Categories</label>
           <Dropdown
             value={categories[0] || ''}
-            onChange={(e: DropdownChangeEvent) =>
-              setCategories([e.value, ...categories.slice(1)])
-            }
+            onChange={(e: DropdownChangeEvent) => updateCategory(0, e.value)}
             options={categoryOptions}
             placeholder={categoriesLoading ? 'Loading...' : 'Select category'}
             disabled={disabled || categoriesLoading}
           />
           {categories.slice(1).map((cat, idx) => (
-            <div key={idx + 1} className="flex items-center gap-2 mt-2">
+            <div key={cat + idx} className="flex items-center gap-2 mt-2">
               <Dropdown
                 value={cat}
-                onChange={(e: DropdownChangeEvent) =>
-                  setCategories(categories.map((c, i) => (i === idx + 1 ? e.value : c)))
-                }
+                onChange={(e: DropdownChangeEvent) => updateCategory(idx + 1, e.value)}
                 options={categoryOptions}
                 disabled={disabled || categoriesLoading}
               />
