@@ -3,8 +3,9 @@
 
 import React from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Button } from '../../../components/shared';
 import type { Product } from '../../../types';
+import { Button } from '../../../components/shared';
+
 
 interface PaymentProps {
   isVisible: boolean;
@@ -14,7 +15,7 @@ interface PaymentProps {
   price?: number;
 }
 
-const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) => {
+const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, onSave, product, price }) => {
   return (
     <Dialog
       visible={isVisible}
@@ -29,10 +30,13 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) 
             variant="secondary"
             onClick={onHide}
             label="Close"
-          //  onClick={onSave}
-           // label="Save Order"
-
           />
+          <Button
+            variant="primary"
+            onClick={onSave}
+            label="Add Order"
+          />
+
         </div>
       }
     >
@@ -41,14 +45,14 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) 
         <div className="mb-4">
           <i className="pi pi-shopping-cart text-4xl text-blue-500"></i>
         </div>
-        
+
         {/* Main message */}
         <h3 className="text-lg font-semibold mb-2">Checkout Coming Soon!</h3>
 
         <p className="text-gray-600 mb-4">
           Payment functionality is currently under development.
         </p>
-        
+
         {/* Product details if provided */}
         {product?.title && (
           <div className="bg-gray-50 p-4 rounded-lg mb-4">
@@ -58,7 +62,7 @@ const Payment: React.FC<PaymentProps> = ({ isVisible, onHide, product, price }) 
             )}
           </div>
         )}
-        
+
         {/* Additional info */}
         <p className="text-sm text-gray-500">
           Thank you for your interest! We'll notify you when checkout is available.

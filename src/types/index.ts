@@ -46,6 +46,7 @@ export interface Order {
   totalAmount: number;
   paymentMethod: string;
   shippingAddress: Address;
+  quantity: number;
   createdAt: string;
   updatedAt: string;
   product: {
