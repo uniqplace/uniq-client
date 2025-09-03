@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { useGetProductsQuery } from '../slices/productApiSlice';
-import { fetchCreatorsAndManufacturers, fetchSubCategories } from '../thunks/marketplaceThunks';
+import { fetchCreatorsAndManufacturers } from '../thunks/marketplaceThunks';
 import { updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
 
@@ -51,7 +51,7 @@ const FiltersBar: React.FC = () => {
     const location = useLocation();
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = React.useState(initialCreator);
-    const [searchValue, setSearchValue] = React.useState<string | null>(null);
+    const [searchValue, _setSearchValue] = React.useState<string | null>(null);
     const [filteredCreators, setFilteredCreators] = React.useState(creators);
     const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
@@ -150,9 +150,6 @@ const FiltersBar: React.FC = () => {
         dispatch(fetchCreatorsAndManufacturers());
     }, [dispatch]);
     useEffect(() => {
-        dispatch(fetchSubCategories());
-    }, []);
-    useEffect(() => {
         handleFilter();
     }, [priceRange, creator]);;
 
@@ -227,7 +224,6 @@ const FiltersBar: React.FC = () => {
                 c.label.toLowerCase().includes(event.query.toLowerCase())
             )
         );
-        setSearchValue(event.query);
     };
 
 
@@ -246,6 +242,8 @@ const FiltersBar: React.FC = () => {
         const params = buildResetParams();
         setCategoryFilters([]);
         setPriceRange([minProductPrice, maxProductPrice]);
+        setCreator(null);
+        dispatch(updateFilters({ ...filters, category: undefined, subCategories: undefined, creator: '', priceRange: [minProductPrice, maxProductPrice] }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
@@ -270,11 +268,9 @@ const FiltersBar: React.FC = () => {
                     />
                     <CreatorFilterSection
                         creator={creator}
-                        searchValue={searchValue}
                         filteredCreators={filteredCreators}
                         searchCreator={searchCreator}
                         setCreator={setCreator}
-                        setSearchValue={setSearchValue}
                     />
                     <PriceFilterSection
                         priceRange={priceRange}

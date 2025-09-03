@@ -1,5 +1,6 @@
 import React from 'react';
 import { AutoComplete } from 'primereact/autocomplete';
+import { Avatar } from 'primereact/avatar';
 
 interface Creator {
   label: string;
@@ -9,60 +10,58 @@ interface Creator {
 
 interface Props {
   creator: Creator | null;
-  searchValue: string | null;
   filteredCreators: Creator[];
   searchCreator: (event: { query: string }) => void;
   setCreator: (creator: Creator | null) => void;
-  setSearchValue: (value: string | null) => void;
 }
 
-const CreatorFilterSection: React.FC<Props> = ({ creator, searchValue, filteredCreators, searchCreator, setCreator, setSearchValue }) => {
-
-  const handleCreatorBlur = () => {
-    if (!creator) {
-      const params = new URLSearchParams(window.location.search);
-      const creatorFromUrl = params.get('creator');
-      if (creatorFromUrl) {
-        setSearchValue(creatorFromUrl);
-      } else {
-        setSearchValue('');
-      }
-    }
-  };
+const CreatorFilterSection: React.FC<Props> = ({ creator, filteredCreators, searchCreator, setCreator }) => {
+  const [inputValue, setInputValue] = React.useState<string>('');
 
   return (
     <span className="p-float-label w-full">
       <AutoComplete
         id="creator"
-        value={searchValue !== null ? searchValue : (creator ? creator.label : '')}
+        value={inputValue !== '' ? inputValue : creator}
         suggestions={filteredCreators || []}
         completeMethod={searchCreator}
         onChange={e => {
-          setCreator(e.value);
-          setTimeout(() => setSearchValue(null), 0);
+          if (typeof e.value === 'string') {
+            setInputValue(e.value);
+          } else {
+            setInputValue('');
+            setCreator(e.value);
+          }
         }}
         onSelect={e => {
           setCreator(e.value);
-          setTimeout(() => setSearchValue(null), 0);
+          setInputValue('');
         }}
-        onFocus={() => setSearchValue('')}
-        onBlur={handleCreatorBlur}
         field="label"
-        itemTemplate={option => option ? (
+        itemTemplate={option => option ? (          
           <div className="flex items-center gap-2">
-            {option.avatar && (
-              <img src={option.avatar} alt={option.label} className="w-6 h-6 rounded-full object-cover" />
-            )}
+            <Avatar
+              image={option.avatar || undefined}
+              label={!option.avatar && option.label ? option.label.charAt(0).toUpperCase() : undefined}
+              shape="circle"
+              className="w-6 h-6 rounded-full object-cover cursor-pointer transition-all duration-300"
+              style={{
+                 backgroundColor: !option.avatar ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : undefined,
+                color: '#fff'
+              }}
+            />
             <span>{option.label}</span>
           </div>
         ) : null}
         dropdown
         forceSelection
+        placeholder="Select Creator"
         className="w-full"
+        
       />
-      <label htmlFor="creator">Creator</label>
     </span>
   );
 };
+
 
 export default CreatorFilterSection;

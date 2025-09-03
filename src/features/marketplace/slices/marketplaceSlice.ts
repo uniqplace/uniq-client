@@ -32,7 +32,7 @@ const initialState: MarketplaceState = {
     searchTerm: '',
   },
   totalPages: 1,
-  creators: [{ label: 'All', value: '' }],
+  creators: [],
   categories: [],
   subCategories: {},
   maxPrice: Number.NEGATIVE_INFINITY,
@@ -105,9 +105,9 @@ const marketplaceSlice = createSlice({
         const creatorOptions = users.map((user: Creator) => ({
           label: user.name,
           value: user._id,
-          avatar: user.avatarUrl
+          avatar: user.avatarUrl,
         }));
-        state.creators = [{ label: 'All', value: '' }, ...creatorOptions];
+        state.creators = [...creatorOptions];
       })
       .addCase(fetchSubCategories.fulfilled, (state, action: PayloadAction<Record<string, SubCategory[]>>) => {
         state.subCategories = action.payload;
