@@ -112,14 +112,21 @@ const Register: React.FC = () => {
         Cookies.set('token', res.data.token, { expires: 7 });
           console.log("user data to be stored in localStorage:", user);
           
-        localStorage.setItem('user', JSON.stringify({
-          name: user.name,
-          avatar: user.avatar || null,
-          fullName: user.fullName || user.name,
-          email: user.email,
-          role: user.role,
-          manufacturer: user.manufacturer || null
-        }));
+       const safeUser = {
+  id: user._id || user.id || null,
+  name: user.name || '',
+  email: user.email || '',
+  role: user.role || null,
+  avatar: user.avatar || null,
+  manufacturer: user.manufacturer || null
+};
+
+// אופציונלי: לבדוק שדות חובה
+if (!safeUser.name || !safeUser.email || !safeUser.role) {
+  console.error('User object missing required fields:', safeUser);
+} else {
+  localStorage.setItem('user', JSON.stringify(safeUser));
+}
 
         dispatch(setUser({
           id: user._id || user.id || null,
@@ -304,7 +311,8 @@ const Register: React.FC = () => {
               placeholder="Company Name (optional)"
             />
           </div>
-
+          
+          {/* Manufacturer-specific fields are only shown if the selected role is 'manufacturer' */}
           {watchedRole === 'manufacturer' && (
             <ManufacturerFields
               servicesOffered={servicesOffered}
