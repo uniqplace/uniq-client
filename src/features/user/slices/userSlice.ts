@@ -16,6 +16,8 @@ export interface UserState {
   portfolio?: string[];
   loading: boolean;
   error: string | null;
+  rating: number | null;
+  manufacturer:{} | null;
 }
 
 const initialState: UserState = {
@@ -28,6 +30,8 @@ const initialState: UserState = {
   role: null,
   loading: false,
   error: null,
+  rating:0,
+  manufacturer:{}
 };
 
 const userSlice = createSlice({

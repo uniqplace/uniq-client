@@ -1,9 +1,9 @@
-export const SOCKET_EVENTS = {
-  REGISTER_USER: 'register_user',
-  NEW_BID: 'new_bid',
-  NEW_ORDER: 'new_order',
-  BID_RESPONSE: 'bid_response',
-  GENERAL_NOTIFICATION: 'general_notification',
-  BID_SENT_CONFIRMATION: 'bid_sent_confirmation',
-  CONNECT: 'connect',
+export const socket_events = {
+  register_user: 'register_user',
+  new_bid: 'new_bid',
+  new_order: 'new_order',
+  bid_response: 'bid_response',
+  general_notification: 'general_notification',
+  bid_sent_confirmation: 'bid_sent_confirmation',
+  connect: 'connect',
 };

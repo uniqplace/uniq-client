@@ -121,6 +121,7 @@ export const OpenBidPage = () => {
       <DataTable
         value={filteredBidRequests}
         paginator
+        paginatorTemplate="PrevPageLink PageLinks NextPageLink"
         rows={10}
         responsiveLayout="scroll"
         sortMode="multiple"

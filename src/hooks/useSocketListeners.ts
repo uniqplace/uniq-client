@@ -1,15 +1,12 @@
 import React from 'react';
 import { useEffect } from 'react';
 import { disconnectSocket, getSocket, initializeSocket } from '../services/socket';
-import { SOCKET_EVENTS } from '../constants/socketEvents';
+import { socket_events } from '../constants/socketEvents';
 import { toast } from 'react-toastify';
 import CustomToast from '../components/shared/CustomToast';
 import { useAppSelector } from './hooks';
 import type { RootState } from '../store'; // Adjust the path if your store file is elsewhere
 import type { Notification } from '../types/notification';
-
-
-
 
 const useSocketListeners = () => {
 
@@ -54,26 +51,25 @@ const useSocketListeners = () => {
       };
 
       const handleCONNECT =  () => {
-
         console.log('Socket connected with ID:', socket.id);
         if (user?.id) {
-          socket.emit(SOCKET_EVENTS.REGISTER_USER, { userId: user.id, role: user.role });
+          socket.emit(socket_events.register_user, { userId: user.id, role: user.role });
           console.log('User registered to socket:', { userId: user.id, role: user.role });
         }
       };
 
-      socket.on(SOCKET_EVENTS.NEW_BID, handleNewBid);
-      socket.on(SOCKET_EVENTS.GENERAL_NOTIFICATION, handleGeneralNotification);
-      socket.on(SOCKET_EVENTS.BID_SENT_CONFIRMATION, handleBidSentConfirmation);
-      socket.on(SOCKET_EVENTS.NEW_ORDER, handleNewOrder);
-      socket.on(SOCKET_EVENTS.CONNECT, handleCONNECT);
+      socket.on(socket_events.new_bid, handleNewBid);
+      socket.on(socket_events.general_notification, handleGeneralNotification);
+      socket.on(socket_events.bid_sent_confirmation, handleBidSentConfirmation);
+      socket.on(socket_events.new_order, handleNewOrder);
+      socket.on(socket_events.connect, handleCONNECT);
 
       return () => {
-        socket.off(SOCKET_EVENTS.NEW_BID, handleNewBid);
-        socket.off(SOCKET_EVENTS.GENERAL_NOTIFICATION, handleGeneralNotification);
-        socket.off(SOCKET_EVENTS.BID_SENT_CONFIRMATION, handleBidSentConfirmation);
-        socket.off(SOCKET_EVENTS.NEW_ORDER, handleNewOrder);
-        socket.off(SOCKET_EVENTS.CONNECT, handleCONNECT);
+        socket.off(socket_events.new_bid, handleNewBid);
+        socket.off(socket_events.general_notification, handleGeneralNotification);
+        socket.off(socket_events.bid_sent_confirmation, handleBidSentConfirmation);
+        socket.off(socket_events.new_order, handleNewOrder);
+        socket.off(socket_events.connect, handleCONNECT);
       };
     } else {
       disconnectSocket();
@@ -83,7 +79,7 @@ const useSocketListeners = () => {
     useEffect(() => {
     if (user?.id) {
       const socket = getSocket();
-      socket?.emit(SOCKET_EVENTS.REGISTER_USER, user.id);
+      socket?.emit(socket_events.register_user, user.id);
     }
   }, [user?.id]);
 }
