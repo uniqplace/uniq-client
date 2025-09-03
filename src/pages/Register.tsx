@@ -85,8 +85,6 @@ const Register: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const onSubmit = async (data: RegisterFormData) => {
-    console.log('Form Data:', data);
-    console.log("watchedRole:", watchedRole);
     try {
       const body: any = {
         name: `${data.firstName} ${data.lastName}`,
@@ -110,7 +108,6 @@ const Register: React.FC = () => {
         const user = res.data.user;
         
         Cookies.set('token', res.data.token, { expires: 7 });
-          console.log("user data to be stored in localStorage:", user);
           
        const safeUser = {
   id: user._id || user.id || null,
