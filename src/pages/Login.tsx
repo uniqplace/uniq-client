@@ -67,7 +67,6 @@ const Login = () => {
         const role = res.data.user.role;
         if (userId && role) {
           socket.emit(socket_events.register_user, { userId, role });
-          console.log('User registered to socket:', { userId, role });
         }
 
       }
