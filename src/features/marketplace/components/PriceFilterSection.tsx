@@ -38,9 +38,6 @@ const PriceFilterSection: React.FC<Props> = ({
   return (
     <div className="w-full">
       <div className="flex flex-col items-center">
-        <label id="price-slider-label" htmlFor="price-slider" className="mb-3 font-semibold text-center">
-          Select a price range
-        </label>
         <div className="flex items-center gap-7 w-full justify-center">
           <Slider
             id="price-slider"
@@ -66,8 +63,26 @@ const PriceFilterSection: React.FC<Props> = ({
             className="mb-2 shadow-sm"
           />
         </div>
-        <div className="flex gap-2 mt-2 text-center">
-          <span>${tempPriceRange[0]}</span> - <span>${tempPriceRange[1]}</span>
+        <div className="flex gap-4 mt-4 items-center">
+          <input
+            type="number"
+            value={tempPriceRange[0]}
+            onChange={(e) => {
+              const value = Math.max(minProductPrice, Math.min(Number(e.target.value), tempPriceRange[1]));
+              setTempPriceRange([value, tempPriceRange[1]]);
+            }}
+            className="border rounded px-2 py-1 w-20 text-center"
+          />
+          <span>-</span>
+          <input
+            type="number"
+            value={tempPriceRange[1]}
+            onChange={(e) => {
+              const value = Math.min(maxProductPrice, Math.max(Number(e.target.value), tempPriceRange[0]));
+              setTempPriceRange([tempPriceRange[0], value]);
+            }}
+            className="border rounded px-2 py-1 w-20 text-center"
+          />
         </div>
       </div>
     </div>

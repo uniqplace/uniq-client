@@ -47,7 +47,7 @@ const SearchBar: React.FC = () => {
                     id="search"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full pr-8 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full pl-4 pr-8 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                     style={{ height: '40px', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                 />
                 {searchTerm && (
@@ -55,7 +55,7 @@ const SearchBar: React.FC = () => {
                         <Button
                             type="button"
                             icon="pi pi-times"
-                            className="p-button-text p-button-sm absolute right-8 top-1/2 -translate-y-1/2 z-10 searchbar-x-btn"
+                            className="p-button-text p-button-sm absolute right-2 top-1/2 -translate-y-1/2 z-10 searchbar-x-btn"
                             style={{ padding: 0, minWidth: 0, width: 24, height: 24 }}
                             onClick={() => {
                                 setSearchTerm('');
@@ -67,15 +67,9 @@ const SearchBar: React.FC = () => {
                         />
                     </span>
                 )}
-                <Button
-                    type="button"
-                    icon="pi pi-search"
-                    className="p-button-text p-button-sm absolute right-2 top-1/2 -translate-y-1/2 z-10"
-                    style={{ padding: 0, minWidth: 0, width: 24, height: 24, pointerEvents: 'none', color: '#bdbdbd' }}
-                    tabIndex={-1}
-                    aria-hidden="true"
-                />
-                <label htmlFor="search">Search product, brand etc...</label>
+                <label htmlFor="search">
+                    <i className="pi pi-search text-gray-400 mr-2" /> Search product, brand etc...
+                </label>
             </span>
         </div>
     );

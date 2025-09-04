@@ -9,9 +9,10 @@ import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
 import { useGetProductsQuery } from '../slices/productApiSlice';
 import { fetchCreatorsAndManufacturers } from '../thunks/marketplaceThunks';
-import { updateFilters } from '../slices/marketplaceSlice';
+import { setMaxPrice, updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
 import { Toast } from 'primereact/toast';
+import FilterSection from './FilterSection';
 
 // Helper to parse filters from URLSearchParams
 function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxProductPrice: number) {
@@ -41,7 +42,6 @@ function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxPr
         priceRange,
     };
 }
-
 
 const FiltersBar: React.FC = () => {
     // Ref for AutoComplete input
@@ -98,7 +98,7 @@ const FiltersBar: React.FC = () => {
     const maxProductPrice = globalMaxPrice && globalMaxPrice > pageMaxPrice ? globalMaxPrice : pageMaxPrice;
     React.useEffect(() => {
         if (pageMaxPrice > (globalMaxPrice || 0)) {
-            dispatch({ type: 'marketplace/setMaxPrice', payload: pageMaxPrice });
+            dispatch(setMaxPrice(pageMaxPrice));
         }
     }, [pageMaxPrice, globalMaxPrice, dispatch]);
 
@@ -179,15 +179,11 @@ const FiltersBar: React.FC = () => {
             dispatch({ type: 'marketplace/setProducts', payload: productsData });
         }
     }, [productsData, dispatch]);
+
     const prevMessage = useRef<string | null>(null);
+
     useEffect(() => {
-        if (
-            !isFetching &&
-            !isLoading &&
-            productsData &&
-            productsData.message &&
-            productsData.message !== prevMessage.current
-        ) {
+        if (!isFetching && !isLoading && productsData && productsData.message) {
             toast.current?.show({
                 severity: productsData.success === false ? 'info' : 'success',
                 summary: 'Note!',
@@ -271,7 +267,7 @@ const FiltersBar: React.FC = () => {
             <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
                 <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
                     <aside
-                        className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8 relative"
+                        className="p-6 bg-white rounded shadow flex flex-col gap-4 w-full md:w-64 mb-8 relative"
                         style={{ minWidth: 220, maxWidth: 320 }}
                         onKeyDown={e => {
                             if (e.key === 'Enter') handleFilter();
@@ -281,23 +277,32 @@ const FiltersBar: React.FC = () => {
                             handleReset={handleReset}
                             hasActiveFilters={hasActiveFilters()}
                         />
-                        <CategoryFilters
-                            selected={categoryFilters}
-                            onChange={setCategoryFilters}
-                            handleFilter={handleFilter}
-                        />
-                        <CreatorFilterSection
-                            creator={creator}
-                            filteredCreators={filteredCreators}
-                            searchCreator={searchCreator}
-                            setCreator={setCreator}
-                        />
-                        <PriceFilterSection
-                            priceRange={priceRange}
-                            setPriceRange={setPriceRange}
-                            minProductPrice={minProductPrice}
-                            maxProductPrice={maxProductPrice}
-                        />
+
+                        <FilterSection title="Price Range" icon="pi pi-dollar">
+                            <PriceFilterSection
+                                priceRange={priceRange}
+                                setPriceRange={setPriceRange}
+                                minProductPrice={minProductPrice}
+                                maxProductPrice={maxProductPrice}
+                            />
+                        </FilterSection>
+
+                        <FilterSection title="Categories" icon="pi pi-tags">
+                            <CategoryFilters
+                                selected={categoryFilters}
+                                onChange={setCategoryFilters}
+                                handleFilter={handleFilter}
+                            />
+                        </FilterSection>
+
+                        <FilterSection title="Creator" icon="pi pi-user">
+                            <CreatorFilterSection
+                                creator={creator}
+                                filteredCreators={filteredCreators}
+                                searchCreator={searchCreator}
+                                setCreator={setCreator}
+                            />
+                        </FilterSection>
                     </aside>
                 </div>
             </div>
