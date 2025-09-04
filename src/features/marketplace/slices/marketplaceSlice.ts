@@ -123,6 +123,7 @@ export const {
   addProduct,
   updateProduct,
   removeProduct,
+  setMaxPrice
 } = marketplaceSlice.actions;
 
 export default marketplaceSlice.reducer;

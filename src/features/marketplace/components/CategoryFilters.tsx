@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { ChevronRightIcon } from 'primereact/icons/chevronright';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
 
@@ -36,6 +38,7 @@ interface CategoryFiltersProps {
 
 const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, handleFilter }) => {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [expandedTypes, setExpandedTypes] = useState<{ [type: string]: boolean }>({});
 
   // Compute mainCategoryId once and reuse
   const mainCategoryId = selected.length > 0 ? selected[0] : '';
@@ -63,9 +66,34 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, h
   const { data: subCategoriesData, isLoading: loadingSubCategories } = useGetSubCategoriesByCategoryQuery(mainCategoryId, { skip: mainCategoryId === '' });
   const subCategories = subCategoriesData || [];
 
+  // Function to toggle the visibility of subcategories for a specific type
+  const toggleType = (type: string) => {
+    setExpandedTypes(prev => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  React.useEffect(() => {
+    // Expand types for selected subcategories
+    const expanded: { [type: string]: boolean } = {};
+    subCategories.forEach((sub) => {
+      if (selected.includes(sub._id)) {
+        expanded[sub.type] = true;
+      }
+    });
+
+    // Only update state if there is a meaningful change
+    setExpandedTypes((prev) => {
+      const isDifferent = Object.keys(expanded).some(
+        (key) => expanded[key] !== prev[key]
+      );
+      return isDifferent ? expanded : prev;
+    });
+  }, [subCategories, selected]);
+
   return (
     <div className="flex flex-col gap-6">
-      <label htmlFor="category-filters" className="block font-semibold text-gray-700 mb-2">Categories</label>
       {loadingCategories ? (
         <div className="flex justify-center items-center py-4">
           <ProgressSpinner style={{ width: '30px', height: '30px' }} strokeWidth="4" />
@@ -125,51 +153,66 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, h
                 {/* Group subCategories by type */}
                 {Object.entries(groupSubCategoriesByType(subCategories)).map(([type, subs]) => (
                   <div key={type} className="mb-2">
-                    <div className="font-semibold text-gray-700 mb-1 text-base text-left">{type}</div>
-                    <div className="flex flex-col gap-2">
-                      {subs.map((sub: SubCategory) => {
-                        const subChecked = selected.includes(sub._id);
-                        return (
-                          <div
-                            key={sub._id}
-                            className={`flex items-center gap-2 cursor-pointer select-none ${subChecked ? 'font-semibold text-blue-700' : ''}`}
-                            style={{ userSelect: 'none', flexDirection: 'row', justifyContent: 'flex-start' }}
-                            onClick={() => {
-                              let next: string[];
-                              if (!subChecked) {
-                                next = [selected[0], ...selected.slice(1), sub._id];
-                              } else {
-                                next = selected.filter(v => v !== sub._id);
-                              }
-                              onChange(next);
-                            }}
-                          >
-                            {/* Custom square for subcategory, now left aligned */}
-                            <span
-                              style={{
-                                width: 18,
-                                height: 18,
-                                border: `2px solid ${subChecked ? '#2563eb' : '#bbb'}`,
-                                borderRadius: 4,
-                                background: subChecked ? '#2563eb' : '#fff',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginRight: 4,
-                                transition: 'background 0.2s, border 0.2s',
+                    <div
+                      className="font-semibold text-gray-700 mb-1 text-base text-left flex items-center cursor-pointer"
+                      onClick={() => toggleType(type)}
+                    >
+                      <span
+                        style={{
+                          marginRight: 8,
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {expandedTypes[type] ? <ChevronDownIcon style={{ fontSize: '1rem', color: '#2563eb' }} /> : <ChevronRightIcon style={{ fontSize: '1rem', color: '#bbb' }} />}
+                      </span>
+                      <span>{type}</span>
+                    </div>
+                    {expandedTypes[type] && (
+                      <div className="flex flex-col gap-2">
+                        {subs.map((sub: SubCategory) => {
+                          const subChecked = selected.includes(sub._id);
+                          return (
+                            <div
+                              key={sub._id}
+                              className={`flex items-center gap-2 cursor-pointer select-none ${subChecked ? 'font-semibold text-blue-700' : ''}`}
+                              style={{ userSelect: 'none', flexDirection: 'row', justifyContent: 'flex-start' }}
+                              onClick={() => {
+                                let next: string[];
+                                if (!subChecked) {
+                                  next = [selected[0], ...selected.slice(1), sub._id];
+                                } else {
+                                  next = selected.filter(v => v !== sub._id);
+                                }
+                                onChange(next);
                               }}
                             >
-                              {subChecked && (
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M3 6.5L5.5 9L9 4.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              )}
-                            </span>
-                            <span>{sub.name}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
+                              <span
+                                style={{
+                                  width: 18,
+                                  height: 18,
+                                  border: `2px solid ${subChecked ? '#2563eb' : '#bbb'}`,
+                                  borderRadius: 4,
+                                  background: subChecked ? '#2563eb' : '#fff',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  marginRight: 4,
+                                  transition: 'background 0.2s, border 0.2s',
+                                }}
+                              >
+                                {subChecked && (
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6.5L5.5 9L9 4.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                )}
+                              </span>
+                              <span>{sub.name}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
