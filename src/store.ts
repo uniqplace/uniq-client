@@ -7,6 +7,7 @@ import BidOfferSlice from './features/deployProcess/slices/BidOfferSlice';
 import BidRequestSlice from './features/deployProcess/slices/BidRequestSlice';
 import stepperReducer from './features/deployProcess/slices/stepperSlice';
 import socketReducer from './features/socket/socketSlice';
+import manufacturerReducer from './features/user/slices/manufacturerSlice';
 import apiSlice from './api/apiSlice';
 
 
@@ -21,6 +22,7 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
      socket: socketReducer,
     stepper: stepperReducer,
+    manufacturer: manufacturerReducer
   },
 
  
