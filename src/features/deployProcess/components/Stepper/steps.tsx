@@ -5,6 +5,8 @@ import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 // import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
 import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
+import { useAppSelector } from '../../../../hooks/hooks';
+import type { RootState } from '../../../../store';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
@@ -110,6 +112,13 @@ export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) 
   </div>
 );
 
+const ViewLiveBidsStep: React.FC<StepProps> = (props) => {
+  const bidRequestId = useAppSelector((state: RootState) => state.stepper.bidRequest?._id || '');
+  console.log( '-bidRequestId in ViewLiveBidsStep 🎶🎶🎶🎶', bidRequestId, );
+  
+  return <BidOffersList {...props} bidRequestId={bidRequestId} />;
+};
+
 export const stepsConfig: StepDefinition[] = [
   {
     key: 'product-definition',
@@ -132,7 +141,7 @@ export const stepsConfig: StepDefinition[] = [
   {
     key: 'viewLiveBids',
     title: 'View Live Bids',
-    component: BidOffersList,
+    component: ViewLiveBidsStep,
     validateStep: () => Promise.resolve(true),
   },
   {

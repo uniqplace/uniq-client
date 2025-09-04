@@ -4,7 +4,7 @@ import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
 import { useDispatch } from 'react-redux';
-import { saveBidRequest,fetchBidRequestByProductId } from '../../deployProcess/slices/stepperSlice';
+import { saveBidRequest, fetchBidRequestByProductId } from '../../deployProcess/slices/stepperSlice';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
@@ -231,6 +231,8 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       // קריאה לשרת דרך thunk של Redux
       // @ts-ignore
       const resultAction = await dispatch(saveBidRequest(preferences));
+
+
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
         toast.current?.show({
@@ -260,7 +262,9 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       });
     }
   };
-
+  React.useEffect(() => {
+    console.log('[Redux] bidRequest after save:😒😒😒😒', bidRequest);
+  }, [bidRequest]);
 
   // Primereact Slider onChange event type is { value: number | [number, number] }
   const handlePriceRangeChange = (e: { value: number | [number, number] }) => {

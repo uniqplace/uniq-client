@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 
 
 const BidRequestDetails = () => {
-    const { bidRequestId } = useParams();
+    const { bidRequestId } = useParams();    
     const navigate = useNavigate();
     const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);

@@ -17,6 +17,7 @@ interface BidOffersListProps {
 
 const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNext }) => {
   // Always allow next step (for now)
+
   useEffect(() => {
     if (setCanGoNext) setCanGoNext(true);
   }, [setCanGoNext]);
@@ -25,6 +26,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
+  console.log(bidRequestId, 'bidRequestId🐺🐺🐺🐺🐺');
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
@@ -33,6 +35,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   ];
 
   useEffect(() => {
+    console.log('[Redux] bidRequest after save😂😂😂😂:', bidRequestId);
     if (bidRequestId) {
       const sortParam = sortOption !== 'date' ? sortOption : undefined;
       dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
@@ -77,7 +80,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
         className="mb-4"
       />
 
-     
+
       {loading ? (
         <div className="flex justify-content-center py-5">
           <ProgressSpinner />
@@ -90,7 +93,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
         </div>
       ) : (
         <>
-          
+
           {/* Table header - desktop only */}
           <div
             className="hidden md:grid grid-cols-12 gap-2 py-4 px-4 border-b border-gray-200 text-xl font-bold text-900 font-sans"
@@ -157,14 +160,14 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
                     <Button
                       className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
-                     icon="pi pi-comments"
+                      icon="pi pi-comments"
                       aria-label="Chat"
                     ></Button>
                     <Button
                       className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
                       icon="pi pi-comments"
                       aria-label="Chat"
-                      
+
                     />
                   </div>
                 </div>
