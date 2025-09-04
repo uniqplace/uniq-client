@@ -19,6 +19,7 @@ interface BidOffersListProps {
 
 const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNext }) => {
   // Always allow next step (for now)
+
   useEffect(() => {
     if (setCanGoNext) setCanGoNext(true);
   }, [setCanGoNext]);
@@ -28,6 +29,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
+  console.log(bidRequestId, 'bidRequestId🐺🐺🐺🐺🐺');
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
@@ -36,6 +38,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   ];
 
   useEffect(() => {
+    console.log('[Redux] bidRequest after save😂😂😂😂:', bidRequestId);
     if (bidRequestId) {
       const sortParam = sortOption !== 'date' ? sortOption : undefined;
       dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));

@@ -1,24 +1,7 @@
 
-
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { BidOffer } from "../../../types";
-
-export const fetchBidOfferById = createAsyncThunk(
-  "BidOffer/fetchById",
-  async (bidOfferId: string, thunkAPI) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${bidOfferId}`, {
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to fetch offer');
-      const data = await response.json();
-      return data.data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.message || 'Failed to fetch offer');
-    }
-  }
-);
+import type { BidOffer, BidOfferResponse } from "../../../types";
 // Thunk to fetch offers by bidRequestId
 export const fetchBidOffersByRequest = createAsyncThunk(
   "BidOffer/fetchByBidRequest",
@@ -29,13 +12,15 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     try {
       
       const { bidRequestId, sort } = params;
-      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
+      // קריאה ל־bid-offers/by-bid-request/:bidRequestId
+      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
         
       const response = await axios.get(url, {
         withCredentials: true,
       });
-      return response.data.data; // assuming { success, data }
+      // הריספונס הוא { success, data: [...] }
+      return response.data.data || [];
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');
     }
@@ -43,9 +28,9 @@ export const fetchBidOffersByRequest = createAsyncThunk(
 );
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
-    async (bidOffer: BidOffer, thunkAPI) => {
+    async (bidOffer: BidOfferResponse, thunkAPI) => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${bidOffer.manufacturerId}`, bidOffer,
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers`, bidOffer,
             {
                 withCredentials: true,
             }
@@ -57,11 +42,11 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
     }
   );
 
-  const getInitialBidOffer = (): Partial<BidOffer> => ({
-    price: -1,
-    estimatedDelivery: '',
-    note: '',
-    attachmentUrl: '',
+const getInitialBidOffer = (): Partial<BidOffer> => ({
+  price: -1,
+  estimatedDelivery: '',
+  note: '',
+  attachmentUrl: '',
 })
 
 const bidOfferSlice = createSlice({
@@ -106,27 +91,9 @@ const bidOfferSlice = createSlice({
         state.error = action.payload as string;
       })
 
-
-
-
-      .addCase(fetchBidOfferById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchBidOfferById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.bidOffer = action.payload;
-      })
-      .addCase(fetchBidOfferById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-   
-
-
   },
 });
-  
-  export const { resetBidOffer } = bidOfferSlice.actions;
 
-  export default bidOfferSlice.reducer;
+export const { resetBidOffer } = bidOfferSlice.actions;
+
+export default bidOfferSlice.reducer;

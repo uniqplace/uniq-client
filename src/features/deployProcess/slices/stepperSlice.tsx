@@ -53,7 +53,8 @@ export const saveBidRequest = createAsyncThunk(
         bidRequest,
         { withCredentials: true }
       );
-      return response.data as BidRequest;
+      // מחזיר רק את ה-bidRequest מתוך ה-response
+      return response.data.bidRequest as BidRequest;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }
