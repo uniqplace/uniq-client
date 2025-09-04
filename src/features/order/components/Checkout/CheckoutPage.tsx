@@ -30,52 +30,58 @@ export const orderSchema = yup.object().shape({
   notes: yup.string().max(500),
 });
 interface CheckoutPageProps {
-  order?: any;
+  order?: Order;
 }
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const location = useLocation();
   const user = useSelector((state: RootState) => state.user) as User;
   const productFromState = location.state?.product;
   const toast = useRef<Toast>(null);
-  const currentOrder = location.state?.order;  
+  const currentOrder = location.state?.order as Order;  
   const product: Product = productFromState || currentOrder?.product;
 
   // Initialize order state, using props.order if provided
+  const initialQuantity = 1;
+  const initialTotalAmount = product ? product.price * initialQuantity : 0;
   const [order, setOrder] = useState<Order>(() => {
+    const fallbackProduct: Product = product || {
+      _id: '',
+      title: '',
+      description: '',
+      price: 0,
+      images: [],
+      creator: { _id: '', name: '' },
+      creatorName: '',
+      category: '',
+      stock: 0,
+      tags: [],
+      createdAt: '',
+      updatedAt: '',
+    };
     if (currentOrder) {
       return {
         ...currentOrder,
-        productId: currentOrder.productId || product?._id || '',
+        productId: currentOrder.productId || fallbackProduct._id,
         buyerId: currentOrder.buyerId || user.id,
-        creator: currentOrder.creator || { name: product?.creator.name || '', _id: product?.creator._id || '' },
-        product: currentOrder.product || {
-          _id: product?._id || '',
-          title: product?.title || '',
-          images: product?.images || [],
-          creatorName: product?.creator.name || '',
-        },
+        creator: currentOrder.creator || { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
+        product: currentOrder.product || fallbackProduct,
       };
     }
     return {
       id: '',
-      productId: product?._id || '',
+      productId: fallbackProduct._id,
       buyerId: user.id,
-      creator: { name: product?.creator.name || '', _id: product?.creator._id || '' },
+      creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
       status: 'pending',
-      totalAmount: product ? product.price : 0,
+      totalAmount: initialTotalAmount,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      quantity: 1,
-      product: {
-        _id: product?._id || '',
-        title: product?.title || '',
-        images: product?.images || [],
-        creatorName: product?.creator.name || '',
-      },
+      quantity: initialQuantity,
+      product: fallbackProduct,
     };
   });
 
@@ -113,7 +119,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       setOrder(prev => ({ ...prev, totalAmount }));
     }
   }, [product, order.quantity, shipping]);
-  
+
   const handlePay = async () => {
     setSubmitted(true);
     try {
