@@ -28,7 +28,6 @@ export default function MyOrdersPage({ orders }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [showStatusOrder, setShowStatusOrder] = useState<string | null>(null);
-  console.log('Orders Data:', orders);
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 960);
     onResize();
