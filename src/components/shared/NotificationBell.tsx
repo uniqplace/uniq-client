@@ -29,6 +29,18 @@ const eventIcons: Record<string, string> = {
   connect: '🔗',
 };
 
+// Helper function to standardize notification data
+function buildNotificationData(data: any, eventName: string): any {
+  if (data?.payload) {
+    return { ...data.payload, type: data?.type || eventName };
+  }
+  return {
+    ...data,
+    title: data?.title || eventName,
+    type: data?.type || eventName,
+  };
+}
+
 const NotificationBell = () => {
   const navigate = useNavigate();
   const {
@@ -56,7 +68,6 @@ const NotificationBell = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    // טוען את מספר ההתראות הלא נקראות מהשרת בהתחלת הקומפוננטה
     const fetchCount = async () => {
       try {
         const res = await getUnreadCount(user?.id ?? '');
@@ -72,16 +83,12 @@ const NotificationBell = () => {
 
     fetchCount();
 
-    // מאזין לכל סוגי האירועים מהקובץ הגנרי
     const eventNames = Object.values(socket_events);
     eventNames.forEach((eventName) => {
       socket.on(eventName, (data: any) => {
         setCount((prev) => prev + 1);
-        const notificationData = data?.payload ? { ...data.payload } : { ...data, title: eventName };
-        setNotifications((prev) => [{
-          ...notificationData,
-          type: data?.type || eventName,
-        }, ...prev]);
+        const notificationData = buildNotificationData(data, eventName);
+        setNotifications((prev) => [notificationData, ...prev]);
       });
     });
 
@@ -191,7 +198,6 @@ const NotificationBell = () => {
                       setNotifications((prev) => prev.filter((item) => item && item._id && item._id !== notification._id));
                       try {
                         await markAsRead(notification._id);
-                        // עדכון הספירה לאחר סימון כה נקראה
                         const res = await getUnreadCount(user?.id ?? '');
                         setCount(res.data.count);
                         setIsOpen(false);
