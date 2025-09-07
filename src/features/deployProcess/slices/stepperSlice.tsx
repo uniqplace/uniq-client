@@ -144,6 +144,8 @@ async ({ productId, stepNumber }, thunkAPI) => {
     }
   }
 );
+
+
 export const fetchOpenBidRequestsByProductId = createAsyncThunk(
   'stepper/fetchOpenBidRequestsByProductId',
   async (productId: string, thunkAPI) => {
