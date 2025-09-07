@@ -173,6 +173,25 @@ const ProfilePage: React.FC = () => {
 
     // Save user profile
     try {
+      // Build valid manufacturer object if needed
+      let manufacturerObj = undefined;
+      if (formData.role === 'manufacturer') {
+        manufacturerObj = {
+          userId: {
+            _id: user.id || '',
+            name: formData.name || user.name || '',
+            email: user.email || '',
+            avatarUrl: user.avatarUrl || user.avatar || ''
+          },
+          name: formData.name || user.name || '',
+          categories,
+          location,
+          availableFrom,
+          servicesOffered,
+          rating
+        };
+      }
+
       const actionResult = await updateUserMutation({
         name: formData.name,
         bio: formData.bio,
@@ -180,30 +199,24 @@ const ProfilePage: React.FC = () => {
         role: formData.role,
         skills: formData.role === 'creator' ? skills : [],
         portfolio: formData.role === 'creator' ? portfolioUrls : [],
-        manufacturer:formData.role === 'manufacturer' ? {
+        manufacturer: manufacturerObj
+      })
+      .unwrap();
+
+      dispatch(updateUser(actionResult));
+
+      if (formData.role === 'manufacturer' && user.id) {
+        const manufacturerPayload = {
+          userId: user.id || '', // ManufacturerProfile expects string
+          name: formData.name || user.name || '',
           categories,
           location,
           availableFrom,
           servicesOffered,
-          rating
-        }: undefined
-      })
-      .unwrap();
-      
-      dispatch(updateUser(actionResult));
-
-    if (formData.role === 'manufacturer' && user.id) {
-      const manufacturerPayload = {
-        userId: user.id,
-        name: formData.name || user.name || '',
-        categories,
-        location,
-        availableFrom,
-        servicesOffered,
-        rating,
-      };
-      dispatch(updateManufacturerProfile(manufacturerPayload));
-    }
+          rating,
+        };
+        dispatch(updateManufacturerProfile(manufacturerPayload));
+      }
       setEditMode(false);
       toast.current?.show({ severity: 'success', summary: 'Profile Updated', detail: 'Profile saved successfully!', life: 3000 });
     } catch (error) {
