@@ -50,7 +50,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state: RootState) => state.user);
-  const loading = user.loading;
+  const loading =  useSelector((state: RootState) => state.user.loading);
   const [wasLoading, setWasLoading] = useState(false);
 
 

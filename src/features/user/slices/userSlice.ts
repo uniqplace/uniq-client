@@ -3,6 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { fetchCurrentUser, updateUserProfile } from '../../marketplace/thunks/userThunk'
 import type { RoleType } from '../../../types';
 
+
 export interface UserState {
   id: string | null;
   name: string | null;
@@ -16,7 +17,7 @@ export interface UserState {
   portfolio?: string[];
   loading: boolean;
   error: string | null;
-  manufacturerId?: string | null;
+  manufacturerId: string | null;
 }
 
 const initialState: UserState = {

@@ -17,14 +17,13 @@ const BidRequestDetails = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
-    const offers = useSelector((state: any) => state.bidOffer.offers);
+    const offers = useSelector((state: RootState) => state.bidOffer.offers);
 
     const bidRequest = useSelector((state: RootState) => state.bidRequest.currentBidRequest);
     const isLoading = useSelector((state: RootState) => state.bidRequest.loading);
     const fetchError = useSelector((state: RootState) => state.bidRequest.error);
     const [hasSubmittedOffer, setHasSubmittedOffer] = useState(false);
-
- 
+    const [submittedAt, setSubmittedAt] = useState<string | null>(null);
 
     useEffect(() => {
         if (bidRequestId) {
@@ -37,6 +36,13 @@ const BidRequestDetails = () => {
         console.log('Offers or userId changed:', { offers, userId });
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
+            console.log('Has submitted offer:', hasSubmittedOffer);
+        }
+        if (hasSubmittedOffer) {
+            const userOffer = offers.find((offer: any) => offer.manufacturerId?._id === userId);
+            setSubmittedAt(userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null);
+            console.log('User offer found:😁😁', userOffer, 'Submitted at:', submittedAt);
+
         }
     }, [offers, userId]);
 
@@ -114,6 +120,12 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
+                      {hasSubmittedOffer && submittedAt && (
+                      <div className="text-green-600 text-sm ml-4">
+                          Offer submitted at: {submittedAt}
+
+                        </div>
+                        )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">
@@ -181,6 +193,7 @@ const BidRequestDetails = () => {
                     >
                         Submit Offer
                     </button>
+                  
                 </div>
             </Card>
         </div>

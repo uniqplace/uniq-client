@@ -185,6 +185,7 @@ export interface BidOffer {
   estimatedDelivery: string;
   note?: string;
   attachmentUrl?: string;
+  createdAt?: Date;
 }
 export interface BidOfferResponse {
   bidRequestId: string;
