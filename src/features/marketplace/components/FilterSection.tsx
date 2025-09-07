@@ -25,7 +25,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, icon, children }) 
                         className={`pi ${isOpen ? 'pi-minus' : 'pi-plus'} text-gray-500`}
                     />
                 </div>
-                {isOpen && <div className="mt-2">{children}</div>}
+                {isOpen && <div className="mt-5">{children}</div>}
             </div>
         </>
     );

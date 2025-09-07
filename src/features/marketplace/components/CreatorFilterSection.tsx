@@ -20,7 +20,7 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, filteredCreators, sear
   const [inputValue, setInputValue] = React.useState<string>('');
 
   return (
-    <span id="creator-filter" className="relative p-float-label w-full" style={{ minWidth: '100%', width: '110%' }}>
+    <span id="creator-filter" className="relative p-float-label w-full" style={{ minWidth: '100%', width: '108%' }}>
       <AutoComplete
         id="creator"
         value={inputValue !== '' ? inputValue : creator}

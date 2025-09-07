@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect,useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CategoryFilters from './CategoryFilters';
 import CreatorFilterSection from './CreatorFilterSection';
@@ -7,11 +7,9 @@ import FilterActionsSection from './FilterActionsSection';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
-import { useGetProductsQuery } from '../slices/productApiSlice';
 import { fetchCreatorsAndManufacturers } from '../thunks/marketplaceThunks';
 import { setMaxPrice, updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
-import { Toast } from 'primereact/toast';
 import FilterSection from './FilterSection';
 
 // Helper to parse filters from URLSearchParams
@@ -43,17 +41,16 @@ function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxPr
     };
 }
 
-const FiltersBar: React.FC = () => {
+const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
     // Ref for AutoComplete input
     const dispatch: AppDispatch = useDispatch();
     const { filters, creators, products, maxPrice: globalMaxPrice } = useSelector((state: RootState) => state.marketplace);
     const navigate = useNavigate();
     const location = useLocation();
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
-    const [creator, setCreator] = React.useState(initialCreator);
-    const [searchValue, _setSearchValue] = React.useState<string | null>(null);
-    const [filteredCreators, setFilteredCreators] = React.useState(creators);
-    const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
+    const [creator, setCreator] = useState(initialCreator);
+    const [filteredCreators, setFilteredCreators] = useState(creators);
+    const [categoryFilters, setCategoryFilters] = useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
         const mainCategory = params.get('category');
         const subCategoriesParam = params.get('subCategories');
@@ -72,7 +69,6 @@ const FiltersBar: React.FC = () => {
         }
         return mainCategory ? [mainCategory, ...subCategoriesArr] : subCategoriesArr;
     });
-    const toast = useRef<Toast>(null);
 
     // Sync categoryFilters with URL when changed
     React.useEffect(() => {
@@ -162,37 +158,12 @@ const FiltersBar: React.FC = () => {
     // Build filters for RTK Query
     const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
     const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
-    const queryFilters = React.useMemo(() => ({
-        q: searchValue || undefined,
-        category: mainCategory,
-        subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
-        creator: creator?.value || undefined,
-        minPrice: priceRange[0] !== minProductPrice ? priceRange[0] : undefined,
-        maxPrice: priceRange[1] !== maxProductPrice ? priceRange[1] : undefined,
-        page: 1,
-    }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
 
-    // Use RTK Query hook
-    const { data: productsData, isLoading, isFetching } = useGetProductsQuery(queryFilters, { skip: false });
     useEffect(() => {
         if (productsData && Array.isArray(productsData)) {
             dispatch({ type: 'marketplace/setProducts', payload: productsData });
         }
     }, [productsData, dispatch]);
-
-    const prevMessage = useRef<string | null>(null);
-
-    useEffect(() => {
-        if (!isFetching && !isLoading && productsData && productsData.message) {
-            toast.current?.show({
-                severity: productsData.success === false ? 'info' : 'success',
-                summary: 'Note!',
-                detail: productsData.message,
-                life: 4000,
-            });
-            prevMessage.current = productsData.message;
-        }
-    }, [isFetching, isLoading, productsData]);
 
     // Helper to build filter params
     const buildFilterParams = () => {
@@ -263,7 +234,6 @@ const FiltersBar: React.FC = () => {
 
     return (
         <>
-            <Toast ref={toast} />
             <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
                 <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
                     <aside
