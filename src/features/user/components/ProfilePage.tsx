@@ -174,7 +174,7 @@ const ProfilePage: React.FC = () => {
     // Save user profile
     try {
       // Build valid manufacturer object if needed
-      let manufacturerObj = undefined;
+      let manufacturerObj = null;
       if (formData.role === 'manufacturer') {
         manufacturerObj = {
           userId: {
