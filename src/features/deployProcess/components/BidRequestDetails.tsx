@@ -18,7 +18,7 @@ const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
-    const userId = useSelector((state: RootState) => state.user.manufacturerId);
+    const userId = useSelector((state: RootState) => state.user.manufacturer);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
 
     const bidRequest = useSelector((state: RootState) => state.bidRequest.currentBidRequest);

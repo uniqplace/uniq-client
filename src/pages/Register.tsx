@@ -131,7 +131,7 @@ if (!safeUser.name || !safeUser.email || !safeUser.role) {
           email: user.email,
           avatar: user.avatar || null,
           role: user.role || null,
-          manufacturerId: user.manufacturerId || null
+          manufacturer: user.manufacturer || null
         }));
 
         // Register user to Socket.IO
