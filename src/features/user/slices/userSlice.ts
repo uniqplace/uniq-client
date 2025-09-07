@@ -18,6 +18,7 @@ export interface UserState {
   loading: boolean;
   error: string | null;
   manufacturer: Manufacturer | null;
+  manufacturerId: string | null;
 }
 
 const initialState: UserState = {
@@ -31,6 +32,7 @@ const initialState: UserState = {
   loading: false,
   error: null,
   manufacturer: null,
+  manufacturerId: null,
 };
 
 const userSlice = createSlice({
