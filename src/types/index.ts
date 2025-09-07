@@ -160,7 +160,7 @@ interface UserToBidOffer {
 }
 
 export interface Manufacturer {
-  _id: string;
+  _id?: string;
   userId: UserToBidOffer;
   name: string;
   rating?: number;

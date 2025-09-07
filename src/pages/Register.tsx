@@ -106,33 +106,43 @@ const Register: React.FC = () => {
       const res = await axios.post(`${API_BASE_URL}/auth/register`, body);
       if (res.data.success && res.data.user) {
         const user = res.data.user;
-        
         Cookies.set('token', res.data.token, { expires: 7 });
-          
-       const safeUser = {
-  id: user._id || user.id || null,
-  name: user.name || '',
-  email: user.email || '',
-  role: user.role || null,
-  avatar: user.avatar || null,
-  manufacturer: user.manufacturer || null
-};
 
-// אופציונלי: לבדוק שדות חובה
-if (!safeUser.name || !safeUser.email || !safeUser.role) {
-  console.error('User object missing required fields:', safeUser);
-} else {
-  localStorage.setItem('user', JSON.stringify(safeUser));
-}
+        // Build a valid Manufacturer object if user is manufacturer
+        let manufacturerObj = null;
+        if (user.role === 'manufacturer' && user.manufacturer) {
+          manufacturerObj = {
+            userId: {
+              _id: user._id || user.id || '',
+              name: user.name || '',
+              email: user.email || '',
+              avatarUrl: user.avatarUrl || user.avatar || ''
+            },
+            name: user.manufacturer.name || user.name || '',
+            categories: user.manufacturer.categories || [],
+            servicesOffered: user.manufacturer.servicesOffered || [],
+            location: user.manufacturer.location || '',
+            availableFrom: user.manufacturer.availableFrom || '',
+            rating: user.manufacturer.rating || 0
+          };
+        }
 
-        dispatch(setUser({
+        const safeUser = {
           id: user._id || user.id || null,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar || null,
+          name: user.name || '',
+          email: user.email || '',
           role: user.role || null,
-          manufacturer: user.manufacturer || null
-        }));
+          avatar: user.avatar || null,
+          manufacturer: manufacturerObj || null
+        };
+
+        if (!safeUser.name || !safeUser.email || !safeUser.role) {
+          console.error('User object missing required fields:', safeUser);
+        } else {
+          localStorage.setItem('user', JSON.stringify(safeUser));
+        }
+
+        dispatch(setUser(safeUser));
 
         // Register user to Socket.IO
         import('../services/socket').then(({ default: socket }) => {
@@ -143,14 +153,13 @@ if (!safeUser.name || !safeUser.email || !safeUser.role) {
             });
           });
         });
-        
+
         toast.current?.show({
           severity: 'success',
           summary: 'Registered',
           detail: 'Your account has been created',
           life: 3000
         });
-
       } else {
         throw new Error('User data missing or invalid in response');
       }
