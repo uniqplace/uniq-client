@@ -46,6 +46,7 @@ export interface Order {
   totalAmount: number;
   paymentMethod: string;
   shippingAddress: Address;
+  quantity: number;
   createdAt: string;
   updatedAt: string;
   product: {
@@ -111,11 +112,6 @@ export interface SubCategory {
 
 // 10. Category
 export interface Category {
-  _id: string;
-  name: string;
-}
-
-export interface ManufacturerProfile {
   _id: string;
   name: string;
 }
@@ -199,7 +195,9 @@ export interface ManufacturerProfile {
   userId: string;
   name: string;
   categories: string[];
+  servicesOffered: string[];
   location: string;
   availableFrom: string;
+  rating?: number;
 }
 
