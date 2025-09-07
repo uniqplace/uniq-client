@@ -15,12 +15,18 @@ const PriceFilterSection: React.FC<Props> = ({
   maxProductPrice,
 }) => {
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
+  const [inputMin, setInputMin] = useState<string>(priceRange[0].toString());
+  const [inputMax, setInputMax] = useState<string>(priceRange[1].toString());
   const debounceTimeout = useRef<number | null>(null);
+  const inputDebounceTimeout = useRef<number | null>(null);
+
   useEffect(() => {
     setTempPriceRange(priceRange);
+    setInputMin(priceRange[0].toString());
+    setInputMax(priceRange[1].toString());
   }, [priceRange]);
 
-  // Debounce: update priceRange only after user stops dragging
+  // Debounce: update priceRange only after user stops dragging slider
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
@@ -34,6 +40,22 @@ const PriceFilterSection: React.FC<Props> = ({
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
   }, [tempPriceRange, setPriceRange]);
+
+  // Debounce for input fields
+  useEffect(() => {
+    if (inputDebounceTimeout.current) clearTimeout(inputDebounceTimeout.current);
+    inputDebounceTimeout.current = setTimeout(() => {
+      let min = Math.max(minProductPrice, Number(inputMin));
+      let max = Math.min(maxProductPrice, Number(inputMax));
+      if (max < min) {
+        [min, max] = [max, min];
+      }
+      setTempPriceRange([min, max]);
+    }, 300);
+    return () => {
+      if (inputDebounceTimeout.current) clearTimeout(inputDebounceTimeout.current);
+    };
+  }, [inputMin, inputMax, minProductPrice, maxProductPrice]);
 
   return (
     <div className="w-full">
@@ -66,21 +88,15 @@ const PriceFilterSection: React.FC<Props> = ({
         <div className="flex gap-4 mt-4 items-center">
           <input
             type="number"
-            value={tempPriceRange[0]}
-            onChange={(e) => {
-              const value = Math.max(minProductPrice, Math.min(Number(e.target.value), tempPriceRange[1]));
-              setTempPriceRange([value, tempPriceRange[1]]);
-            }}
+            value={inputMin}
+            onChange={e => setInputMin(e.target.value)}
             className="border rounded px-2 py-1 w-20 text-center"
           />
           <span>-</span>
           <input
             type="number"
-            value={tempPriceRange[1]}
-            onChange={(e) => {
-              const value = Math.min(maxProductPrice, Math.max(Number(e.target.value), tempPriceRange[0]));
-              setTempPriceRange([tempPriceRange[0], value]);
-            }}
+            value={inputMax}
+            onChange={e => setInputMax(e.target.value)}
             className="border rounded px-2 py-1 w-20 text-center"
           />
         </div>

@@ -6,6 +6,7 @@ import { useGetProductsQuery } from '../features/marketplace/slices/productApiSl
 import FiltersBar from '../features/marketplace/components/FiltersBar'; import { Paginator } from 'primereact/paginator';
 import SearchBar from '../features/marketplace/components/SearchBar';
 import { useSelector } from 'react-redux';
+import { Toast } from 'primereact/toast';
 
 // Helper to parse subCategories from URLSearchParams
 function parseSubCategoriesFromParams(params: URLSearchParams): string[] | undefined {
@@ -33,6 +34,7 @@ const Marketplace: React.FC = () => {
   const [page, setPage] = useState(initialPage);
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
   const loading = useSelector((state: any) => state.marketplace.loading);
+  const toast = React.useRef<Toast>(null);
 
   useEffect(() => {
     const pageParam = Number(params.get('page')) || 1;
@@ -42,7 +44,7 @@ const Marketplace: React.FC = () => {
   // Build filters for RTK Query
   const mainCategory = params.get('category') || undefined;
   const subCategoriesArr = parseSubCategoriesFromParams(params);
-  const queryFilters = {
+const queryFilters = React.useMemo(() => ({
     category: mainCategory,
     subCategories: subCategoriesArr,
     creator: params.get('creator') || '',
@@ -50,8 +52,19 @@ const Marketplace: React.FC = () => {
     maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
     q: params.get('q') || '',
     page,
-  };
+}), [mainCategory, subCategoriesArr, params, page]);
   const { data: productsData, error: productsError, isLoading, isFetching } = useGetProductsQuery(queryFilters);
+
+  React.useEffect(() => {
+    if (!isFetching && !isLoading && productsData && productsData.message && productsData.success === false) {
+      toast.current?.show({
+        severity: 'info',
+        summary: 'Note!',
+        detail: productsData.message,
+        life: 3000,
+      });
+    }
+  }, [isFetching, isLoading, productsData]);
 
   // Use products from RTK Query
   const products = isLoading ? [] : productsData?.data || [];
@@ -86,7 +99,7 @@ const Marketplace: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen">
         <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
         <span className="text-gray-600 mt-4 block">Loading marketplace...</span>
       </div>
@@ -95,6 +108,7 @@ const Marketplace: React.FC = () => {
 
   return (
     <>
+      <Toast ref={toast} />
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
         <div className="mb-6">
@@ -102,7 +116,7 @@ const Marketplace: React.FC = () => {
         </div>
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-64 flex-shrink-0">
-            <FiltersBar />
+            <FiltersBar productsData={productsData} />
           </div>
           <div className="flex-1">
             <section className="bg-gray-50 rounded-lg p-4 mb-8">

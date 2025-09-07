@@ -33,7 +33,7 @@ const SearchBar: React.FC = () => {
             else params.delete('q');
             navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
             dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
-        }, 400);
+        }, 600);
         return () => {
             if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
         };
