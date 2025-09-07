@@ -1,7 +1,24 @@
 
+
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidOffer, BidOfferResponse } from "../../../types";
+
+export const fetchBidOfferById = createAsyncThunk(
+  "BidOffer/fetchById",
+  async (bidOfferId: string, thunkAPI) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${bidOfferId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch offer');
+      const data = await response.json();
+      return data.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message || 'Failed to fetch offer');
+    }
+  }
+);
 // Thunk to fetch offers by bidRequestId
 export const fetchBidOffersByRequest = createAsyncThunk(
   "BidOffer/fetchByBidRequest",
@@ -52,6 +69,9 @@ const bidOfferSlice = createSlice({
     offers: [] as BidOffer[],
     loading: false,
     error: null as string | null,
+    currentBidOffer: null as BidOffer | null,
+    currentBidOfferLoading: false,
+    currentBidOfferError: null as string | null,
   },
   reducers: {
     resetBidOffer: (state) => {
@@ -85,6 +105,21 @@ const bidOfferSlice = createSlice({
       .addCase(fetchBidOffersByRequest.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Fetch single bid offer by ID
+      .addCase(fetchBidOfferById.pending, (state: any) => {
+        state.currentBidOfferLoading = true;
+        state.currentBidOfferError = null;
+        state.currentBidOffer = null;
+      })
+      .addCase(fetchBidOfferById.fulfilled, (state: any, action: any) => {
+        state.currentBidOfferLoading = false;
+        state.currentBidOffer = action.payload;
+      })
+      .addCase(fetchBidOfferById.rejected, (state: any, action: any) => {
+        state.currentBidOfferLoading = false;
+        state.currentBidOfferError = action.payload as string;
+        state.currentBidOffer = null;
       });
   },
 });

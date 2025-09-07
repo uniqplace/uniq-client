@@ -1,40 +1,46 @@
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
-import type { BidRequest } from '../../../types';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
+import { fetchBidRequestById } from '../slices/BidRequestSlice';
+
+import type { RootState, AppDispatch } from '../../../store';
+import type { BidOffer } from '../../../types';
 
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
-    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [fetchError, setFetchError] = useState<string | null>(null);
+    const dispatch = useDispatch<AppDispatch>();
+    const userId = useSelector((state: RootState) => state.user.manufacturer?._id );
+    const offers = useSelector((state: RootState) => state.bidOffer.offers);
+
+    const bidRequest = useSelector((state: RootState) => state.bidRequest.currentBidRequest);
+    const isLoading = useSelector((state: RootState) => state.bidRequest.loading);
+    const fetchError = useSelector((state: RootState) => state.bidRequest.error);
+    const [hasSubmittedOffer, setHasSubmittedOffer] = useState(false);
+    // Always get userOffer from offers
+    const userOffer = offers?.find((offer: BidOffer) => offer.manufacturerId?._id === userId);
+    const submittedAt = userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null;
 
     useEffect(() => {
-        const fetchBidRequestDetails = async () => {
-            setIsLoading(true);
-            setFetchError(null);
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bidRequests/${bidRequestId}`, {
-                    credentials: 'include',
-                });
-                if (!response.ok) throw new Error('Error loading bid request');
-                const data = await response.json();
-                setBidRequest(data.bidRequest as BidRequest);
-            } catch (err: any) {
-                setFetchError('Error loading bid request');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        if (bidRequestId) fetchBidRequestDetails();
-    }, [bidRequestId]);
+        if (bidRequestId) {
+            dispatch(fetchBidRequestById(bidRequestId));
+            dispatch(fetchBidOffersByRequest({ bidRequestId }));
+        }
+    }, [bidRequestId, dispatch]);
+
+    useEffect(() => {
+        if (offers && userId) {
+            setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
+        }
+    }, [offers, userId]);
 
     if (isLoading) {
         return (
@@ -64,8 +70,9 @@ const BidRequestDetails = () => {
     // Handler function for navigation
     const handleNavigation = () => {
         if (bidRequestId) {
-            const userId = location.state?.userId;
-            navigate('/BidOffer', { state: { bidRequestId, manufactorerId: userId } });
+            
+            console.log('Navigating to BidOffer with:', { bidRequestId, manufacturerId: userId });
+            navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
         }
     };
 
@@ -109,6 +116,19 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
+                    {hasSubmittedOffer && submittedAt && (
+                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                            Offer submitted at: {submittedAt}
+                            <button
+                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                                style={{ width: 28, height: 28 }}
+                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                                title="View full offer details"
+                            >
+                                <span className="pi pi-arrow-right" />
+                            </button>
+                        </div>
+                    )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">
@@ -172,9 +192,11 @@ const BidRequestDetails = () => {
                     <button
                         className="p-button p-component p-button-primary"
                         onClick={handleNavigation}
+                        disabled={hasSubmittedOffer}
                     >
                         Submit Offer
                     </button>
+                  
                 </div>
             </Card>
         </div>
