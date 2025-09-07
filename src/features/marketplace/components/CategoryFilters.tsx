@@ -51,13 +51,10 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, h
   }, []);
 
   React.useEffect(() => {
-    handleFilter();
-  }, [selected, openCategory]);
-
-  React.useEffect(() => {
     if (selected.length > 0) {
       setOpenCategory(selected[0]);
     }
+    handleFilter();
   }, [selected]);
 
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetAllCategoriesQuery();
