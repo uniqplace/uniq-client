@@ -33,7 +33,12 @@ const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsC
 
   // Developer error: steps prop is missing or empty
   if (!steps || !Array.isArray(steps) || steps.length === 0) {
-    return <div style={{display: 'none'}}>{/* Stepper configuration error: steps prop is missing or empty. */}</div>;
+    console.error('Stepper configuration error: steps prop is missing or empty.', { steps });
+    return (
+      <div style={{ color: 'red', padding: '1em', background: '#ffe6e6', border: '1px solid #ffcccc', borderRadius: '4px' }}>
+        Stepper configuration error: steps prop is missing or empty.
+      </div>
+    );
   }
 
   const dispatch = useAppDispatch();

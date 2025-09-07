@@ -258,9 +258,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       });
     }
   };
-  React.useEffect(() => {
-    console.log('[Redux] bidRequest after save:😒😒😒😒', bidRequest);
-  }, [bidRequest]);
+
 
   // Primereact Slider onChange event type is { value: number | [number, number] }
   const handlePriceRangeChange = (e: { value: number | [number, number] }) => {

@@ -54,13 +54,11 @@ export const OpenBidPage = () => {
   };
 
   const actionsTemplate = (rowData: BidRequest) => {
-    console.log('navigate to:', `/MyBidRequest/${rowData._id}`, 'rowData:', rowData);
     return (
       <Button
         label="View offers"
         icon="pi pi-eye"
         onClick={() => {
-          console.log('onClick navigate:', `/MyBidRequest/${rowData._id}`, 'rowData._id:', rowData._id);
           navigate(`/MyBidRequest/${rowData._id}`);
         }}
         className="p-button-sm"
@@ -84,13 +82,10 @@ export const OpenBidPage = () => {
 
   useEffect(() => {
     if (bidRequestId) {
-      console.log(bidRequestId, 'bidRequestId🐺💕💕💕💕🐺🐺');
     }
   }, [bidRequestId]);
 
-  useEffect(() => {
-    console.log(filteredBidRequests, 'filteredBidRequests');
-  }, [filteredBidRequests]);
+
 
   if (loading) {
     return (
