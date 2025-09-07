@@ -9,7 +9,9 @@ import { Divider } from 'primereact/divider';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import { fetchBidRequestById } from '../slices/BidRequestSlice';
+
 import type { RootState, AppDispatch } from '../../../store';
+import type { BidOffer } from '../../../types';
 
 
 const BidRequestDetails = () => {
@@ -23,7 +25,9 @@ const BidRequestDetails = () => {
     const isLoading = useSelector((state: RootState) => state.bidRequest.loading);
     const fetchError = useSelector((state: RootState) => state.bidRequest.error);
     const [hasSubmittedOffer, setHasSubmittedOffer] = useState(false);
-    const [submittedAt, setSubmittedAt] = useState<string | null>(null);
+    // Always get userOffer from offers
+    const userOffer = offers?.find((offer: BidOffer) => offer.manufacturerId?._id === userId);
+    const submittedAt = userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null;
 
     useEffect(() => {
         if (bidRequestId) {
@@ -33,16 +37,8 @@ const BidRequestDetails = () => {
     }, [bidRequestId, dispatch]);
 
     useEffect(() => {
-        console.log('Offers or userId changed:', { offers, userId });
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
-            console.log('Has submitted offer:', hasSubmittedOffer);
-        }
-        if (hasSubmittedOffer) {
-            const userOffer = offers.find((offer: any) => offer.manufacturerId?._id === userId);
-            setSubmittedAt(userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null);
-            console.log('User offer found:😁😁', userOffer, 'Submitted at:', submittedAt);
-
         }
     }, [offers, userId]);
 
@@ -120,12 +116,19 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
-                      {hasSubmittedOffer && submittedAt && (
-                      <div className="text-green-600 text-sm ml-4">
-                          Offer submitted at: {submittedAt}
-
+                    {hasSubmittedOffer && submittedAt && (
+                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                            Offer submitted at: {submittedAt}
+                            <button
+                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                                style={{ width: 28, height: 28 }}
+                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                                title="View full offer details"
+                            >
+                                <span className="pi pi-arrow-right" />
+                            </button>
                         </div>
-                        )}
+                    )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">

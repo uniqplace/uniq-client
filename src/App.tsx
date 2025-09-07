@@ -31,6 +31,7 @@ import BidRequestDetails from './features/deployProcess/components/BidRequestDet
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 
 
 
@@ -104,6 +105,7 @@ function App() {
             <Route path="/BidOffer" element={<BidOfferForm />} />
             <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
             <Route path="/MyBidRequest" element={<OpenBidPage />} />
+            <Route path="/BidOfferDetails/:BidOfferId" element={<BidOfferDetails />} />
           </Routes>
         </MainContent>
 
