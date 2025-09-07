@@ -5,6 +5,7 @@ import type { RootState } from '../../../store';
 
 interface BidRequestState {
   bidRequests: BidRequest[];
+  currentBidRequest: BidRequest | null;
   loading: boolean;
   error: string | null;
 }
@@ -28,7 +29,12 @@ export const getBidRequestsForManufacturer = createAsyncThunk<BidRequest[], void
   async (_, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
+<<<<<<< HEAD
       const manufacturerId = state.user?.manufacturer?._id;
+=======
+     
+      const userId = state.user?.id;
+>>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
 
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/bidRequests/manufacturer/${manufacturerId}`, {
         withCredentials: true,
@@ -40,9 +46,23 @@ export const getBidRequestsForManufacturer = createAsyncThunk<BidRequest[], void
   }
 );
 
+export const fetchBidRequestById = createAsyncThunk<BidRequest, string>(
+  "bidRequests/fetchById",
+  async (bidRequestId, thunkAPI) => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/bidRequests/${bidRequestId}`, {
+        withCredentials: true,
+      });
+      return response.data.bidRequest;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch bid request');
+    }
+  }
+);
 
 const initialState: BidRequestState = {
   bidRequests: [] as BidRequest[],
+  currentBidRequest: null,
   loading: true,
   error: null,
 };
@@ -77,6 +97,27 @@ const bidRequestSlice = createSlice({
       .addCase(getBidRequestsForManufacturer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchBidRequestById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+  state.currentBidRequest = null;
+      })
+      .addCase(fetchBidRequestById.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedBidRequest = action.payload;
+        const existingBidRequestIndex = state.bidRequests.findIndex(bidRequest => bidRequest._id === updatedBidRequest._id);
+        if (existingBidRequestIndex !== -1) {
+          state.bidRequests[existingBidRequestIndex] = updatedBidRequest;
+        } else {
+          state.bidRequests.push(updatedBidRequest);
+        }
+  state.currentBidRequest = updatedBidRequest;
+      })
+      .addCase(fetchBidRequestById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+  state.currentBidRequest = null;
       });
   }
 });
