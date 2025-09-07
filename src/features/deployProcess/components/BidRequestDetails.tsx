@@ -44,9 +44,7 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
-          
         }
-     
     }, [offers, userId]);
 
     if (isLoading) {
@@ -110,7 +108,14 @@ const BidRequestDetails = () => {
                         label="Back to Requests"
                         icon={<ArrowLeft size={16} />}
                         className="p-button-text p-button-sm text-green-600"
-                        onClick={() => navigate(-1)} // חזרה לעמוד הקודם
+                        onClick={() => {
+                                if (window.history.length > 1) {
+                                    navigate(-1);
+                                } else {
+                                    navigate('/MyBidRequest');
+                                }
+                            }
+                        }
                     />
                 </div>
                 <div className="flex items-center gap-4 mb-6">

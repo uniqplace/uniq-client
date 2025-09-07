@@ -97,11 +97,16 @@ function App() {
           <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
           <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
           <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
-          <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
+          <Route
+            path="/myBidRequests/:bidRequestId"
+            element={
+              <PrivateRoute>
+                <BidRequestDetails />
+              </PrivateRoute>}
+          />
           <Route path="/BidOffer" element={<BidOfferForm />} />
           <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
           <Route path="/MyBidRequest" element={<OpenBidPage />} />
-          {/* <Route path="/BidOfferDetails/:BidOfferId" element={<BidOfferDetails />} /> */}
           <Route
             path="/BidOfferDetails/:BidOfferId"
             element={
@@ -112,15 +117,6 @@ function App() {
           />
         </Routes>
       </MainContent>
-      {/* <h5>Socket.IO + React Toastify</h5> */}
-
-      {/* <button
-        onClick={() =>
-          sendSocket()
-        }
-      >
-        Simulate New Bid For User {user.name}
-      </button> */}
     </div>
   );
 }
