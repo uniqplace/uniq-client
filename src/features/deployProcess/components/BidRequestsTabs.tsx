@@ -18,6 +18,7 @@ const getTabHeaderClass = (isActive: boolean) =>
 const BidRequestsTabs = () => {
     const user = useSelector((state: RootState) => state.user);
     const ismanufacturer = user?.role === 'manufacturer';
+    const [activeIndex, setActiveIndex] = useState(DEFAULT_TAB_INDEX);
 
     if (!ismanufacturer) {
         return (
@@ -27,7 +28,6 @@ const BidRequestsTabs = () => {
         );
     }
 
-    const [activeIndex, setActiveIndex] = useState(DEFAULT_TAB_INDEX);
     return (
         <div className="max-w-6xl w-full flex flex-col items-start mt-0 ml-0">
             <TabView

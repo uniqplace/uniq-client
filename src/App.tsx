@@ -26,14 +26,13 @@ import { CheckoutPage } from './features/order/components/Checkout/CheckoutPage'
 import BidRequestsTabs from './features/deployProcess/components/BidRequestsTabs';
 import MyBidRequestsNotifications from './pages/MyBidRequestsNotifications';
 import CreateYourOwnProduct from './pages/CreateYourOwnProduct';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import BidOfferForm from './features/deployProcess/components/BidOfferForm';
 import BidRequestDetails from './features/deployProcess/components/BidRequestDetails';
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
-import { socket_events } from './constants/socketEvents';
-import { getSocket } from './services/socket';
+import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
+
 
 
 
@@ -52,7 +51,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state: RootState) => state.user);
-  const loading = user.loading;
+  const loading =  useSelector((state: RootState) => state.user.loading);
   const [wasLoading, setWasLoading] = useState(false);
 
 
@@ -76,34 +75,8 @@ function App() {
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
 
-  useEffect(() => {
-  }, [user]);
 
-  const sendSocket = async () => {
-    const socket = getSocket();
-    if (socket) {
-      try {
-        const response = await fetch(`http://localhost:5002/api/test-bid/68b554499ff29d1e893dca02/${user.id}`);
-        console.log('API response:', response);
 
-        socket.emit(socket_events.new_bid, { userId: user.id, message: `New bid for user ${user.name}` });
-        
-      } catch (error) {
-        console.error('Error while sending socket event:', error);
-      }
-    } else {
-      console.error('Socket is not initialized');
-    }
-
-    if (loading) {
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <ProgressSpinner />
-          <span style={{ marginTop: '1rem' }}>Loading...</span>
-        </div>
-      );
-    }
-  }
 
 
     return (
@@ -130,20 +103,11 @@ function App() {
             <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
             <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
             <Route path="/BidOffer" element={<BidOfferForm />} />
-            <Route path="/BidOffer" element={<BidOfferForm bidRequestId="6885e9e91a27cccc0165de40" manufacturerId="687f7b71c3ffd771d479aa5c" />} />
             <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
             <Route path="/MyBidRequest" element={<OpenBidPage />} />
+            <Route path="/BidOfferDetails/:BidOfferId" element={<BidOfferDetails />} />
           </Routes>
         </MainContent>
-        <h5>Socket.IO + React Toastify</h5>
-
-        <button
-          onClick={() =>
-            sendSocket()
-          }
-        >
-          Simulate New Bid For User {user.name}
-        </button>
 
       </div>
     );
