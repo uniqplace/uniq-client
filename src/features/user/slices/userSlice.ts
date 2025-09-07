@@ -30,8 +30,8 @@ const initialState: UserState = {
   role: null,
   loading: false,
   error: null,
-  manufacturerId: null,
-  manufacturer: null,
+  manufacturer: {} as Manufacturer,
+  manufacturerId:null,
 };
 
 const userSlice = createSlice({

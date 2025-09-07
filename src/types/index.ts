@@ -184,7 +184,7 @@ export interface BidOffer {
   estimatedDelivery: string;
   note?: string;
   attachmentUrl?: string;
-  createdAt?: string | Date;
+  createdAt?: Date;
 }
 
 export interface ManufacturerProfile {
