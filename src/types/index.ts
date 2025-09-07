@@ -167,6 +167,7 @@ export interface Manufacturer {
   location?: string;
   availableFrom?: string;
   categories?: string[];
+  servicesOffered?: string[];
 }
 interface BidRequestId {
   productId: ({ title: string }) & { _id?: string } & { description?: string }&{ images?: string[] };
