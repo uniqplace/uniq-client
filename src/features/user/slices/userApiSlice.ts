@@ -29,6 +29,9 @@ export const userApiSlice = apiSlice.injectEndpoints({
                 method: 'PUT',
                 body: data,
             }),
+            transformResponse: (response: any) => {
+                return response.user; 
+              },
             invalidatesTags: (_result, _error, { id }) =>
                 id !== null && id !== undefined
                     ? [{ type: 'User', id }]
