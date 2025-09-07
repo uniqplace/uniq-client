@@ -166,6 +166,7 @@ export interface Manufacturer {
   rating?: number;
   location?: string;
   availableFrom?: string;
+  categories?: string[];
 }
 interface BidRequestId {
   productId: ({ title: string }) & { _id?: string } & { description?: string }&{ images?: string[] };
