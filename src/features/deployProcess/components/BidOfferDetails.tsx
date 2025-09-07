@@ -7,8 +7,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOfferById } from '../slices/BidOfferSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import { useEffect } from 'react';
+import { useState } from 'react';
 
 const BidOfferDetails: React.FC = () => {
+  // Image gallery state
+  const [imgIndex, setImgIndex] = useState(0);
   const { BidOfferId } = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const offer = useSelector((state: RootState) => state.bidOffer.currentBidOffer);
@@ -44,10 +47,39 @@ const BidOfferDetails: React.FC = () => {
           <Divider layout="vertical" className="mx-4" />
           <div className="flex flex-col items-start">
             <div className="font-semibold text-lg text-gray-800 mb-1">Product</div>
-              { Array.isArray(offer.bidRequestId?.productId?.images) &&
-              offer.bidRequestId.productId.images.length >1&&
-              offer.bidRequestId.productId.images[0] && (
-                <img src={offer.bidRequestId.productId.images[0]} alt="Product" className="w-32 h-32 object-cover rounded shadow" />
+            {Array.isArray(offer.bidRequestId?.productId?.images) && offer.bidRequestId.productId.images.length > 0 && (
+              <div className="flex flex-col items-center mb-2">
+                <div className="relative">
+                  <img
+                    src={offer.bidRequestId?.productId?.images?.[imgIndex]}
+                    alt="Product"
+                    className="w-32 h-32 object-cover rounded shadow"
+                  />
+                  {Array.isArray(offer.bidRequestId?.productId?.images) && offer.bidRequestId.productId.images?.length > 1 && (
+                    <>
+                      <button
+                        className="absolute left-0 top-1/2 -translate-y-1/2 hover:text-blue-600"
+                        style={{ zIndex: 2, background: 'none', boxShadow: 'none', border: 'none', padding: 0 }}
+                        onClick={() => setImgIndex(i => i === 0 ? (offer.bidRequestId?.productId?.images?.length ?? 1) - 1 : i - 1)}
+                        title="Previous image"
+                      >
+                        <span className="pi pi-chevron-left text-xl" />
+                      </button>
+                      <button
+                        className="absolute right-0 top-1/2 -translate-y-1/2 hover:text-blue-600"
+                        style={{ zIndex: 2, background: 'none', boxShadow: 'none', border: 'none', padding: 0 }}
+                        onClick={() => setImgIndex(i => i === ((offer.bidRequestId?.productId?.images?.length ?? 1) - 1) ? 0 : i + 1)}
+                        title="Next image"
+                      >
+                        <span className="pi pi-chevron-right text-xl" />
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {imgIndex + 1} / {offer.bidRequestId?.productId?.images?.length ?? 1}
+                </div>
+              </div>
             )}
             <div className="font-medium text-gray-700">{offer.bidRequestId?.productId?.title}</div>
             <div className="text-sm text-gray-500 mb-2">{offer.bidRequestId?.productId?.description}</div>
