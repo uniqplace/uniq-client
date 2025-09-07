@@ -199,9 +199,9 @@ export interface ManufacturerProfile {
   userId: string;
   name: string;
   categories: string[];
-  servicesOffered: string[];
   location: string;
   availableFrom: string;
   rating?: number;
+  servicesOffered?: string[];
 }
 
