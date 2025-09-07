@@ -115,7 +115,6 @@ const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsC
     setCanGoNext(false);
   }, [currentStepIndex]);
 
-  // מחיקת השורה הכפולה
   const CurrentStepComponent = currentStepIndex !== null ? steps[currentStepIndex]?.component : null;
 
   const validateCurrentStep = async () => {

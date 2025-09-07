@@ -56,7 +56,6 @@ const ManufacturerBidRequests = () => {
   };
 
   const actionsTemplate = (rowData: BidRequest) => {
-    console.log(rowData, 'rowData🐶🐶🐶🐶');
     return (
       <Button
         label="Submit Offer"

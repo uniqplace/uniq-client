@@ -18,7 +18,7 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
     const isManualCreateInProgress = useRef(false);
 
 
-    // יצירת מוצר hardcoded
+    // creating a hardcoded product
     const createNewProduct = async () => {
         if (!userId) return;
         setLoading(true);

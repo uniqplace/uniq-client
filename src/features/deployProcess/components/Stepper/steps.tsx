@@ -1,12 +1,13 @@
-// import React, { createRef } from 'react';
-import React from 'react';
+// import React, { createRef } from 'react};
+import React, { useEffect } from 'react';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 // import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
 import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
-import { useAppSelector } from '../../../../hooks/hooks';
+import { useAppSelector, useAppDispatch } from '../../../../hooks/hooks';
 import type { RootState } from '../../../../store';
+import { fetchOpenBidRequestsByProductId } from '../../slices/stepperSlice';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
@@ -113,9 +114,36 @@ export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) 
 );
 
 const ViewLiveBidsStep: React.FC<StepProps> = (props) => {
-  const bidRequestId = useAppSelector((state: RootState) => state.stepper.bidRequest?._id || '');
-  console.log( '-bidRequestId in ViewLiveBidsStep 🎶🎶🎶🎶', bidRequestId, );
-  
+  const bidRequest = useAppSelector((state: RootState) => state.stepper.bidRequest);
+  const bidRequestId = bidRequest?._id || '';
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state: RootState) => state.user);
+  let productId = useAppSelector((state: RootState) => state.stepper.product)?._id || '';
+  useEffect(() => {
+    if(!productId) {
+      productId = localStorage.getItem(`productId_${user.id}`) || '';
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!bidRequestId) {
+      if (productId) {
+        dispatch(fetchOpenBidRequestsByProductId(productId));
+      }
+    }
+  }, [bidRequestId, dispatch, productId]);
+
+  if (!bidRequestId) {
+    return (
+      <div className="text-center py-8 text-lg text-gray-500">
+        Loading auction data...<br />
+        {(!productId || productId === '') && (
+          <span className="text-red-500">Could not load your auction. Please refresh the page.</span>
+        )}
+      </div>
+    );
+  }
+
   return <BidOffersList {...props} bidRequestId={bidRequestId} />;
 };
 

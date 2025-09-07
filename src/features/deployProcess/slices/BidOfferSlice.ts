@@ -11,13 +11,12 @@ export const fetchBidOffersByRequest = createAsyncThunk(
   ) => {
     try {
       const { bidRequestId, sort } = params;
-      // קריאה ל־bid-offers/by-bid-request/:bidRequestId
       const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
       const response = await axios.get(url, {
         withCredentials: true,
       });
-      // הריספונס הוא { success, data: [...] }
+      // The response is { success, data: [...] }
       return response.data.data || [];
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');

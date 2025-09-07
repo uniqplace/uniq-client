@@ -100,7 +100,7 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
     }
   };
 
-  // פתרון לרינדור כשמשתמשים ב-ref:
+  // a solution to rendering ref:
   const [, setRerender] = useState(false);
   const forceUpdate = () => setRerender(r => !r);
 

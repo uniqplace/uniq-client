@@ -26,7 +26,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
-  console.log(bidRequestId, 'bidRequestId🐺🐺🐺🐺🐺');
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
@@ -35,7 +34,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   ];
 
   useEffect(() => {
-    console.log('[Redux] bidRequest after save😂😂😂😂:', bidRequestId);
     if (bidRequestId) {
       const sortParam = sortOption !== 'date' ? sortOption : undefined;
       dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
@@ -99,13 +97,13 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
             className="hidden md:grid grid-cols-12 gap-2 py-4 px-4 border-b border-gray-200 text-xl font-bold text-900 font-sans"
             style={{ fontFamily: 'Inter, Arial, sans-serif' }}
           >
-            <div className="col-span-2 flex items-center text-left justify-start">
+            <div className="col-span-3 flex items-center text-left justify-start">
               <span className="w-full">Manufacturer</span>
             </div>
             <div className="col-span-2 flex items-center justify-center">
               <span className="w-full text-center">Price</span>
             </div>
-            <div className="col-span-3 flex items-center justify-center">
+            <div className="col-span-2 flex items-center justify-center">
               <span className="w-full text-center">Lead Time</span>
             </div>
             <div className="col-span-4 flex items-center justify-center">
@@ -130,7 +128,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   style={{ fontFamily: 'Arial, sans-serif', WebkitTapHighlightColor: 'rgba(0,0,0,0.03)' }}
                 >
                   {/* Manufacturer */}
-                  <div className="md:col-span-2 flex items-center gap-1 md:gap-2 mb-1 md:mb-0">
+                  <div className="md:col-span-3 flex items-center gap-1 md:gap-2 mb-1 md:mb-0">
                     <Avatar
                       image={offer.manufacturerId.userId.avatarUrl || '/default-avatar.png'}
                       shape="circle"
@@ -147,9 +145,20 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                     <span>${offer.price}</span>
                   </div>
                   {/* Lead Time */}
-                  <div className="md:col-span-3 flex flex-col items-center text-gray-600 text-xs md:text-base text-center mb-0.5 md:mb-0">
+                  <div className="md:col-span-2 flex flex-col items-center text-gray-600 text-xs md:text-base text-center mb-0.5 md:mb-0">
                     <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Lead Time</span>
-                    <span>{offer.estimatedDelivery} days</span>
+                    <span>
+                      {offer.estimatedDelivery ? (() => {
+                        const createdAt = offer.createdAt ? new Date(offer.createdAt) : null;
+                        const deliveryDate = new Date(offer.estimatedDelivery);
+                        if (createdAt) {
+                          const diffMs = deliveryDate.getTime() - createdAt.getTime();
+                          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                          return diffDays + ' days';
+                        }
+                        return '';
+                      })() : ''}
+                    </span>
                   </div>
                   {/* Note */}
                   <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
