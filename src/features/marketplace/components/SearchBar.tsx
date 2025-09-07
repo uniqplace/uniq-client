@@ -49,6 +49,7 @@ const SearchBar: React.FC = () => {
                     onChange={e => setSearchTerm(e.target.value)}
                     className="w-full pl-4 pr-8 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                     style={{ height: '40px', paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
+                    autoComplete='off'
                 />
                 {searchTerm && (
                     <span title="Clear search">
