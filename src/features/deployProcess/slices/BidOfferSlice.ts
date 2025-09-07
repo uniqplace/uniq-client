@@ -44,9 +44,6 @@ export const fetchBidOffersByRequest = createAsyncThunk(
   }
 );
 
-
-
-
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
     async (bidOffer: BidOfferResponse, thunkAPI) => {
       try {
