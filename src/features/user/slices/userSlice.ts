@@ -2,10 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { fetchCurrentUser, updateUserProfile } from '../../marketplace/thunks/userThunk'
 import type { Manufacturer, RoleType } from '../../../types';
-<<<<<<< HEAD
-=======
 
->>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
 
 export interface UserState {
   id: string | null;
@@ -34,12 +31,9 @@ const initialState: UserState = {
   role: null,
   loading: false,
   error: null,
-<<<<<<< HEAD
   rating: 0,
   manufacturer: {} as Manufacturer,
-=======
-  manufacturer: null,
->>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
+
 };
 
 const userSlice = createSlice({

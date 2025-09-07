@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidOffer, BidOfferResponse } from "../../../types";
-import type { RootState } from '../../../store';
-=======
-
-
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-import type { BidOffer, BidOfferResponse } from "../../../types";
+import type { RootState } from "../../../store";
 
 export const fetchBidOfferById = createAsyncThunk(
   "BidOffer/fetchById",
@@ -25,7 +18,6 @@ export const fetchBidOfferById = createAsyncThunk(
     }
   }
 );
->>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
 // Thunk to fetch offers by bidRequestId
 export const fetchBidOffersByRequest = createAsyncThunk(
   "BidOffer/fetchByBidRequest",
