@@ -27,9 +27,13 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     thunkAPI
   ) => {
     try {
+      console.log('Fetching offers for bidRequestId:', params.bidRequestId);
+      
       const { bidRequestId, sort } = params;
       const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
+        console.log('Constructed URL:', url);
+        
       const response = await axios.get(url, {
         withCredentials: true,
       });
@@ -39,6 +43,9 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     }
   }
 );
+
+
+
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
     async (bidOffer: BidOfferResponse, thunkAPI) => {
@@ -106,6 +113,22 @@ const bidOfferSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
+
+
+
+      .addCase(fetchBidOfferById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBidOfferById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.bidOffer = action.payload;
+      })
+      .addCase(fetchBidOfferById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       // Fetch single bid offer by ID
       .addCase(fetchBidOfferById.pending, (state: any) => {
         state.currentBidOfferLoading = true;
@@ -121,6 +144,9 @@ const bidOfferSlice = createSlice({
         state.currentBidOfferError = action.payload as string;
         state.currentBidOffer = null;
       });
+
+
+
   },
 });
   

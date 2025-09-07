@@ -16,6 +16,8 @@ import type { BidOffer } from '../../../types';
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
+    console.log("bidRequestId from params:", bidRequestId);
+    
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturer?._id );

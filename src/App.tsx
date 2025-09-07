@@ -31,8 +31,10 @@ import BidRequestDetails from './features/deployProcess/components/BidRequestDet
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
+import { socket_events } from './constants/socketEvents';
+import { getSocket } from './services/socket';
+import PrivateRoute from './utils/PrivateRoute';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
-
 
 
 
@@ -106,11 +108,43 @@ function App() {
             <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
             <Route path="/MyBidRequest" element={<OpenBidPage />} />
             <Route path="/BidOfferDetails/:BidOfferId" element={<BidOfferDetails />} />
-          </Routes>
-        </MainContent>
+          {/* </Routes>
+        </MainContent> */}
 
-      </div>
-    );
-  }
+
+
+
+
+
+          <Route
+            path="/bidOffers/:offerId"
+            element={
+              <PrivateRoute>
+                <BidOfferDetails />
+              </PrivateRoute>
+            }
+          />
+
+
+
+
+
+
+
+        </Routes>
+      </MainContent>
+      <h5>Socket.IO + React Toastify</h5>
+
+      {/* <button
+        onClick={() =>
+          sendSocket()
+        }
+      >
+        Simulate New Bid For User {user.name}
+      </button> */}
+
+    </div>
+  );
+}
 
 export default App;

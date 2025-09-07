@@ -99,29 +99,32 @@ export default function MyOrdersPage({ orders }: Props) {
       ) : (
         <DataTable
           value={filteredOrders}
+          rows={10}
           responsiveLayout="scroll"
+          paginator
+          paginatorTemplate="PrevPageLink PageLinks NextPageLink"
           stripedRows
           className="shadow rounded border w-full"
           size="small"
         >
           <Column
-             field="Product"
-             header="Product"
-             body={(rowData) => (
-               <div className="flex items-center gap-3 w-full max-w-[240px]">
-                 <img
-                   src={rowData.product.images[0]}
-                   width={50}
-                   height={50}
-                   className="rounded flex-shrink-0"
-                   alt={rowData.product.title}
-                 />
-                 <span className="text-sm break-words whitespace-normal">
-                   {rowData.product.title}
-                 </span>
-               </div>
-             )}
-             sortable
+            field="Product"
+            header="Product"
+            body={(rowData) => (
+              <div className="flex items-center gap-3 w-full max-w-[240px]">
+                <img
+                  src={rowData.product.images[0]}
+                  width={50}
+                  height={50}
+                  className="rounded flex-shrink-0"
+                  alt={rowData.product.title}
+                />
+                <span className="text-sm break-words whitespace-normal">
+                  {rowData.product.title}
+                </span>
+              </div>
+            )}
+            sortable
           />
           <Column
             field="createdAt"
