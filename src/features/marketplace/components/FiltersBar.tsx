@@ -147,7 +147,7 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
     }, [dispatch]);
     useEffect(() => {
         handleFilter();
-    }, [priceRange, creator]);;
+    }, [priceRange, creator]);
 
     const hasActiveFilters = () => {
         return Boolean(creator) ||
