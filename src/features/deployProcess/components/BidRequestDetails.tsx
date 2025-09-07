@@ -5,32 +5,25 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
-<<<<<<< HEAD
-import type { BidRequest } from '../../../types';
-import { useSelector } from 'react-redux';
-=======
-
+//import type { BidRequest } from '../../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import { fetchBidRequestById } from '../slices/BidRequestSlice';
 
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
->>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
 
 
 const BidRequestDetails = () => {
-    const { bidRequestId } = useParams();    
+    const { bidRequestId } = useParams();
     const navigate = useNavigate();
-<<<<<<< HEAD
-    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [fetchError, setFetchError] = useState<string | null>(null);
-    const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
+    //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
+    //  const [isLoading, setIsLoading] = useState<boolean>(true);
+    //const [fetchError, setFetchError] = useState<string | null>(null);
+    //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
 
-=======
     const dispatch = useDispatch<AppDispatch>();
-    const userId = useSelector((state: RootState) => state.user.manufacturer?._id );
+    const userId = useSelector((state: any) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
 
     const bidRequest = useSelector((state: RootState) => state.bidRequest.currentBidRequest);
@@ -40,7 +33,6 @@ const BidRequestDetails = () => {
     // Always get userOffer from offers
     const userOffer = offers?.find((offer: BidOffer) => offer.manufacturerId?._id === userId);
     const submittedAt = userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null;
->>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
 
     useEffect(() => {
         if (bidRequestId) {
@@ -83,14 +75,9 @@ const BidRequestDetails = () => {
     // Handler function for navigation
     const handleNavigation = () => {
         if (bidRequestId) {
-<<<<<<< HEAD
-            // const userId = location.state?.userId;
-            navigate('/BidOffer', { state: { bidRequestId, manufacturerId: manufacturerId } });
-=======
-            
+
             console.log('Navigating to BidOffer with:', { bidRequestId, manufacturerId: userId });
             navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
->>>>>>> 045f5e37ee52c98ce7460f3b011e73081784e4da
         }
     };
 
@@ -134,19 +121,19 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
-                    {hasSubmittedOffer && submittedAt && (
-                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
-                            Offer submitted at: {submittedAt}
-                            <button
-                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
-                                style={{ width: 28, height: 28 }}
-                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
-                                title="View full offer details"
-                            >
-                                <span className="pi pi-arrow-right" />
-                            </button>
-                        </div>
-                    )}
+                {hasSubmittedOffer && submittedAt && (
+                    <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                        Offer submitted at: {submittedAt}
+                        <button
+                            className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                            style={{ width: 28, height: 28 }}
+                            onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                            title="View full offer details"
+                        >
+                            <span className="pi pi-arrow-right" />
+                        </button>
+                    </div>
+                )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">
@@ -214,7 +201,7 @@ const BidRequestDetails = () => {
                     >
                         Submit Offer
                     </button>
-                  
+
                 </div>
             </Card>
         </div>
