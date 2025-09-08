@@ -31,8 +31,6 @@ import BidRequestDetails from './features/deployProcess/components/BidRequestDet
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
-import { socket_events } from './constants/socketEvents';
-import { getSocket } from './services/socket';
 import PrivateRoute from './utils/PrivateRoute';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 
