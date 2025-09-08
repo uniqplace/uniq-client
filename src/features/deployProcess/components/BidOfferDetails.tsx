@@ -1,6 +1,6 @@
 // BidOfferDetails.tsx
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
@@ -11,8 +11,10 @@ import { useAppDispatch } from "../../../hooks/hooks";
 import { fetchBidOfferById } from "../slices/BidOfferSlice";
 
 const BidOfferDetails: React.FC = () => {
-    const { offerId } = useParams<{ offerId: string }>();
+    const { BidOfferId } = useParams<{ BidOfferId: string }>();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
+
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
@@ -20,14 +22,31 @@ const BidOfferDetails: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (location.state && (location.state as any).offer) {
+        const encoded = searchParams.get("manufacturerId"); // או 'encodedOffer'
+        if (encoded) {
+            try {
+                const decoded = JSON.parse(atob(encoded)) as BidOffer;
+                setOffer(decoded);
+            } catch (err) {
+                console.error("Failed to decode offer from URL", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        else if (location.state && (location.state as any).offer) {
             setOffer((location.state as any).offer);
             setLoading(false);
-        } else if (offerId) {
+        } else if (BidOfferId) {
             setLoading(true);
-            dispatch(fetchBidOfferById(offerId));
+            dispatch(fetchBidOfferById(BidOfferId))
+                .unwrap()
+                .then((data: BidOffer) => {
+                    setOffer(data);
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
         }
-    }, [offerId, location.state]);
+    }, [BidOfferId, location.state]);
 
     if (loading) return <div className="text-center py-8">Loading...</div>;
     if (!offer) return <div className="text-center py-8 text-red-500">Offer not found</div>;
@@ -42,7 +61,14 @@ const BidOfferDetails: React.FC = () => {
                     icon={<ArrowLeft />}
                     label="Back"
                     className="p-button-text"
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                        if (window.history.length > 1) {
+                          navigate(-1);
+                        } else {
+                          navigate('/MyBidRequest');
+                        }
+                      }}
+                                           
                 />
             </div>
 
@@ -54,6 +80,7 @@ const BidOfferDetails: React.FC = () => {
                         image={offer.manufacturerId?.userId?.avatarUrl || "/default-avatar.png"}
                         shape="circle"
                         size="xlarge"
+                        className="[&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                     />
                     <div className="flex flex-col">
                         <div className="flex justify-between w-full gap-2">

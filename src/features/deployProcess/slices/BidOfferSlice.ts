@@ -2,7 +2,7 @@
 
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { BidOffer, BidOfferResponse } from "../../../types";
+import type { BidOffer } from "../../../types";
 
 export const fetchBidOfferById = createAsyncThunk(
   "BidOffer/fetchById",
@@ -45,9 +45,9 @@ export const fetchBidOffersByRequest = createAsyncThunk(
 );
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
-    async (bidOffer: BidOfferResponse, thunkAPI) => {
+    async (bidOffer: BidOffer, thunkAPI) => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers`, bidOffer,
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${bidOffer.manufacturerId}`, bidOffer,
             {
                 withCredentials: true,
             }
@@ -72,10 +72,7 @@ const bidOfferSlice = createSlice({
     bidOffer: getInitialBidOffer(),
     offers: [] as BidOffer[],
     loading: false,
-    error: null as string | null,
-    currentBidOffer: null as BidOffer | null,
-    currentBidOfferLoading: false,
-    currentBidOfferError: null as string | null,
+    error: null as string | null
   },
   reducers: {
     resetBidOffer: (state) => {
@@ -126,22 +123,7 @@ const bidOfferSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch single bid offer by ID
-      .addCase(fetchBidOfferById.pending, (state: any) => {
-        state.currentBidOfferLoading = true;
-        state.currentBidOfferError = null;
-        state.currentBidOffer = null;
-      })
-      .addCase(fetchBidOfferById.fulfilled, (state: any, action: any) => {
-        state.currentBidOfferLoading = false;
-        state.currentBidOffer = action.payload;
-      })
-      .addCase(fetchBidOfferById.rejected, (state: any, action: any) => {
-        state.currentBidOfferLoading = false;
-        state.currentBidOfferError = action.payload as string;
-        state.currentBidOffer = null;
-      });
-
+   
 
 
   },

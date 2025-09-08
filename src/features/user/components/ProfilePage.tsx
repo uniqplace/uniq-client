@@ -16,6 +16,7 @@ import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation, useDeleteImagesMutation } from '../../../api/apiSlice';
 import { updateManufacturerProfile } from '../slices/manufacturerSlice';
 import { updateUser } from '../slices/userSlice';
+import type { ManufacturerProfile } from '../../../types';
 
 const ProfilePage: React.FC = () => {
   const user = useAppSelector(state => state.user);
@@ -206,7 +207,8 @@ const ProfilePage: React.FC = () => {
 
       if (formData.role === 'manufacturer' && user.id) {
         const manufacturerPayload = {
-          userId: user.id || '', // ManufacturerProfile expects string
+          _id:user.manufacturer?._id,
+          userId: user || '', // ManufacturerProfile expects string
           name: formData.name || user.name || '',
           categories,
           location,
@@ -214,7 +216,7 @@ const ProfilePage: React.FC = () => {
           servicesOffered,
           rating,
         };
-        dispatch(updateManufacturerProfile(manufacturerPayload));
+        dispatch(updateManufacturerProfile(manufacturerPayload as ManufacturerProfile));
       }
       setEditMode(false);
       toast.current?.show({ severity: 'success', summary: 'Profile Updated', detail: 'Profile saved successfully!', life: 3000 });

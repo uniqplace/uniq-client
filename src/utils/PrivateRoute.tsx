@@ -7,7 +7,6 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // שולח להתחברות, שומר לאן המשתמש רצה להגיע
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

@@ -53,7 +53,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state: RootState) => state.user);
-  const loading =  useSelector((state: RootState) => state.user.loading);
+  const loading = useSelector((state: RootState) => state.user.loading);
   const [wasLoading, setWasLoading] = useState(false);
 
 
@@ -81,59 +81,44 @@ function App() {
 
 
 
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <NewHeader />
-        <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
-        <MainContent>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/product/:id" element={<ProductPage />} />
-            <Route path="/account/orders" element={<MyOrdersWrapper />} />
-            <Route path="/user/:id" element={<UserProfile />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/uploadProduct" element={<ProductUploadForm />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
-            <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
-            <Route path="/checkout/:productId" element={<CheckoutPage />} />
-            <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
-            <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
-            <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
-            <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
-            <Route path="/BidOffer" element={<BidOfferForm />} />
-            <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
-            <Route path="/MyBidRequest" element={<OpenBidPage />} />
-            <Route path="/BidOfferDetails/:BidOfferId" element={<BidOfferDetails />} />
-          {/* </Routes>
-        </MainContent> */}
-
-
-
-
-
-
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <NewHeader />
+      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
+      <MainContent>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/account/orders" element={<MyOrdersWrapper />} />
+          <Route path="/user/:id" element={<UserProfile />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/uploadProduct" element={<ProductUploadForm />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+          <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
+          <Route path="/checkout/:productId" element={<CheckoutPage />} />
+          <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
+          <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
+          <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
+          <Route path="/myBidRequests/:bidRequestId" element={<BidRequestDetails />} />
+          <Route path="/BidOffer" element={<BidOfferForm />} />
+          <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
+          <Route path="/MyBidRequest" element={<OpenBidPage />} />
+          {/* <Route path="/BidOfferDetails/:BidOfferId" element={<BidOfferDetails />} /> */}
           <Route
-            path="/bidOffers/:offerId"
+            path="/BidOfferDetails/:BidOfferId"
             element={
               <PrivateRoute>
                 <BidOfferDetails />
               </PrivateRoute>
             }
           />
-
-
-
-
-
-
-
         </Routes>
       </MainContent>
-      <h5>Socket.IO + React Toastify</h5>
+      {/* <h5>Socket.IO + React Toastify</h5> */}
 
       {/* <button
         onClick={() =>
@@ -142,7 +127,6 @@ function App() {
       >
         Simulate New Bid For User {user.name}
       </button> */}
-
     </div>
   );
 }
