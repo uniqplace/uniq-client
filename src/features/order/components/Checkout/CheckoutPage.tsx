@@ -4,7 +4,7 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import type { Order, Product, User } from '../../../../types';
 import { useCreateOrderMutation } from '../../slices/orderApiSlice';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../../../store';
 import ProductDetails from './ProductDetails';
 import OrderDetails from './OrderDetails';
@@ -36,6 +36,7 @@ interface CheckoutPageProps {
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const productFromState = location.state?.product;
   const toast = useRef<Toast>(null);
@@ -183,3 +184,5 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
     </div>
   );
 };
+
+
