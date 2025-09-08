@@ -12,6 +12,7 @@ import './CheckoutPage.css';
 import Payment from '../../../payments/components/Payment';
 import * as yup from 'yup';
 import OrderSummary from './OrderSummary';
+import { addOrder } from '../../slices/orderSlice';
 
 export const SHIPPING_OPTIONS = [
   { label: 'Standard (5$)', value: 'standard', price: 5 },
@@ -137,6 +138,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const addNewOrder = async () => {
     try {
       await createOrder(order).unwrap();
+       dispatch(addOrder(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
