@@ -4,16 +4,9 @@ import { Toast } from 'primereact/toast';
 import { Bell } from 'lucide-react';
 import { ListBox } from 'primereact/listbox';
 import { Tag } from 'primereact/tag';
-import socket from '../../services/socket';
-import { getUnreadCount, markAsRead } from '../../services/notificationApi';
 import { deduplicateNotifications } from '../../utils/notificationHelpers';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { useNotifications } from '../../hooks/useNotifications';
-import { socket_events } from '../../constants/socketEvents';
-
-import { useAppSelector } from '../../hooks/hooks';
-import type { RootState } from '../../store';
 
 // Utility function to check if a value is an object
 const isObject = (value: any): boolean => {
@@ -29,17 +22,6 @@ const eventIcons: Record<string, string> = {
   connect: '🔗',
 };
 
-// Helper function to standardize notification data
-function buildNotificationData(data: any, eventName: string): any {
-  if (data?.payload) {
-    return { ...data.payload, type: data?.type || eventName };
-  }
-  return {
-    ...data,
-    title: data?.title || eventName,
-    type: data?.type || eventName,
-  };
-}
 
 const NotificationBell = () => {
   const navigate = useNavigate();
@@ -51,78 +33,14 @@ const NotificationBell = () => {
     loading,
     error,
     toastRef,
-    setNotifications,
-    setCount,
-    loadNotifications,
     loadMore,
+    markNotificationAsRead,
   } = useNotifications();
-
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
-  const user = useAppSelector((state: RootState) => state.user);
-
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchCount = async () => {
-      try {
-        const res = await getUnreadCount(user?.id ?? '');
-        setCount(res.data.count);
-      } catch (err) {
-        if (toastRef.current) {
-          toastRef.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch unread count', life: 3000 });
-        } else {
-          toast.error('Failed to fetch unread count');
-        }
-      }
-    };
-
-    fetchCount();
-
-    const eventNames = Object.values(socket_events);
-    eventNames.forEach((eventName) => {
-      socket.on(eventName, (data: any) => {
-        setCount((prev) => prev + 1);
-        const notificationData = buildNotificationData(data, eventName);
-        setNotifications((prev) => [notificationData, ...prev]);
-      });
-    });
-
-    return () => {
-      eventNames.forEach((eventName) => {
-        socket.off(eventName);
-      });
-    };
-  }, [user, setCount, setNotifications, toastRef]);
-
-  
-  useEffect(() => {
-    const onScroll = () => {
-      if (!listRef.current || !loading || !hasMore) return; // Stop if no more notifications
-
-      const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-      // Check if scrolled to the bottom (90% of scroll height)
-      if (scrollTop + clientHeight >= scrollHeight * 0.9) {
-        loadMore();
-      }
-    };
-
-    const el = listRef.current;
-    if (el) {
-      el.addEventListener('scroll', onScroll);
-    }
-
-    return () => {
-      if (el) {
-        el.removeEventListener('scroll', onScroll);
-      }
-    };
-  }, [loading, hasMore, loadMore]);
-
-  // Intersection observer to auto-load more
+  // Infinite scroll using Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -132,11 +50,9 @@ const NotificationBell = () => {
       },
       { threshold: 1.0 }
     );
-
     if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
-
     return () => {
       if (loaderRef.current) {
         observer.unobserve(loaderRef.current);
@@ -144,18 +60,30 @@ const NotificationBell = () => {
     };
   }, [loaderRef, hasMore, loadMore]);
 
-  const handleBellClick = async () => {
-    if (!isOpen && !notificationsLoaded) {
-      await loadNotifications(1); // Load notifications only if not already loaded
-      setNotificationsLoaded(true);
-    }
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  const handleBellClick = () => {
     setIsOpen((prev) => !prev);
   };
+
+  // Close notifications when clicking outside
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClick = (event: MouseEvent) => {
+      if (bellRef.current && !bellRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [isOpen]);
 
   return (
     <>
       <Toast ref={toastRef} />
-      <div className="relative">
+      <div className="relative" ref={bellRef}>
         <button
           className="relative"
           onClick={handleBellClick}
@@ -188,29 +116,19 @@ const NotificationBell = () => {
               ) : (
                 <div className="flex flex-col flex-1" style={{ maxHeight: '16rem', overflowY: 'auto', marginTop: '1.5rem', flex: '1 1 auto' }} ref={listRef}>
                   <ListBox
-                    value={null}
+                    value={undefined}
+                    key={isOpen ? 'open' : 'closed'}
                     options={deduplicateNotifications(notifications)}
                     optionLabel="title"
                     onChange={async (e) => {
                       if (!e.value || !isObject(e.value)) return;
                       const notification = e.value;
-                      setNotifications((prev) => prev.filter((item) => item && item._id && item._id !== notification._id));
-                      try {
-                        await markAsRead(notification._id);
-                        const res = await getUnreadCount(user?.id ?? '');
-                        setCount(res.data.count);
-                        setIsOpen(false);
-                        if (notification.type === 'NEW_BID' && notification.bidRequestId) {
-                          navigate(`/MyBidRequests/${notification.bidRequestId}`);
-                        } else if (notification.link) {
-                          navigate(notification.link);
-                        }
-                      } catch (err) {
-                        if (toastRef.current) {
-                          toastRef.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to mark notification as read', life: 3000 });
-                        } else {
-                          toast.error('Failed to mark notification as read');
-                        }
+                      await markNotificationAsRead(notification._id);
+                      setIsOpen(false);
+                      if (notification.type === 'NEW_BID' && notification.bidRequestId) {
+                        navigate(`/MyBidRequests/${notification.bidRequestId}`);
+                      } else if (notification.link) {
+                        navigate(notification.link);
                       }
                     }}
                     itemTemplate={(notification) => (
@@ -223,13 +141,22 @@ const NotificationBell = () => {
                       </div>
                     )}
                   />
-                  {!hasMore && (
-                    <div ref={loaderRef} style={{ textAlign: 'center', padding: '1rem', display: 'none' }}></div>
+                  {/* Show spinner only once: center if empty, bottom if not */}
+                  {loading && (
+                    deduplicateNotifications(notifications).length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem', color: '#6366f1' }} />
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '0.5rem' }}>
+                        <i className="pi pi-spin pi-spinner" style={{ fontSize: '1.5rem', color: '#6366f1' }} />
+                      </div>
+                    )
                   )}
                 </div>
               )}
-              <div className="px-4 pb-4 pt-2 border-t border-gray-200">
-                {(user.role === 'admin' || user.role === 'manufacturer') && (
+              <div className="p-0 border-t border-gray-200">
+                {/* {(user.role === 'admin' || user.role === 'manufacturer') && (
                   <Button
                     label="Show all bid request notifications"
                     className="w-full p-button-sm p-button-info"
@@ -238,7 +165,18 @@ const NotificationBell = () => {
                       navigate('/myBidRequestsNotifications');
                     }}
                   />
-                )}
+                )} */}
+                {/* Removed auto-triggered loadMore to prevent multiple API calls */}
+                <div style={{ padding: 0, margin: 0 }}>
+                  <Button
+                    label="Load more notifications"
+                    icon="pi pi-chevron-down"
+                    onClick={loadMore}
+                    className="p-button-sm w-full flex items-center justify-center px-4 pb-4 pt-2"
+                    style={{ borderRadius: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, width: '100%' }}
+                    disabled={!hasMore}
+                  />
+                </div>
               </div>
             </div>
           </div>

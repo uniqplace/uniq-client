@@ -28,7 +28,7 @@ export const getNotifications = async (userId: string, page = 1, limit = 10): Pr
         console.error('getNotifications error: User ID is undefined. Ensure the user is authenticated.');
         throw new Error('User not authenticated');
       }
-      const res = await api.get<NotificationsResponse>(`/notifications`, {
+      const res = await api.get<NotificationsResponse>(`/notifications/unread`, {
         params: { userId, page, limit },
         withCredentials: true,
       });
