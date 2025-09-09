@@ -11,6 +11,8 @@ import { Message } from 'primereact/message';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
+import type { StepProps } from "./Stepper/steps";
+import NormalizedRating from '../../../components/shared/Rating';
 
 const priceRangeMin = 0;
 const priceRangeMax = 1000;
@@ -50,9 +52,6 @@ const hardcodedLocations = [
   { label: 'General', value: 'general' },
 ];
 
-import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/Rating';
-
 function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
   if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
     return categoryId._id;
@@ -82,7 +81,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: priceRangeMin, max: priceRangeMax });
   const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>(bidRequest?.deliveryTimeframe ?? '7 days');
   const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>(bidRequest?.deliveryMethod ?? 'pickup');
-  const [ratingPreference, setRatingPreference] = useState<number>(bidRequest?.ratingPreference ?? 1);
+  const [rating, setRating] = useState<number>(bidRequest?.rating ?? 1);
 
   const dispatch = useDispatch();
   // Restore step and form data from Redux on mount (if needed)
@@ -93,7 +92,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       if (bidRequest.priceRange !== undefined) setPriceRange(bidRequest.priceRange);
       if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(bidRequest.deliveryTimeframe);
       if (bidRequest.deliveryMethod !== undefined) setDeliveryMethod(bidRequest.deliveryMethod);
-      if (bidRequest.ratingPreference !== undefined) setRatingPreference(bidRequest.ratingPreference ?? 1);
+      if (bidRequest.rating !== undefined) setRating(bidRequest.rating ?? 1);
     }
   }, [bidRequest]);
 
@@ -113,7 +112,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
         dispatch(fetchOpenBidRequestsByProductId(productId));
       }
     }
-  }, [ dispatch]);
+  }, [dispatch]);
 
   const toast = useRef<Toast>(null);
 
@@ -138,11 +137,11 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           priceRange,
           deliveryTimeframe,
           deliveryMethod,
-          ratingPreference,
+          rating: rating,
         }
       });
     }
-  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, ratingPreference, isReadOnly, dispatch]);
+  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,7 +218,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       productId,
       categoryId: getCategoryIdValue(bidRequest.categoryId),
     };
-    console.log('[BidRequest] Sending preferences:', preferences);
+    console.log('🍟🍟[BidRequest] Sending preferences:', preferences);
 
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
 
@@ -227,7 +226,8 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     try {
       // @ts-ignore
       const resultAction = await dispatch(saveBidRequest(preferences));
-
+      console.log('🍔🍔 Save bid request resultAction:', resultAction);
+      
 
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
@@ -344,13 +344,13 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
         <div className="flex flex-col items-center w-full">
           <label className="block mb-2 font-medium">Rating Preference</label>
           <NormalizedRating
-            rating={ratingPreference}
+            rating={rating}
             readOnly={isReadOnly}
-            onChange={value => !isReadOnly && setRatingPreference(value)}
+            onChange={value => !isReadOnly && setRating(value)}
             className="w-full"
           />
 
-          <div className="text-sm mt-2 text-center">{ratingPreference} Stars</div>
+          <div className="text-sm mt-2 text-center">{rating} Stars</div>
         </div>
 
         <div className="flex flex-col items-center w-full">
