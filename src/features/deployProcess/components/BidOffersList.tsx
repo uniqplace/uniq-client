@@ -57,6 +57,15 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
 
   const sortedOffers = sortOffers(offers, sortOption);
 
+  function getLeadTime(createdAt?: string | Date, estimatedDelivery?: string | Date) {
+    if (!createdAt || !estimatedDelivery) return '';
+    const created = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
+    const delivery = typeof estimatedDelivery === 'string' ? new Date(estimatedDelivery) : estimatedDelivery;
+    const diffMs = delivery.getTime() - created.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays + ' days';
+  }
+
   return (
     <Card className="p-4 shadow-2 border-round">
       {offers && offers.length > 0 && <h1 className="text-xl font-bold mb-4">Bid Offers for Request #{offers[0]?.bidRequestId?.productId?.title}</h1>}
@@ -148,16 +157,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   <div className="md:col-span-2 flex flex-col items-center text-gray-600 text-xs md:text-base text-center mb-0.5 md:mb-0">
                     <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Lead Time</span>
                     <span>
-                      {offer.estimatedDelivery ? (() => {
-                        const createdAt = offer.createdAt ? new Date(offer.createdAt) : null;
-                        const deliveryDate = new Date(offer.estimatedDelivery);
-                        if (createdAt) {
-                          const diffMs = deliveryDate.getTime() - createdAt.getTime();
-                          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                          return diffDays + ' days';
-                        }
-                        return '';
-                      })() : ''}
+                      {offer.estimatedDelivery ? getLeadTime(offer.createdAt, offer.estimatedDelivery) : ''}
                     </span>
                   </div>
                   {/* Note */}
