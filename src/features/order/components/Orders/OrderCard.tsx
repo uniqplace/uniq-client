@@ -9,9 +9,11 @@ import { useNavigate } from 'react-router-dom';
 interface OrderCardProps {
   order: Order;
   onShowDetails: () => void;
+  currentTab: 'buyer' | 'creator';
+  refetchOrders: () => void;
 }
 
-export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
+export const OrderCard = ({ order, onShowDetails, currentTab, refetchOrders }: OrderCardProps) => {
   const [showStatusOrder, setShowStatusOrder] = useState<string | null>(null);
  const navigate = useNavigate();
   return (
@@ -56,7 +58,7 @@ export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
           icon="pi pi-refresh"
           size="small"
           className="p-button-sm text-xs flex-1"
-          onClick={() => navigate(`/checkout/${order.product._id}`)}
+          onClick={() => navigate(`/checkout/${order.product._id}`, { state: { order } })}
         />
       </div>
 
@@ -65,6 +67,9 @@ export const OrderCard = ({ order, onShowDetails }: OrderCardProps) => {
           visible={!!showStatusOrder}
           status={showStatusOrder as OrderStatus}
           onHide={() => setShowStatusOrder(null)}
+          orderId={order._id}
+          currentTab={currentTab}
+          refetchOrders={refetchOrders}
         />
       )}
     </div>

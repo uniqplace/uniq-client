@@ -57,7 +57,7 @@ const ManufacturerBidRequests = () => {
 
   const actionsTemplate = (rowData: BidRequest) => (
     <Button
-      label="Submit Offer"
+      label="View Details"
       icon="pi pi-pencil"
       onClick={() => navigate(`/myBidRequests/${rowData._id}`)}
       className="p-button-sm"
@@ -113,6 +113,7 @@ const ManufacturerBidRequests = () => {
       <DataTable
         value={filteredBidRequests}
         paginator
+        paginatorTemplate="PrevPageLink PageLinks NextPageLink"
         rows={10}
         responsiveLayout="scroll"
         sortMode="multiple"

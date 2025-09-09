@@ -43,20 +43,14 @@
 
 
 import { useState } from 'react';
-import MyOrdersPage from './OrdersPage';
-import { useGetOrdersByRoleQuery } from '../../slices/orderApiSlice';
 import { Button } from 'primereact/button';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Message } from 'primereact/message';
 import type { RootState } from '../../../../store';
 import { useAppSelector } from '../../../../hooks/hooks';
+import OrdersPage from './OrdersPage';
 
 export default function MyOrdersWrapper() {
   const [tab, setTab] = useState<'buyer' | 'creator'>('buyer');
   const user = useAppSelector((state: RootState) => state.user);
-  const { data: orders, isLoading, error } = useGetOrdersByRoleQuery(tab, {
-    refetchOnMountOrArgChange: true,
-  });
 
   return (
     <div className="container mx-auto px-4 py-4">
@@ -77,9 +71,8 @@ export default function MyOrdersWrapper() {
         </div>
       )}
 
-      {isLoading && <div className="flex justify-center mt-10"><ProgressSpinner /></div>}
-      {error && <Message severity="error" text="שגיאה בטעינת ההזמנות" />}
-      {!isLoading && orders && <MyOrdersPage orders={orders} />}
+     <OrdersPage currentTab={tab} />
+
     </div>
   );
 }
