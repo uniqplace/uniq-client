@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import socket from '../services/socket';
 import {socket_events } from '../constants/socketEvents';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
@@ -19,8 +19,19 @@ const Login = () => {
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const user = useAppSelector((state: RootState) => state.user);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const [searchParams] = useSearchParams();
+
+  // PrivateRoute
+  const fromState = (location.state as any)?.from?.pathname;
+
+  // mail
+  const fromQuery = searchParams.get("redirect");
+
+  const from = fromQuery || fromState || "/";
 
   useEffect(() => {
     if (user?.email) setEmail(user.email);
@@ -115,7 +126,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Toast ref={toast} onHide={() => navigate('/')} />
+      <Toast ref={toast} onHide={() => navigate(from, { replace: true })} />
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
         <div className="space-y-6">
           {/* Username Input */}

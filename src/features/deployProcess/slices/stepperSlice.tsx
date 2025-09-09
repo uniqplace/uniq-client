@@ -53,7 +53,7 @@ export const saveBidRequest = createAsyncThunk(
         bidRequest,
         { withCredentials: true }
       );
-      return response.data as BidRequest;
+      return response.data.bidRequest as BidRequest;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -75,13 +75,13 @@ export const fetchBidRequestByProductId = createAsyncThunk(
   }
 );
 
-export const createProduct = createAsyncThunk<Product>(
+export const createProduct = createAsyncThunk<Product, Partial<Product>>(
   'stepper/createProduct',
-  async (_, thunkAPI) => {
+  async (productData, thunkAPI) => {
     try {
       const response = await axios.post(
         `${apiBaseUrl}/create-product`,
-        null,
+        productData ?? {},
         { withCredentials: true }
       );
       return response.data as Product;
@@ -145,6 +145,23 @@ async ({ productId, stepNumber }, thunkAPI) => {
   }
 );
 
+
+export const fetchOpenBidRequestsByProductId = createAsyncThunk(
+  'stepper/fetchOpenBidRequestsByProductId',
+  async (productId: string, thunkAPI) => {
+    try {
+      const response = await axios.get(
+        `${apiBaseUrl}/bidRequests/product/${productId}/open`,
+        { withCredentials: true }
+      );
+      // Returns the first bid request from the array
+      return response.data.bidRequests[0] as BidRequest;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
 const stepperSlice = createSlice({
   name: 'stepper',
   initialState,
@@ -202,6 +219,18 @@ const stepperSlice = createSlice({
         state.bidRequest = action.payload;
       })
       .addCase(saveBidRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchOpenBidRequestsByProductId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOpenBidRequestsByProductId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.bidRequest = action.payload;
+      })
+      .addCase(fetchOpenBidRequestsByProductId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

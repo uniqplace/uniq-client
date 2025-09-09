@@ -9,55 +9,32 @@ import {
 import { stepsConfig } from '../features/deployProcess/components/Stepper/steps';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import { getUserProductKey } from '../utils/productStorageKey';
+import { defaultProductTemplate } from '../utils/defaultProductTemplate';
 
 const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<void> } => {
     const dispatch = useAppDispatch();
     const userId = useAppSelector((state) => state.user?.id);
     const [loading, setLoading] = useState(false);
     const hasInitialized = useRef(false);
-    // Flag to prevent useEffect from running after manual creation
     const isManualCreateInProgress = useRef(false);
 
 
-    // Expose a function to create a new product (manual only)
+    // creating a hardcoded product
     const createNewProduct = async () => {
         if (!userId) return;
         setLoading(true);
         isManualCreateInProgress.current = true;
         const key = getUserProductKey(userId);
         try {
-            // 0. Clear previous product from Redux and localStorage
             localStorage.removeItem(key);
             localStorage.removeItem('currentStep');
             dispatch(clearStepper());
             dispatch({ type: 'stepper/setCompletedSteps', payload: Array(stepsConfig.length).fill(false) });
 
-            let product, productId, attempts = 0;
-            do {
-                const newProduct = await dispatch(createProduct()).unwrap();
-                productId = newProduct._id;
-                localStorage.setItem(key, productId);
-                product = await dispatch(fetchProductStatus(productId)).unwrap();
-                if (product.CreationStatus === 'Complete Delivery') {
-                    console.warn(`[createNewProduct] Product returned as 'Complete Delivery', deleting...`, { productId });
-                    try {
-                        await fetch(`${import.meta.env.VITE_API_BASE_URL}/create-product/${productId}`, {
-                            method: 'DELETE',
-                            credentials: 'include',
-                        });
-                    } catch (e) {
-                        console.warn('Failed to delete completed product', e);
-                    }
-                    localStorage.removeItem(key);
-                }
-                attempts++;
-                if (attempts > 3) {
-                    console.error('[createNewProduct] Too many attempts to create a fresh product, aborting.');
-                    throw new Error('Failed to create a fresh product');
-                }
-            } while (product.CreationStatus === 'Complete Delivery');
-
-            const index = stepsConfig.findIndex((s) => s.title === product.CreationStatus);
+            const hardcodedProduct = { ...defaultProductTemplate };
+            const newProduct = await dispatch(createProduct(hardcodedProduct)).unwrap();
+            localStorage.setItem(key, newProduct._id);
+            const index = stepsConfig.findIndex((s) => s.title === newProduct.CreationStatus);
             dispatch(setCurrentStepIndex(index !== -1 ? index : 0));
         } catch (err) {
             console.error('Error creating new product:', err);
@@ -121,7 +98,8 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
                             (typeof err?.message === 'string' && (err.message.includes('404') || err.message.includes('Product not found')));
                         if (is404) {
                             // If not found anywhere, create new product automatically
-                            const newProduct = await dispatch(createProduct()).unwrap();
+                            const hardcodedProduct = { ...defaultProductTemplate };
+                            const newProduct = await dispatch(createProduct(hardcodedProduct)).unwrap();
                             productId = newProduct._id;
                             localStorage.setItem(key, productId);
                             product = { CreationStatus: newProduct.CreationStatus, _id: newProduct._id };
@@ -130,12 +108,12 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
                         }
                     }
                 }
-                // Ignore product if it is already completed
+                // 4. Ignore product if it is already completed
                 if (product && product.CreationStatus === 'Complete Delivery') {
                     product = null;
                     productId = null;
                 }
-                // 3. Set step index from productStatus
+                // 5. Set step index from productStatus
                 if (product) {
                     if (!isMounted) {
                         setLoading(false);
