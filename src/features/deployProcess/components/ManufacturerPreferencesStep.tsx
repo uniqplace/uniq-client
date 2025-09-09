@@ -8,7 +8,6 @@ import { saveBidRequest, fetchOpenBidRequestsByProductId } from '../../deployPro
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
@@ -52,6 +51,7 @@ const hardcodedLocations = [
 ];
 
 import type { StepProps } from "./Stepper/steps";
+import NormalizedRating from '../../../components/shared/Rating';
 
 function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
   if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
@@ -204,14 +204,14 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     }
 
     // Type guard for categoryId
-    function isCategoryObj(val: unknown): val is { id: string } {
-      return (
-        typeof val === 'object' &&
-        val !== null &&
-        'id' in val &&
-        typeof (val as any).id === 'string'
-      );
-    }
+    // function isCategoryObj(val: unknown): val is { id: string } {
+    //   return (
+    //     typeof val === 'object' &&
+    //     val !== null &&
+    //     'id' in val &&
+    //     typeof (val as any).id === 'string'
+    //   );
+    // }
     const preferences = {
       ...bidRequest,
       clientId: userId,
@@ -343,13 +343,13 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
         <div className="flex flex-col items-center w-full">
           <label className="block mb-2 font-medium">Rating Preference</label>
-          <Rating
-            value={ratingPreference}
-            onChange={e => !isReadOnly && setRatingPreference(e.value ?? 1)}
-            cancel={false}
+          <NormalizedRating
+            rating={ratingPreference}
+            readOnly={isReadOnly}
+            onChange={value => !isReadOnly && setRatingPreference(value)}
             className="w-full"
-            disabled={isReadOnly}
           />
+
           <div className="text-sm mt-2 text-center">{ratingPreference} Stars</div>
         </div>
 

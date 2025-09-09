@@ -12,10 +12,14 @@ import { fetchBidRequestById } from '../slices/BidRequestSlice';
 
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
+import { Button } from 'primereact/button';
+import { ArrowLeft } from 'lucide-react';
 
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
+    console.log("bidRequestId from params:", bidRequestId);
+
     const navigate = useNavigate();
     //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
     //  const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -23,7 +27,7 @@ const BidRequestDetails = () => {
     //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
 
     const dispatch = useDispatch<AppDispatch>();
-    const userId = useSelector((state: any) => state.user.manufacturerId);
+    const userId = useSelector((state: RootState) => state.user.manufacturer?._id );
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
 
     const bidRequest = useSelector((state: RootState) => state.bidRequest.currentBidRequest);
@@ -32,6 +36,7 @@ const BidRequestDetails = () => {
     const [hasSubmittedOffer, setHasSubmittedOffer] = useState(false);
     // Always get userOffer from offers
     const userOffer = offers?.find((offer: BidOffer) => offer.manufacturerId?._id === userId);
+
     const submittedAt = userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null;
 
     useEffect(() => {
@@ -75,7 +80,8 @@ const BidRequestDetails = () => {
     // Handler function for navigation
     const handleNavigation = () => {
         if (bidRequestId) {
-
+            
+            console.log('Navigating to BidOffer with:', { bidRequestId, manufacturerId: userId });
             navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
         }
     };
@@ -102,6 +108,14 @@ const BidRequestDetails = () => {
     return (
         <div className="flex justify-center items-start min-h-screen bg-gray-50">
             <Card className="w-full max-w-2xl shadow-md p-6 rounded-lg">
+                <div className="mb-4">
+                    <Button
+                        label="Back to Requests"
+                        icon={<ArrowLeft size={16} />}
+                        className="p-button-text p-button-sm text-green-600"
+                        onClick={() => navigate(-1)} // חזרה לעמוד הקודם
+                    />
+                </div>
                 <div className="flex items-center gap-4 mb-6">
                     <div>
                         <span id="creator-avatar">
@@ -110,7 +124,7 @@ const BidRequestDetails = () => {
                                 icon={!creatorAvatar ? "pi pi-user" : undefined}
                                 size="large"
                                 shape="circle"
-                                className="border border-gray-300 shadow-sm"
+                                className="border border-gray-300 shadow-sm [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                             />
                         </span>
                         <Tooltip target="#creator-avatar" content={creatorName} />
@@ -120,19 +134,19 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
-                {hasSubmittedOffer && submittedAt && (
-                    <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
-                        Offer submitted at: {submittedAt}
-                        <button
-                            className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
-                            style={{ width: 28, height: 28 }}
-                            onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
-                            title="View full offer details"
-                        >
-                            <span className="pi pi-arrow-right" />
-                        </button>
-                    </div>
-                )}
+                    {hasSubmittedOffer && submittedAt && (
+                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                            Offer submitted at: {submittedAt}
+                            <button
+                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                                style={{ width: 28, height: 28 }}
+                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                                title="View full offer details"
+                            >
+                                <span className="pi pi-arrow-right" />
+                            </button>
+                        </div>
+                    )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">

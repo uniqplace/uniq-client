@@ -25,7 +25,7 @@ function getProductsBaseQuery(url: string) {
 
 const marketplaceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<{ data: Product[]; totalPages: number }, {
+    getProducts: builder.query<{ data: Product[]; totalPages: number, success: boolean, message: string }, {
       q?: string;
       category?: string;
       subCategories?: string[];

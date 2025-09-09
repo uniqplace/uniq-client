@@ -19,8 +19,7 @@ export interface UserState {
   error: string | null;
   rating: number | null;
   manufacturer: Manufacturer | null;
-  manufacturerId: string | null;
-
+  manufacturerId?: string | null;
 }
 
 const initialState: UserState = {

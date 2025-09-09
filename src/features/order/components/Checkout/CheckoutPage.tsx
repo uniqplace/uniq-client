@@ -50,7 +50,7 @@ console.log('productIdFromParams', productIdFromParams);
   const product: Product = productFromState || productFromServer;
 
   const [order, setOrder] = useState<Order>({
-    id: '',
+    _id: '',
     productId: product?._id || '',
     buyerId: user.id,
     creator: { name: product?.creator.name || '', _id: product?.creator._id || '' },
