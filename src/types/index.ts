@@ -49,12 +49,7 @@ export interface Order {
   quantity: number;
   createdAt: string;
   updatedAt: string;
-  product: {
-    _id: string;
-    title: string;
-    images: string[];
-    creatorName: string;
-  },
+  product: Product;
   notes?: string;
 }
 
