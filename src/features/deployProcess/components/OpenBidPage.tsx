@@ -82,10 +82,9 @@ export const OpenBidPage = () => {
 
   useEffect(() => {
     if (bidRequestId) {
+      // Removed debug log
     }
   }, [bidRequestId]);
-
-
 
   if (loading) {
     return (

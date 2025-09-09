@@ -76,7 +76,6 @@ const BidRequestDetails = () => {
     const handleNavigation = () => {
         if (bidRequestId) {
 
-            console.log('Navigating to BidOffer with:', { bidRequestId, manufacturerId: userId });
             navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
         }
     };

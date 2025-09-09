@@ -9,6 +9,7 @@ import {
 import { stepsConfig } from '../features/deployProcess/components/Stepper/steps';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import { getUserProductKey } from '../utils/productStorageKey';
+import { defaultProductTemplate } from '../utils/defaultProductTemplate';
 
 const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<void> } => {
     const dispatch = useAppDispatch();
@@ -30,19 +31,7 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
             dispatch(clearStepper());
             dispatch({ type: 'stepper/setCompletedSteps', payload: Array(stepsConfig.length).fill(false) });
 
-            // מוצר קבוע
-            const hardcodedProduct = {
-                title: 'Test Product',
-                description: 'This is a hardcoded product',
-                price: 123,
-                images: [],
-                category: 'hardcoded-category',
-                subCategories: [],
-                condition: 'new',
-                location: 'Hardcoded Location',
-                tags: ['hardcoded'],
-            };
-            // שליחת המוצר לשרת
+            const hardcodedProduct = { ...defaultProductTemplate };
             const newProduct = await dispatch(createProduct(hardcodedProduct)).unwrap();
             localStorage.setItem(key, newProduct._id);
             const index = stepsConfig.findIndex((s) => s.title === newProduct.CreationStatus);
@@ -109,17 +98,7 @@ const useInitProduct = (): { loading: boolean; createNewProduct: () => Promise<v
                             (typeof err?.message === 'string' && (err.message.includes('404') || err.message.includes('Product not found')));
                         if (is404) {
                             // If not found anywhere, create new product automatically
-                            const hardcodedProduct = {
-                                title: 'Test Product',
-                                description: 'This is a hardcoded product',
-                                price: 123,
-                                images: [],
-                                category: 'hardcoded-category',
-                                subCategories: [],
-                                condition: 'new',
-                                location: 'Hardcoded Location',
-                                tags: ['hardcoded'],
-                            };
+                            const hardcodedProduct = { ...defaultProductTemplate };
                             const newProduct = await dispatch(createProduct(hardcodedProduct)).unwrap();
                             productId = newProduct._id;
                             localStorage.setItem(key, productId);
