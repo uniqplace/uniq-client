@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { Toast } from 'primereact/toast';
-import { getUnreadCount, getNotifications, markAsRead } from '../services/notificationApi';
+import { getUnreadCount, getUnreadNotifications, markAsRead } from '../services/notificationApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import type { Notification } from '../types/notification';
-// ...existing code...
 
 
 export const useNotifications = () => {
@@ -22,7 +21,7 @@ export const useNotifications = () => {
   // Prevent duplicate fetches and only fetch when logged in and userId exists
   // Debounce notification fetch to prevent multiple API calls
   useEffect(() => {
-    let ignore = false;
+  let ignore = false;
   let debounceTimeout: number;
     if (!isUserLoggedIn || !userId) {
       setNotifications([]);
@@ -39,25 +38,16 @@ export const useNotifications = () => {
       setError(null);
       Promise.all([
         getUnreadCount(userId),
-        getNotifications(userId, 1)
+        getUnreadNotifications(userId, 1)
       ])
-        .then(async ([countRes, notifRes]) => {
+        .then(([countRes, notifRes]) => {
           if (ignore) return;
           setCount(countRes.data.count);
-          let notificationsArr = Array.isArray(notifRes.data?.notifications) ? notifRes.data.notifications : [];
-          let unreadNotifications = notificationsArr.filter((n: Notification) => !n.isRead);
-          let currentPage = 1;
-          let totalPages = notifRes.data?.pages ?? 1;
-          // Keep loading more pages until we find unread notifications or run out of pages
-          while (unreadNotifications.length === 0 && currentPage < totalPages) {
-            currentPage++;
-            const nextRes = await getNotifications(userId, currentPage);
-            notificationsArr = Array.isArray(nextRes.data?.notifications) ? nextRes.data.notifications : [];
-            unreadNotifications = notificationsArr.filter((n: Notification) => !n.isRead);
-          }
-          setNotifications(unreadNotifications);
-          setHasMore(currentPage < totalPages);
-          setPage(currentPage);
+          const notificationsArr = Array.isArray(notifRes.data?.notifications) ? notifRes.data.notifications : [];
+          setNotifications(notificationsArr);
+          const totalPages = notifRes.data?.pages ?? 1;
+          setHasMore(1 < totalPages);
+          setPage(1);
         })
         .catch((err: any) => {
           if (err?.response?.status === 401) setAuthError(true);
@@ -83,7 +73,7 @@ export const useNotifications = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getNotifications(userId, pageNum);
+      const res = await getUnreadNotifications(userId, pageNum);
       const notificationsArr = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
       const unreadNotifications = notificationsArr.filter((n: Notification) => !n.isRead);
       if (pageNum === 1) {

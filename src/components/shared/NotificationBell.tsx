@@ -116,7 +116,7 @@ const NotificationBell = () => {
               ) : (
                 <div className="flex flex-col flex-1" style={{ maxHeight: '16rem', overflowY: 'auto', marginTop: '1.5rem', flex: '1 1 auto' }} ref={listRef}>
                   <ListBox
-                    value={undefined}
+                    value={null}
                     key={isOpen ? 'open' : 'closed'}
                     options={deduplicateNotifications(notifications)}
                     optionLabel="title"
