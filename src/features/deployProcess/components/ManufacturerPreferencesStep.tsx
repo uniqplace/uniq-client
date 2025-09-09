@@ -60,6 +60,13 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
   return categoryId ?? null;
 }
 
+function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
+  if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
+    return categoryId._id;
+  }
+  return categoryId ?? null;
+}
+
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);
 

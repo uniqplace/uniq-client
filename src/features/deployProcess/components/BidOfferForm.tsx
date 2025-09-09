@@ -70,7 +70,9 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
         life: 3000,
       });
       clearForm();
-      forceUpdate();      
+
+      forceUpdate();
+      navigate(`/BidOfferDetails/${savedBidOffer.data._id}`, { state: { offer: savedBidOffer.data } });
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',

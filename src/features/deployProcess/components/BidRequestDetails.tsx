@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import { fetchBidRequestById } from '../slices/BidRequestSlice';
@@ -20,6 +21,11 @@ const BidRequestDetails = () => {
     console.log("bidRequestId from params:", bidRequestId);
 
     const navigate = useNavigate();
+    //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
+    //  const [isLoading, setIsLoading] = useState<boolean>(true);
+    //const [fetchError, setFetchError] = useState<string | null>(null);
+    //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
+
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
@@ -43,7 +49,9 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
+          
         }
+     
     }, [offers, userId]);
 
     if (isLoading) {
@@ -134,19 +142,19 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
-                {hasSubmittedOffer && submittedAt && (
-                    <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
-                        Offer submitted at: {submittedAt}
-                        <button
-                            className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
-                            style={{ width: 28, height: 28 }}
-                            onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`, { state: { offer: userOffer } })}
-                            title="View full offer details"
-                        >
-                            <span className="pi pi-arrow-right" />
-                        </button>
-                    </div>
-                )}
+                    {hasSubmittedOffer && submittedAt && (
+                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                            Offer submitted at: {submittedAt}
+                            <button
+                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                                style={{ width: 28, height: 28 }}
+                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                                title="View full offer details"
+                            >
+                                <span className="pi pi-arrow-right" />
+                            </button>
+                        </div>
+                    )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">

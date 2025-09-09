@@ -35,6 +35,7 @@ const initialState: UserState = {
   rating: null,
   manufacturer: {} as Manufacturer,
   manufacturerId:null,
+
 };
 
 const userSlice = createSlice({

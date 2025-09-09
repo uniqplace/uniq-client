@@ -65,7 +65,6 @@ export default function OrdersPage({
     { label: 'Delivered', value: 'delivered' },
     { label: 'Cancelled', value: 'cancelled' },
   ];
-
   return (
     <div className="container max-w-none px-6 py-6">
       <div className="flex flex-wrap gap-4 mb-4 border p-4 rounded-md bg-white">
@@ -189,7 +188,8 @@ export default function OrdersPage({
                   icon="pi pi-refresh"
                   size="small"
                   className="p-button-sm text-xs flex-1"
-                  onClick={() => navigate(`/checkout/${rowData.product._id}`)}
+                  onClick={() =>navigate(`/checkout/${rowData.product._id}`, { state: { order: rowData } })
+ }
                 />
               </div>
             )}

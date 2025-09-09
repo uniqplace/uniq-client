@@ -58,7 +58,7 @@ export const OrderCard = ({ order, onShowDetails, currentTab, refetchOrders }: O
           icon="pi pi-refresh"
           size="small"
           className="p-button-sm text-xs flex-1"
-          onClick={() => navigate(`/checkout/${order.product._id}`)}
+          onClick={() => navigate(`/checkout/${order.product._id}`, { state: { order } })}
         />
       </div>
 
