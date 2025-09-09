@@ -8,7 +8,6 @@ import { saveBidRequest, fetchBidRequestByProductId } from '../../deployProcess/
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';

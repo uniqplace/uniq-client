@@ -4,12 +4,10 @@ import { useParams, useNavigate, useLocation, useSearchParams } from "react-rout
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
-import { Rating } from "primereact/rating";
 import { ArrowLeft } from "lucide-react";
 import type { BidOffer } from "../../../types";
 import { useAppDispatch } from "../../../hooks/hooks";
 import { fetchBidOfferById } from "../slices/BidOfferSlice";
-import { getMaxRating } from "../../../utils/getMaxRating";
 import NormalizedRating from "../../../components/shared/Rating";
 
 const BidOfferDetails: React.FC = () => {
@@ -52,8 +50,6 @@ const BidOfferDetails: React.FC = () => {
 
     if (loading) return <div className="text-center py-8">Loading...</div>;
     if (!offer) return <div className="text-center py-8 text-red-500">Offer not found</div>;
-
-    const maxRating = getMaxRating(offer);
 
     return (
         <div className="max-w-3xl mx-auto p-4">

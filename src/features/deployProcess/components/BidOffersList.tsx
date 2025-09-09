@@ -9,9 +9,7 @@ import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
-import { Rating } from 'primereact/rating';
 import { useNavigate } from 'react-router-dom';
-import { getMaxRating } from '../../../utils/getMaxRating';
 import NormalizedRating from '../../../components/shared/Rating';
 
 interface BidOffersListProps {
@@ -30,7 +28,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
-  const maxRating = getMaxRating(offers);
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
