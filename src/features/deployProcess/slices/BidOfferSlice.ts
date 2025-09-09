@@ -1,8 +1,7 @@
-
-
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidOffer } from "../../../types";
+import type { RootState } from "../../../store";
 
 export const fetchBidOfferById = createAsyncThunk(
   "BidOffer/fetchById",
@@ -29,13 +28,14 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     try {
       
       const { bidRequestId, sort } = params;
-      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
+      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
         
       const response = await axios.get(url, {
         withCredentials: true,
       });
-      return response.data.data; // assuming { success, data }
+      // The response is { success, data: [...] }
+      return response.data.data || [];
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');
     }
@@ -43,25 +43,27 @@ export const fetchBidOffersByRequest = createAsyncThunk(
 );
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
-    async (bidOffer: BidOffer, thunkAPI) => {
-      try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${bidOffer.manufacturerId}`, bidOffer,
-            {
-                withCredentials: true,
-            }
-        );
-        return response.data;
-      } catch (error: any) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message);
-      }
+  async (bidOffer: BidOffer, thunkAPI) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const manufacturerId = state.user?.manufacturerId;
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${manufacturerId}`, bidOffer,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  );
+  }
+);
 
-  const getInitialBidOffer = (): Partial<BidOffer> => ({
-    price: -1,
-    estimatedDelivery: '',
-    note: '',
-    attachmentUrl: '',
+const getInitialBidOffer = (): Partial<BidOffer> => ({
+  price: -1,
+  estimatedDelivery: '',
+  note: '',
+  attachmentUrl: '',
 })
 
 const bidOfferSlice = createSlice({
@@ -126,7 +128,7 @@ const bidOfferSlice = createSlice({
 
   },
 });
-  
-  export const { resetBidOffer } = bidOfferSlice.actions;
 
-  export default bidOfferSlice.reducer;
+export const { resetBidOffer } = bidOfferSlice.actions;
+
+export default bidOfferSlice.reducer;

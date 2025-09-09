@@ -10,7 +10,6 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
-import NormalizedRating from '../../../components/shared/Rating';
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -19,6 +18,7 @@ interface BidOffersListProps {
 
 const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNext }) => {
   // Always allow next step (for now)
+
   useEffect(() => {
     if (setCanGoNext) setCanGoNext(true);
   }, [setCanGoNext]);
@@ -63,6 +63,15 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   }
 
   const sortedOffers = sortOffers(offers, sortOption);
+
+  function getLeadTime(createdAt?: string | Date, estimatedDelivery?: string | Date) {
+    if (!createdAt || !estimatedDelivery) return '';
+    const created = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
+    const delivery = typeof estimatedDelivery === 'string' ? new Date(estimatedDelivery) : estimatedDelivery;
+    const diffMs = delivery.getTime() - created.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays + ' days';
+  }
 
   return (
     <Card className="p-2 shadow-2 border-round">
@@ -138,7 +147,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   onClick={() => handleRowClick(offer)}
                 >
                   {/* Manufacturer */}
-                  <div className="md:col-span-3 flex items-center gap-3">
+                  <div className="md:col-span-3 flex items-center gap-1 md:gap-2 mb-1 md:mb-0">
                     <Avatar
                       image={offer.manufacturerId.userId.avatarUrl || '/default-avatar.png'}
                       shape="circle"
@@ -154,20 +163,29 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                     <span>${offer.price}</span>
                   </div>
                   {/* Lead Time */}
-                  <div className="md:col-span-2 text-center text-gray-600 text-sm md:text-base">
+                  <div className="md:col-span-2 flex flex-col items-center text-gray-600 text-xs md:text-base text-center mb-0.5 md:mb-0">
+                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Lead Time</span>
                     <span>
-                      {offer.estimatedDelivery
-                        ? new Date(offer.estimatedDelivery).toLocaleDateString()
-                        : 'Not specified'}
+                      {offer.estimatedDelivery ? getLeadTime(offer.createdAt, offer.estimatedDelivery) : ''}
                     </span>
                   </div>
-                  {/* Rating */}
-                  <div className="md:col-span-2 text-center">
-                    <NormalizedRating
-                      rating={offer.manufacturerId?.rating}
-                      offers={offers} // כך maxRating מחושב אוטומטית
-                      readOnly
-                      style={{ fontSize: '1rem' }}
+                  {/* Note */}
+                  <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
+                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
+                    <span>{offer.note || 'No note provided'}</span>
+                  </div>
+                  {/* Chat Button */}
+                  <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
+                    <Button
+                      className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
+                      icon="pi pi-comments"
+                      aria-label="Chat"
+                    ></Button>
+                    <Button
+                      className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
+                      icon="pi pi-comments"
+                      aria-label="Chat"
+
                     />
 
                   </div>
