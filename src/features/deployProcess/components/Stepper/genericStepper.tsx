@@ -4,18 +4,18 @@ import { getUserProductKey } from '../../../../utils/productStorageKey';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Steps } from 'primereact/steps';
 import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
 import { useAppDispatch, useAppSelector } from '../../../../hooks/hooks';
 import {
   markStepCompleted,
   updateProductStep,
   setCurrentStepIndex,
 } from '../../slices/stepperSlice';
-// stepsConfig יוסר מהייבוא
 import useInitProduct from '../../../../hooks/useInitProduct';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import '../../../../styles/genericStepper.css';
 import 'primeicons/primeicons.css';
+import useStepperValidation from '../../../../hooks/useStepperValidation';
+import ProductCompletedDialog from './ProductCompletedDialog';
 
 import { stepsConfig } from './steps';
 
@@ -28,15 +28,13 @@ interface GenericStepperProps {
   }>;
 }
 
-// שימוש ב־stepsConfig כברירת מחדל אם לא מועבר steps
 const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsConfig }) => {
-
-  // Developer error: steps prop is missing or empty
-  if (!steps || !Array.isArray(steps) || steps.length === 0) {
-    console.error('Stepper configuration error: steps prop is missing or empty.', { steps });
+  const { isValid, error: stepperError } = useStepperValidation(steps);
+  if (!isValid) {
+    console.error(stepperError, { steps });
     return (
       <div style={{ color: 'red', padding: '1em', background: '#ffe6e6', border: '1px solid #ffcccc', borderRadius: '4px' }}>
-        Stepper configuration error: steps prop is missing or empty.
+        {stepperError}
       </div>
     );
   }
@@ -143,9 +141,9 @@ const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsC
   };
 
 
-  const updateStepOnServer = () => {
-    if (typeof currentStepIndex === 'number' && currentStepIndex > 0) {
-      dispatch(markStepCompleted(currentStepIndex - 1));
+  const updateStepOnServer = (stepIndex: number) => {
+    if (typeof stepIndex === 'number' && stepIndex > 0) {
+      dispatch(markStepCompleted(stepIndex - 1));
     }
   };
 
@@ -175,7 +173,7 @@ const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsC
       console.warn('[Stepper] No productId, cannot complete step');
       return;
     }
-    updateStepOnServer();
+    updateStepOnServer(currentStepIndex);
     navigateToNextStep();
   }, [currentStepIndex, dispatch, navigate, product?._id, userId]);
 
@@ -262,32 +260,15 @@ if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
         />
       </div>
 
-      <Dialog
-        header={<span className="text-xl font-bold text-primary">Product Completed!</span>}
+      <ProductCompletedDialog
         visible={showFinalPopup}
-        style={{ width: '350px', borderRadius: '1rem' }}
         onHide={() => setShowFinalPopup(false)}
-        closeIcon={<i className="pi pi-times" style={{ fontSize: '1.5rem' }} />}
-        className="rounded-2xl shadow-xl"
-      >
-        <div className="text-center">
-          <p className="mb-4 text-lg">
-            <span role="img" aria-label="delivered" style={{ fontSize: '2em' }}>🎉</span><br />
-            <span className="font-bold">Congratulations!</span> Your product has been successfully delivered.<br />
-            <span className="text-gray-600">We hope you enjoy your unique creation.</span><br />
-            <span className="text-gray-400 text-sm">Thank you for choosing us!</span>
-          </p>
-          <Button
-            label={initLoading ? "create new product..." : "Create New Product"}
-            onClick={async () => {
-              setShowFinalPopup(false);
-              await createNewProduct();
-            }}
-            className="p-button-success mt-3 px-6 py-2 rounded-lg text-base font-semibold shadow-md"
-            disabled={initLoading}
-          />
-        </div>
-      </Dialog>
+        onCreateNewProduct={async () => {
+          setShowFinalPopup(false);
+          await createNewProduct();
+        }}
+        loading={initLoading}
+      />
     </div>
   );
 };

@@ -53,6 +53,13 @@ const hardcodedLocations = [
 import type { StepProps } from "./Stepper/steps";
 import NormalizedRating from '../../../components/shared/NormalizedRating';
 
+function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
+  if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
+    return categoryId._id;
+  }
+  return categoryId ?? null;
+}
+
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);
 
@@ -70,7 +77,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Get bidRequest from Redux
   const bidRequest = useAppSelector(state => state.stepper.bidRequest);
-  const [categoryId, setCategoryId] = useState<string | Category | null>( bidRequest?.categoryId ?? null);
+  const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
   const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: priceRangeMin, max: priceRangeMax });
   const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>(bidRequest?.deliveryTimeframe ?? '7 days');
@@ -81,11 +88,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   // Restore step and form data from Redux on mount (if needed)
   React.useEffect(() => {
     if (bidRequest) {
-      if (typeof bidRequest.categoryId === 'object' && bidRequest.categoryId !== null) {
-        setCategoryId(bidRequest.categoryId._id);
-      } else {
-        setCategoryId(bidRequest.categoryId ?? null);
-      }
+      setCategoryId(getCategoryIdValue(bidRequest.categoryId));
       if (bidRequest.locationPreference !== undefined) setLocationPreference(bidRequest.locationPreference);
       if (bidRequest.priceRange !== undefined) setPriceRange(bidRequest.priceRange);
       if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(bidRequest.deliveryTimeframe);
@@ -98,24 +101,16 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   React.useEffect(() => {
     // Only fetch if bidRequest is empty/null and productId exists
     if (!bidRequest) {
-      console.log('No bidRequest found in Redux🫥🫥🫥🫥🫥🫥');
       let productId: string | null = null;
-      // const guestId = localStorage.getItem('productId_guest');
-      // if (guestId) {
-      //   productId = guestId;
-      // } else {
       const keys = Object.keys(localStorage);
       const productKey = keys.find(k => k.startsWith('productId_'));
       if (productKey) {
         productId = localStorage.getItem(productKey);
       }
-      // }
-      console.log('productId found:', productId);
 
       if (productId) {
         // @ts-ignore
         dispatch(fetchOpenBidRequestsByProductId(productId));
-        console.log('🐶🐶🐶🐶🐶');
       }
     }
   }, [ dispatch]);
@@ -138,7 +133,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
         type: 'stepper/setBidRequest',
         payload: {
           ...bidRequest,
-          categoryId: typeof categoryId === 'object' && categoryId !== null ? categoryId._id : categoryId,
+          categoryId: getCategoryIdValue(categoryId),
           locationPreference,
           priceRange,
           deliveryTimeframe,
@@ -222,9 +217,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       clientId: userId,
       creatorId: userId,
       productId,
-      categoryId: isCategoryObj(bidRequest.categoryId)
-        ? bidRequest.categoryId.id
-        : bidRequest.categoryId,
+      categoryId: getCategoryIdValue(bidRequest.categoryId),
     };
     console.log('[BidRequest] Sending preferences:', preferences);
 
@@ -308,7 +301,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           <label htmlFor="category" className="block mb-2 font-medium">Category</label>
           <Dropdown
             id="category"
-            value={typeof categoryId === 'string' ? categoryId : categoryId?._id}
+            value={getCategoryIdValue(categoryId)}
             options={categoryOptions}
             onChange={e => !isReadOnly && setCategoryId(e.value)}
             placeholder="Select a category"

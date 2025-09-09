@@ -29,8 +29,12 @@ export const getBidRequestsForManufacturer = createAsyncThunk<BidRequest[], void
   async (_, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const manufacturerId = state.user?.manufacturer?._id;
-
+      const manufacturerId = state.user?.manufacturerId;
+     
+      // const userId = state.user?.id;
+      if (!manufacturerId) {
+        return thunkAPI.rejectWithValue('Manufacturer ID is missing');
+      }
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/bidRequests/manufacturer/${manufacturerId}`, {
         withCredentials: true,
       });
