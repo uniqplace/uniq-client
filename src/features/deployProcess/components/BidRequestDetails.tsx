@@ -40,13 +40,16 @@ const BidRequestDetails = () => {
     const submittedAt = userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null;
 
     useEffect(() => {
+        
         if (bidRequestId) {
             dispatch(fetchBidRequestById(bidRequestId));
+           
             dispatch(fetchBidOffersByRequest({ bidRequestId }));
         }
     }, [bidRequestId, dispatch]);
 
     useEffect(() => {
+        console.log('Fetched offers:', offers,hasSubmittedOffer);
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
           
