@@ -97,7 +97,6 @@ export const OrderStatusTracker: React.FC<Props> = ({ visible, status, onHide, o
         model={steps}
         readOnly={true}
         activeIndex={STATUS_ORDER.indexOf(localStatus)}
-        // activeIndex={1}
         className="custom-stepper"
       />
       {role === 'creator' && currentTab ==='creator' && !isCancelled && (

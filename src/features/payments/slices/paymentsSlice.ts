@@ -45,7 +45,7 @@ const paymentsSlice = createSlice({
       state.orders.push(action.payload);
     },
     updateOrderStatus: (state, action: PayloadAction<{ orderId: string; status: Order['status'] }>) => {
-      const order = state.orders.find(o => o.id === action.payload.orderId);
+      const order = state.orders.find(o => o._id === action.payload.orderId);
       if (order) {
         order.status = action.payload.status;
       }
