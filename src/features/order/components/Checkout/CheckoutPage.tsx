@@ -71,7 +71,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
       };
     }
     return {
-      id: '',
+      _id: '',
       productId: fallbackProduct._id,
       buyerId: user.id,
       creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
