@@ -118,7 +118,6 @@ const Register: React.FC = () => {
   manufacturer: user.manufacturer || null
 };
 
-// אופציונלי: לבדוק שדות חובה
 if (!safeUser.name || !safeUser.email || !safeUser.role) {
   console.error('User object missing required fields:', safeUser);
 } else {

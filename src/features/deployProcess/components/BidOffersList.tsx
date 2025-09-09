@@ -11,6 +11,8 @@ import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { Rating } from 'primereact/rating';
 import { useNavigate } from 'react-router-dom';
+import { getMaxRating } from '../../../utils/getMaxRating';
+import NormalizedRating from '../../../components/shared/Rating';
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -28,7 +30,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
-  const maxRating = Math.max(...offers.map(o => o.manufacturerId?.rating ?? 0), 5);
+  const maxRating = getMaxRating(offers);
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
@@ -42,6 +44,10 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
       dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
     }
   }, [dispatch, bidRequestId, sortOption]);
+
+  const handleRowClick = (offer: BidOffer) => {
+    navigate(`/bidOffers/${offer._id}`, { state: { offer } });
+  };
 
   // Client-side sorting logic
   function sortOffers(offers: BidOffer[], sortOption: 'date' | 'price' | 'rating') {
@@ -132,7 +138,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   }
                   className="md:grid md:grid-cols-12 md:gap-4 md:items-center md:py-2 md:px-4 md:border-b md:border-gray-200 flex flex-row items-center bg-gray-50 rounded-lg shadow-md p-3 mb-3 transition hover:shadow-lg focus-within:shadow-lg"
                   style={{ fontFamily: 'Arial, sans-serif', WebkitTapHighlightColor: 'rgba(0,0,0,0.03)' }}
-                  onClick={() => navigate(`/bidOffers/${offer._id}`, { state: { offer } })} //  ניווט להצעה
+                  onClick={() => handleRowClick(offer)}
                 >
                   {/* Manufacturer */}
                   <div className="md:col-span-3 flex items-center gap-3">
@@ -160,13 +166,13 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   </div>
                   {/* Rating */}
                   <div className="md:col-span-2 text-center">
-                    <Rating
-                      value={((offer.manufacturerId?.rating ?? 0) / maxRating) * 5}
+                    <NormalizedRating
+                      rating={offer.manufacturerId?.rating}
+                      offers={offers} // כך maxRating מחושב אוטומטית
                       readOnly
-                      cancel={false}
-                      stars={5}
                       style={{ fontSize: '1rem' }}
                     />
+
                   </div>
                   {/* Response */}
                   <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">

@@ -27,12 +27,10 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      console.log('Fetching offers for bidRequestId:', params.bidRequestId);
       
       const { bidRequestId, sort } = params;
       const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
-        console.log('Constructed URL:', url);
         
       const response = await axios.get(url, {
         withCredentials: true,

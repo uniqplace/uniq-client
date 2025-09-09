@@ -9,6 +9,8 @@ import { ArrowLeft } from "lucide-react";
 import type { BidOffer } from "../../../types";
 import { useAppDispatch } from "../../../hooks/hooks";
 import { fetchBidOfferById } from "../slices/BidOfferSlice";
+import { getMaxRating } from "../../../utils/getMaxRating";
+import NormalizedRating from "../../../components/shared/Rating";
 
 const BidOfferDetails: React.FC = () => {
     const { BidOfferId } = useParams<{ BidOfferId: string }>();
@@ -51,7 +53,7 @@ const BidOfferDetails: React.FC = () => {
     if (loading) return <div className="text-center py-8">Loading...</div>;
     if (!offer) return <div className="text-center py-8 text-red-500">Offer not found</div>;
 
-    const maxRating = Math.max(offer.manufacturerId?.rating ?? 0, 5);
+    const maxRating = getMaxRating(offer);
 
     return (
         <div className="max-w-3xl mx-auto p-4">
@@ -63,12 +65,12 @@ const BidOfferDetails: React.FC = () => {
                     className="p-button-text"
                     onClick={() => {
                         if (window.history.length > 1) {
-                          navigate(-1);
+                            navigate(-1);
                         } else {
-                          navigate('/MyBidRequest');
+                            navigate('/MyBidRequest');
                         }
-                      }}
-                                           
+                    }}
+
                 />
             </div>
 
@@ -89,12 +91,12 @@ const BidOfferDetails: React.FC = () => {
                         </div>
                         <div className="flex justify-between w-full mt-1 gap-4">
                             <span className="font-medium">Manufacturer Rating:</span>
-                            <Rating
-                                value={(offer.manufacturerId?.rating ?? 0) / maxRating * 5}
+                            <NormalizedRating
+                                rating={offer.manufacturerId?.rating}
+                                offers={offer} // גם הצעה בודדת עובדת
                                 readOnly
-                                cancel={false}
-                                stars={5}
                             />
+
                         </div>
                     </div>
                 </div>
