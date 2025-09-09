@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { useDebouncedPriceRange } from '../../../hooks/useDebouncedPriceRange';
 import { Slider } from 'primereact/slider';
 
 interface Props {
@@ -14,48 +15,14 @@ const PriceFilterSection: React.FC<Props> = ({
   minProductPrice,
   maxProductPrice,
 }) => {
-  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
-  const [inputMin, setInputMin] = useState<string>(priceRange[0].toString());
-  const [inputMax, setInputMax] = useState<string>(priceRange[1].toString());
-  const debounceTimeout = useRef<number | null>(null);
-  const inputDebounceTimeout = useRef<number | null>(null);
-
-  useEffect(() => {
-    setTempPriceRange(priceRange);
-    setInputMin(priceRange[0].toString());
-    setInputMax(priceRange[1].toString());
-  }, [priceRange]);
-
-  // Debounce: update priceRange only after user stops dragging slider
-  useEffect(() => {
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(() => {
-      setPriceRange(
-        tempPriceRange[0] > tempPriceRange[1]
-          ? [tempPriceRange[1], tempPriceRange[0]]
-          : tempPriceRange
-      );
-    }, 400);
-    return () => {
-      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    };
-  }, [tempPriceRange, setPriceRange]);
-
-  // Debounce for input fields
-  useEffect(() => {
-    if (inputDebounceTimeout.current) clearTimeout(inputDebounceTimeout.current);
-    inputDebounceTimeout.current = setTimeout(() => {
-      let min = Math.max(minProductPrice, Number(inputMin));
-      let max = Math.min(maxProductPrice, Number(inputMax));
-      if (max < min) {
-        [min, max] = [max, min];
-      }
-      setTempPriceRange([min, max]);
-    }, 300);
-    return () => {
-      if (inputDebounceTimeout.current) clearTimeout(inputDebounceTimeout.current);
-    };
-  }, [inputMin, inputMax, minProductPrice, maxProductPrice]);
+  const {
+    tempPriceRange,
+    setTempPriceRange,
+    inputMin,
+    setInputMin,
+    inputMax,
+    setInputMax,
+  } = useDebouncedPriceRange(priceRange, setPriceRange, minProductPrice, maxProductPrice);
 
   return (
     <div className="w-full">

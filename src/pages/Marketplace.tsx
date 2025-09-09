@@ -1,3 +1,5 @@
+import { useMarketplaceToast } from '../hooks/useMarketplaceToast';
+import { getMarketplaceQueryFilters } from '../utils/getMarketplaceQueryFilters';
 import React, { useEffect, useState } from 'react';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -9,22 +11,6 @@ import { useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
 
 // Helper to parse subCategories from URLSearchParams
-function parseSubCategoriesFromParams(params: URLSearchParams): string[] | undefined {
-  const subCategoriesParam = params.get('subCategories');
-  if (subCategoriesParam) {
-    try {
-      const parsed = JSON.parse(subCategoriesParam);
-      if (Array.isArray(parsed)) {
-        return parsed.filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
-      } else if (parsed && typeof parsed === 'object') {
-        return Object.values(parsed).flat().filter((v): v is string => typeof v === 'string' && v !== '' && v !== 'null' && v !== 'undefined');
-      }
-    } catch {
-      return undefined;
-    }
-  }
-  return undefined;
-}
 
 const Marketplace: React.FC = () => {
   const location = useLocation();
@@ -34,7 +20,7 @@ const Marketplace: React.FC = () => {
   const [page, setPage] = useState(initialPage);
   const limit = Number(import.meta.env.VITE_MARKETPLACE_PAGE_LIMIT) || 12;
   const loading = useSelector((state: any) => state.marketplace.loading);
-  const toast = React.useRef<Toast>(null);
+  const toast = React.useRef<Toast | null>(null);
 
   useEffect(() => {
     const pageParam = Number(params.get('page')) || 1;
@@ -42,29 +28,8 @@ const Marketplace: React.FC = () => {
   }, [location.search, params]);
 
   // Build filters for RTK Query
-  const mainCategory = params.get('category') || undefined;
-  const subCategoriesArr = parseSubCategoriesFromParams(params);
-const queryFilters = React.useMemo(() => ({
-    category: mainCategory,
-    subCategories: subCategoriesArr,
-    creator: params.get('creator') || '',
-    minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
-    maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
-    q: params.get('q') || '',
-    page,
-}), [mainCategory, subCategoriesArr, params, page]);
+  const queryFilters = React.useMemo(() => getMarketplaceQueryFilters(params, page), [params, page]);
   const { data: productsData, error: productsError, isLoading, isFetching } = useGetProductsQuery(queryFilters);
-
-  React.useEffect(() => {
-    if (!isFetching && !isLoading && productsData && productsData.message && productsData.success === false) {
-      toast.current?.show({
-        severity: 'info',
-        summary: 'Note!',
-        detail: productsData.message,
-        life: 3000,
-      });
-    }
-  }, [isFetching, isLoading, productsData]);
 
   // Use products from RTK Query
   const products = isLoading ? [] : productsData?.data || [];
@@ -79,6 +44,8 @@ const queryFilters = React.useMemo(() => ({
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     // refetch will be triggered automatically by page state change
   };
+
+  useMarketplaceToast(productsData, isLoading, isFetching, toast);
 
   if (error) {
     let errorMsg = 'Unknown error';

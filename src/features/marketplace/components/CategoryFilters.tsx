@@ -4,17 +4,8 @@ import { ChevronRightIcon } from 'primereact/icons/chevronright';
 import { ChevronDownIcon } from 'primereact/icons/chevrondown';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
-
-// Utility to group subCategories by type
-function groupSubCategoriesByType(subCategories: SubCategory[]): { [type: string]: SubCategory[] } {
-  const groups: { [type: string]: SubCategory[] } = {};
-  subCategories.forEach((sub) => {
-    const type = sub.type || 'Other';
-    if (!groups[type]) groups[type] = [];
-    groups[type].push(sub);
-  });
-  return groups;
-}
+import { groupSubCategoriesByType } from '../../../utils/groupSubCategoriesByType';
+import { useMainCategoryId } from '../../../utils/mainCategoryId';
 
 // Utility function to update category and subCategories in URL
 function updateCategoryParams(mainCategoryId: string, selected: string[], isChecked: boolean) {
@@ -40,8 +31,8 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ selected, onChange, h
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [expandedTypes, setExpandedTypes] = useState<{ [type: string]: boolean }>({});
 
-  // Compute mainCategoryId once and reuse
-  const mainCategoryId = selected.length > 0 ? selected[0] : '';
+  // Memoized mainCategoryId
+  const mainCategoryId = useMainCategoryId(selected);
 
   // On mount, if a main category is selected, open its subCategories list
   React.useEffect(() => {

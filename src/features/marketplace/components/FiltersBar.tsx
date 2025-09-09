@@ -211,7 +211,6 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
         );
     };
 
-
     const handleReset = () => {
         // Helper to build reset params
         const buildResetParams = () => {
@@ -269,8 +268,8 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
                             <CreatorFilterSection
                                 creator={creator}
                                 filteredCreators={filteredCreators}
-                                searchCreator={searchCreator}
                                 setCreator={setCreator}
+                                searchCreator={searchCreator}
                             />
                         </FilterSection>
                     </aside>

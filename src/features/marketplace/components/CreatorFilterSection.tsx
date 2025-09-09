@@ -2,8 +2,9 @@ import React from 'react';
 import { AutoComplete } from 'primereact/autocomplete';
 import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
+import { useCreatorFilter } from '../../../hooks/useCreatorFilter';
 
-interface Creator {
+export interface Creator {
   label: string;
   value: string;
   avatar?: string;
@@ -17,13 +18,19 @@ interface Props {
 }
 
 const CreatorFilterSection: React.FC<Props> = ({ creator, filteredCreators, searchCreator, setCreator }) => {
-  const [inputValue, setInputValue] = React.useState<string>('');
+  const {
+    inputValue,
+    setInputValue,
+    selectedCreator,
+    setSelectedCreator,
+    clearCreator,
+  } = useCreatorFilter(creator);
 
   return (
     <span id="creator-filter" className="relative p-float-label w-full" style={{ minWidth: '100%', width: '108%' }}>
       <AutoComplete
         id="creator"
-        value={inputValue !== '' ? inputValue : creator}
+        value={inputValue !== '' ? inputValue : selectedCreator}
         suggestions={filteredCreators || []}
         completeMethod={searchCreator}
         onChange={e => {
@@ -31,12 +38,14 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, filteredCreators, sear
             setInputValue(e.value);
           } else {
             setInputValue('');
+            setSelectedCreator(e.value);
             setCreator(e.value);
           }
         }}
         onSelect={e => {
-          setCreator(e.value);
+          setSelectedCreator(e.value);
           setInputValue('');
+          setCreator(e.value);
         }}
         field="label"
         itemTemplate={option => option ? (
@@ -59,7 +68,7 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, filteredCreators, sear
         placeholder="Select Creator"
         className="w-full"
       />
-      {(inputValue !== '' || creator) && (
+      {(inputValue !== '' || selectedCreator) && (
         <span title="Clear search">
           <Button
             type="button"
@@ -77,7 +86,7 @@ const CreatorFilterSection: React.FC<Props> = ({ creator, filteredCreators, sear
               zIndex: 10,
             }}
             onClick={() => {
-              setInputValue('');
+              clearCreator();
               setCreator(null);
             }}
             aria-label="Clear search"

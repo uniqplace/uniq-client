@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,7 +14,7 @@ const SearchBar: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchTerm, setSearchTerm] = useState(filters.searchTerm || '');
-    const debounceTimeout = useRef<number | null>(null);
+    const debouncedSearchTerm = useDebouncedValue(searchTerm, 600);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -23,22 +24,15 @@ const SearchBar: React.FC = () => {
         // eslint-disable-next-line
     }, [location.search]);
 
-    // Debounce search on input change
+    // Debounced search effect
     useEffect(() => {
-        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-        debounceTimeout.current = window.setTimeout(() => {
-            const trimmedSearch = searchTerm.trim();
-            const params = new URLSearchParams(location.search);
-            if (trimmedSearch) params.set('q', trimmedSearch);
-            else params.delete('q');
-            navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-            dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
-        }, 600);
-        return () => {
-            if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-        };
-        // eslint-disable-next-line
-    }, [searchTerm]);
+        const trimmedSearch = debouncedSearchTerm.trim();
+        const params = new URLSearchParams(location.search);
+        if (trimmedSearch) params.set('q', trimmedSearch);
+        else params.delete('q');
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+        dispatch(updateFilters({ ...filters, searchTerm: trimmedSearch }));
+    }, [debouncedSearchTerm]);
 
     return (
         <div className="mb-4 flex items-center gap-2 w-full">
