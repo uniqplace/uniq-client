@@ -14,12 +14,17 @@ import { useEffect, useState } from 'react';
 import { getStatusTag } from './getStatusTag';
 import { OrderStatusTracker } from './OrderStatus';
 import { useNavigate } from 'react-router-dom';
+import { useGetOrdersByRoleQuery } from '../../slices/orderApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 type Props = {
-  orders: Order[];
+  // orders: Order[];
+  currentTab: 'buyer' | 'creator';
 };
 
-export default function MyOrdersPage({ orders }: Props) {
+export default function OrdersPage({ 
+  // orders,
+   currentTab }: Props) {
 
   const user = useAppSelector((state) => state.user);
   const navigate = useNavigate();
@@ -27,7 +32,12 @@ export default function MyOrdersPage({ orders }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [showStatusOrder, setShowStatusOrder] = useState<string | null>(null);
+  const [showStatusOrder, setShowStatusOrder] = useState<OrderStatus | null>(null);
+  const [trackedOrder, setTrackedOrder] = useState<Order | null>(null);
+
+  const { data: orders, isLoading, error, refetch  } = useGetOrdersByRoleQuery(currentTab, {
+    refetchOnMountOrArgChange: true,
+  });
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 960);
@@ -36,7 +46,9 @@ export default function MyOrdersPage({ orders }: Props) {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  if (!user?.id) return <Message severity="warn" text=" the user isnot login " />;
+  if (!user?.id) return <Message severity="warn" text="The user is not logged in" />;
+  if (isLoading) return <div className="flex justify-center mt-10"><ProgressSpinner /></div>;
+  if (error) return <Message severity="error" text="שגיאה בטעינת ההזמנות" />;
   if (!orders || orders.length === 0) return <EmptyOrders />;
 
   const filteredOrders = orders.filter(order => {
@@ -90,9 +102,11 @@ export default function MyOrdersPage({ orders }: Props) {
         <div className="space-y-4">
           {filteredOrders.map(order => (
             <OrderCard
-              key={order.id}
+              key={order._id}
               order={order}
               onShowDetails={() => setSelectedOrder(order)}
+              currentTab={currentTab}
+              refetchOrders={refetch}
             />
           ))}
         </div>
@@ -164,7 +178,11 @@ export default function MyOrdersPage({ orders }: Props) {
                   icon="pi pi-truck"
                   size="small"
                   className="p-button-sm text-xs"
-                  onClick={() => setShowStatusOrder(rowData.status)}
+                  onClick={() => {
+                    setShowStatusOrder(rowData.status)
+                    setTrackedOrder(rowData)
+                  }
+                  }
                 />
                 <Button
                   label="Repeat"
@@ -182,8 +200,11 @@ export default function MyOrdersPage({ orders }: Props) {
       {showStatusOrder && (
         <OrderStatusTracker
           visible={!!showStatusOrder}
-          status={showStatusOrder as OrderStatus}
+          status={showStatusOrder}
           onHide={() => setShowStatusOrder(null)}
+          orderId={trackedOrder?._id || ""}
+          currentTab={currentTab}
+          refetchOrders={refetch} 
         />
       )}
 
