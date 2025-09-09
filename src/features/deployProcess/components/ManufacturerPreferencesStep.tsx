@@ -51,7 +51,7 @@ const hardcodedLocations = [
 ];
 
 import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/NormalizedRatin';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);
@@ -213,7 +213,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     const preferences = {
       ...bidRequest,
       clientId: userId,
-      creatorId: userId, // required by backend
+      creatorId: userId, 
       productId,
       categoryId: isCategoryObj(bidRequest.categoryId)
         ? bidRequest.categoryId.id
@@ -222,13 +222,9 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     console.log('[BidRequest] Sending preferences:', preferences);
 
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
-    // Mark this step as completed in Redux (so it will be in completedSteps)
-    // if (typeof currentStepIndex === 'number') {
-    //   dispatch({ type: 'stepper/markStepCompleted', payload: currentStepIndex });
-    // }
+
 
     try {
-      // קריאה לשרת דרך thunk של Redux
       // @ts-ignore
       const resultAction = await dispatch(saveBidRequest(preferences));
 
@@ -241,7 +237,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           detail: 'Bid request opened successfully.',
           life: 4000,
         });
-        // אפשר לעבור לשלב הבא רק אחרי הצלחה
+        // Can proceed to the next step only after success
         setCanGoNext && setCanGoNext(true);
         onComplete && onComplete();
       } else {

@@ -184,17 +184,9 @@ export interface BidOffer {
   estimatedDelivery: string;
   note?: string;
   attachmentUrl?: string;
-  createdAt?: Date;
+  createdAt?: string | Date;
 }
 
-export interface BidOfferResponse {
-  bidRequestId: string;
-  manufacturerId: string;
-  price: number;
-  estimatedDelivery: string;
-  note?: string;
-  attachmentUrl?: string;
-}
 export interface ManufacturerProfile {
   _id: string;
   userId: User;

@@ -10,7 +10,7 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
-import NormalizedRating from '../../../components/shared/NormalizedRatin';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -29,7 +29,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
-  console.log(bidRequestId, 'bidRequestId🐺🐺🐺🐺🐺');
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
@@ -38,7 +37,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   ];
 
   useEffect(() => {
-    console.log('[Redux] bidRequest after save😂😂😂😂:', bidRequestId);
     if (bidRequestId) {
       const sortParam = sortOption !== 'date' ? sortOption : undefined;
       dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
@@ -141,7 +139,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   onClick={() => handleRowClick(offer)}
                 >
                   {/* Manufacturer */}
-                  <div className="md:col-span-3 flex items-center gap-3">
+                  <div className="md:col-span-3 flex items-center gap-1 md:gap-2 mb-1 md:mb-0">
                     <Avatar
                       image={offer.manufacturerId.userId.avatarUrl || '/default-avatar.png'}
                       shape="circle"
