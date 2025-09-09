@@ -10,10 +10,9 @@ import type { RootState } from '../../../store';
 import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { BidOffer } from '../../../types';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManufacturerId }: { bidRequestId?: string, manufacturerId?: string }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const bidRequestId = propBidRequestId || location.state?.bidRequestId;
   const manufacturerId = propManufacturerId || location.state?.manufacturerId;
   const [price, setPrice] = useState<number | null>(null);
@@ -62,7 +61,7 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
         note,
         attachmentUrl,
       };
-      const savedBidOffer = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
+      await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
       dispatch(resetBidOffer());
       toast.current?.show({
         severity: 'success',
@@ -71,8 +70,7 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
         life: 3000,
       });
       clearForm();
-      forceUpdate();
-      navigate(`/BidOfferDetails/${savedBidOffer.data._id}`, { state: { offer: savedBidOffer.data } });
+      forceUpdate();      
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',

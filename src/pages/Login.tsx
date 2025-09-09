@@ -58,7 +58,7 @@ const Login = () => {
 
         toast.current?.show({
           severity: 'success',
-          summary: 'Registered',
+          summary: 'logged in',
           detail: 'You have successfully logged in.',
           life: 3000
         });

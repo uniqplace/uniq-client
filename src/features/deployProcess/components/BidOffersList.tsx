@@ -44,7 +44,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   }, [dispatch, bidRequestId, sortOption]);
 
   const handleRowClick = (offer: BidOffer) => {
-    navigate(`/bidOffers/${offer._id}`, { state: { offer } });
+    navigate(`/BidOfferDetails/${offer._id}`, { state: { offer: offer } });
   };
 
   // Client-side sorting logic
