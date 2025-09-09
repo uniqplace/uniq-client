@@ -4,11 +4,10 @@ import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
 import { useDispatch } from 'react-redux';
-import { saveBidRequest,fetchBidRequestByProductId } from '../../deployProcess/slices/stepperSlice';
+import { saveBidRequest, fetchBidRequestByProductId } from '../../deployProcess/slices/stepperSlice';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
@@ -52,6 +51,7 @@ const hardcodedLocations = [
 ];
 
 import type { StepProps } from "./Stepper/steps";
+import NormalizedRating from '../../../components/shared/Rating';
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);
@@ -345,13 +345,13 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
         <div className="flex flex-col items-center w-full">
           <label className="block mb-2 font-medium">Rating Preference</label>
-          <Rating
-            value={ratingPreference}
-            onChange={e => !isReadOnly && setRatingPreference(e.value ?? 1)}
-            cancel={false}
+          <NormalizedRating
+            rating={ratingPreference}
+            readOnly={isReadOnly}
+            onChange={value => !isReadOnly && setRatingPreference(value)}
             className="w-full"
-            disabled={isReadOnly}
           />
+
           <div className="text-sm mt-2 text-center">{ratingPreference} Stars</div>
         </div>
 

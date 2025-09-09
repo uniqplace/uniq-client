@@ -9,6 +9,8 @@ import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
+import { useNavigate } from 'react-router-dom';
+import NormalizedRating from '../../../components/shared/Rating';
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -21,6 +23,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
     if (setCanGoNext) setCanGoNext(true);
   }, [setCanGoNext]);
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<'date' | 'price' | 'rating'>('date');
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
@@ -39,8 +42,13 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
     }
   }, [dispatch, bidRequestId, sortOption]);
 
+  const handleRowClick = (offer: BidOffer) => {
+    navigate(`/bidOffers/${offer._id}`, { state: { offer } });
+  };
+
   // Client-side sorting logic
   function sortOffers(offers: BidOffer[], sortOption: 'date' | 'price' | 'rating') {
+
     if (!offers) return [];
     const offersCopy = [...offers];
     switch (sortOption) {
@@ -57,7 +65,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const sortedOffers = sortOffers(offers, sortOption);
 
   return (
-    <Card className="p-4 shadow-2 border-round">
+    <Card className="p-2 shadow-2 border-round">
       {offers && offers.length > 0 && <h1 className="text-xl font-bold mb-4">Bid Offers for Request #{offers[0]?.bidRequestId?.productId?.title}</h1>}
       <div className="flex justify-between align-items-center mb-3">
         <h2 className="text-2xl font-bold">Received Bids</h2>
@@ -77,7 +85,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
         className="mb-4"
       />
 
-     
+
       {loading ? (
         <div className="flex justify-content-center py-5">
           <ProgressSpinner />
@@ -90,25 +98,27 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
         </div>
       ) : (
         <>
-          
+
           {/* Table header - desktop only */}
           <div
             className="hidden md:grid grid-cols-12 gap-2 py-4 px-4 border-b border-gray-200 text-xl font-bold text-900 font-sans"
             style={{ fontFamily: 'Inter, Arial, sans-serif' }}
           >
-            <div className="col-span-2 flex items-center text-left justify-start">
+            <div className="col-span-3 flex items-center text-left justify-start">
               <span className="w-full">Manufacturer</span>
             </div>
             <div className="col-span-2 flex items-center justify-center">
               <span className="w-full text-center">Price</span>
             </div>
-            <div className="col-span-3 flex items-center justify-center">
+            <div className="col-span-2 flex items-center justify-center">
               <span className="w-full text-center">Lead Time</span>
             </div>
-            <div className="col-span-4 flex items-center justify-center">
+            <div className="col-span-2 flex items-center justify-center">
+              <span className="w-full text-center">Rating</span>
+            </div>
+            <div className="col-span-3 flex items-center justify-center">
               <span className="w-full text-center">Response</span>
             </div>
-            <div className="col-span-1"></div>
           </div>
           <div>
             {sortedOffers.map((offer: BidOffer, idx) =>
@@ -123,49 +133,47 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                     '-' +
                     idx
                   }
-                  className="md:grid md:grid-cols-12 md:gap-2 md:items-center md:py-2 md:px-2 md:border-b md:border-gray-100 md:text-sm flex flex-col bg-gray-50 rounded-xl shadow-md p-1 mb-2 transition hover:shadow-lg focus-within:shadow-lg"
+                  className="md:grid md:grid-cols-12 md:gap-4 md:items-center md:py-2 md:px-4 md:border-b md:border-gray-200 flex flex-row items-center bg-gray-50 rounded-lg shadow-md p-3 mb-3 transition hover:shadow-lg focus-within:shadow-lg"
                   style={{ fontFamily: 'Arial, sans-serif', WebkitTapHighlightColor: 'rgba(0,0,0,0.03)' }}
+                  onClick={() => handleRowClick(offer)}
                 >
                   {/* Manufacturer */}
-                  <div className="md:col-span-2 flex items-center gap-1 md:gap-2 mb-1 md:mb-0">
+                  <div className="md:col-span-3 flex items-center gap-3">
                     <Avatar
                       image={offer.manufacturerId.userId.avatarUrl || '/default-avatar.png'}
                       shape="circle"
-                      style={{ width: '48px', height: '48px' }}
-                      className="md:w-14 md:h-14 w-8 h-8 border border-gray-300"
+                      style={{ width: '50px', height: '50px' }}
+                      className="border border-gray-300 w-12 h-12 [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                     />
                     <span className="font-semibold text-gray-800 text-sm md:text-base truncate">
                       {offer.manufacturerId.userId.name}
                     </span>
                   </div>
                   {/* Price */}
-                  <div className="md:col-span-2 flex flex-col items-center text-gray-900 font-medium text-xs md:text-base text-center mb-0.5 md:mb-0">
-                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Price</span>
+                  <div className="md:col-span-2 text-center text-gray-900 font-medium text-sm md:text-base">
                     <span>${offer.price}</span>
                   </div>
                   {/* Lead Time */}
-                  <div className="md:col-span-3 flex flex-col items-center text-gray-600 text-xs md:text-base text-center mb-0.5 md:mb-0">
-                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Lead Time</span>
-                    <span>{offer.estimatedDelivery} days</span>
+                  <div className="md:col-span-2 text-center text-gray-600 text-sm md:text-base">
+                    <span>
+                      {offer.estimatedDelivery
+                        ? new Date(offer.estimatedDelivery).toLocaleDateString()
+                        : 'Not specified'}
+                    </span>
                   </div>
-                  {/* Note */}
-                  <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
-                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
-                    <span>{offer.note || 'No note provided'}</span>
-                  </div>
-                  {/* Chat Button */}
-                  <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
-                    <Button
-                      className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
-                     icon="pi pi-comments"
-                      aria-label="Chat"
-                    ></Button>
-                    <Button
-                      className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
-                      icon="pi pi-comments"
-                      aria-label="Chat"
-                      
+                  {/* Rating */}
+                  <div className="md:col-span-2 text-center">
+                    <NormalizedRating
+                      rating={offer.manufacturerId?.rating}
+                      offers={offers} // כך maxRating מחושב אוטומטית
+                      readOnly
+                      style={{ fontSize: '1rem' }}
                     />
+
+                  </div>
+                  {/* Response */}
+                  <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">
+                    <span>{offer.note || 'No note provided'}</span>
                   </div>
                 </div>
               ) : null

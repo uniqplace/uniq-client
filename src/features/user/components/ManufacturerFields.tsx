@@ -57,20 +57,21 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
     const [showErrors, setShowErrors] = useState(false);
 
     const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
+    
     const categoryOptions = (categoriesData?.data || []).map((cat: any) => ({
       label: cat.name,
-      value: cat.name,
+      value: cat._id,
     }));
+    
     const profile = useAppSelector(state => state.manufacturer.profile);
-    if (!profile) {
-  return <div>Loading manufacturer profile...</div>;
-}
+    // if (!profile) {
+    // return <div>Loading manufacturer profile...</div>;
+    // }
 
 useEffect(() => {
- 
   // Update states with existing values
   setServicesOffered(profile?.servicesOffered || []);
-  setCategories(profile?.categories || []);
+  setCategories(profile?.categories || ['']);
   setLocation(profile?.location || '');
   setAvailableFrom(
         profile?.availableFrom && /^\d{4}-\d{2}-\d{2}$/.test(profile.availableFrom.split('T')[0])
@@ -104,7 +105,7 @@ useEffect(() => {
         availableFrom: '',
       };
       if (!servicesOffered.some((s) => s.trim())) newErrors.services = 'At least one service is required';
-      if (!categories.length || !categories[0]?.trim()) newErrors.categories = 'Category is required';
+      if (!categories.length || !categories[0]) newErrors.categories = 'Category is required';
       if (!location.trim()) newErrors.location = 'Location is required';
       if (!availableFrom) newErrors.availableFrom = 'Available from date is required';
 
