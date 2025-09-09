@@ -27,7 +27,7 @@ const BidRequestDetails = () => {
     //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
 
     const dispatch = useDispatch<AppDispatch>();
-    const userId = useSelector((state: RootState) => state.user.manufacturerId );
+    const userId = useSelector((state: RootState) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
 
     const bidRequest = useSelector((state: RootState) => state.bidRequest.currentBidRequest);
@@ -49,7 +49,9 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
+          
         }
+     
     }, [offers, userId]);
 
     if (isLoading) {

@@ -55,16 +55,14 @@ const ManufacturerBidRequests = () => {
     return <Tag value={status} severity={severity} />;
   };
 
-  const actionsTemplate = (rowData: BidRequest) => {
-    return (
-      <Button
-        label="Submit Offer"
-        icon="pi pi-pencil"
-        onClick={() => navigate(`/myBidRequests/${rowData._id}`)}
-        className="p-button-sm"
-      />
-    );
-  };
+  const actionsTemplate = (rowData: BidRequest) => (
+    <Button
+      label="View Details"
+      icon="pi pi-pencil"
+      onClick={() => navigate(`/myBidRequests/${rowData._id}`)}
+      className="p-button-sm"
+    />
+  );
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
     const dateValue = rowData[field];
