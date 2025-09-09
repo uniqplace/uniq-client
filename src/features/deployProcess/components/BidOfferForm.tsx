@@ -71,7 +71,7 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
         life: 3000,
       });
       clearForm();
-      forceUpdate();      
+      forceUpdate();
       navigate(`/BidOfferDetails/${savedBidOffer.data._id}`, { state: { offer: savedBidOffer.data } });
     } catch (error: any) {
       toast.current?.show({
@@ -88,7 +88,7 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
   };
   // a solution to rendering ref:
   const [, setRerender] = useState(false);
-  const forceUpdate = () => setRerender(r => !r);
+  const forceUpdate = () => setRerender(r => !r);  
   if (!bidRequestId || !manufacturerId) {
     return <div className="text-red-500 text-center">Missing required information to submit an offer.</div>;
   }
@@ -161,9 +161,3 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
   );
 };
 export default BidOfferForm;
-
-
-
-
-
-
