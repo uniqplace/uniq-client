@@ -13,11 +13,13 @@ export interface UserState {
   role: RoleType | null | string;
   bio?: string | null;
   skills?: string[];
-  servicesOffered?: string[]; 
+  servicesOffered?: string[];
   portfolio?: string[];
   loading: boolean;
   error: string | null;
+  rating: number | null;
   manufacturer: Manufacturer | null;
+  manufacturerId?: string | null;
 }
 
 const initialState: UserState = {
@@ -30,7 +32,9 @@ const initialState: UserState = {
   role: null,
   loading: false,
   error: null,
-  manufacturer: null,
+  rating: 0,
+  manufacturer: {} as Manufacturer,
+  manufacturerId: null,
 };
 
 const userSlice = createSlice({
@@ -55,7 +59,7 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        Object.assign(state, action.payload); 
+        Object.assign(state, action.payload);
         state.loading = false;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {

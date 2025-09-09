@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Button, ImageGallery, CreatorCard } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
 import { formatDate } from '../utils/date';
-import { fetchProduct } from '../features/marketplace/thunks';
+import { fetchProduct } from '../features/marketplace/thunks/marketplaceThunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
 import type { Product } from '../types';

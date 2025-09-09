@@ -38,7 +38,7 @@ export interface Product {
 
 
 export interface Order {
-  id: string;
+  _id: string;
   productId: string;
   buyerId: string;
   creator: { name: string, _id: string };
@@ -174,7 +174,7 @@ interface BidRequestId {
 export interface BidOffer {
   _id?: string;
   bidRequestId: BidRequestId;
-  manufacturerId: Manufacturer; // Manufacturer can be an object or just an ID string
+  manufacturerId: ManufacturerProfile; // Manufacturer can be an object or just an ID string
   price: number;
   estimatedDelivery: string;
   note?: string;
@@ -190,9 +190,9 @@ export interface BidOfferResponse {
   note?: string;
   attachmentUrl?: string;
 }
-
 export interface ManufacturerProfile {
-  userId: string;
+  _id: string;
+  userId: User;
   name: string;
   categories: string[];
   location: string;

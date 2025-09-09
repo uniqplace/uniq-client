@@ -4,11 +4,10 @@ import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
 import { Button } from 'primereact/button';
 import { useDispatch } from 'react-redux';
-import { saveBidRequest,fetchBidRequestByProductId } from '../../deployProcess/slices/stepperSlice';
+import { saveBidRequest, fetchOpenBidRequestsByProductId } from '../../deployProcess/slices/stepperSlice';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
@@ -52,6 +51,14 @@ const hardcodedLocations = [
 ];
 
 import type { StepProps } from "./Stepper/steps";
+import NormalizedRating from '../../../components/shared/Rating';
+
+function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
+  if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
+    return categoryId._id;
+  }
+  return categoryId ?? null;
+}
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);
@@ -70,7 +77,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Get bidRequest from Redux
   const bidRequest = useAppSelector(state => state.stepper.bidRequest);
-  const [categoryId, setCategoryId] = useState<string | null>(typeof bidRequest?.categoryId === 'string' ? bidRequest.categoryId : null);
+  const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
   const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: priceRangeMin, max: priceRangeMax });
   const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>(bidRequest?.deliveryTimeframe ?? '7 days');
@@ -81,7 +88,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   // Restore step and form data from Redux on mount (if needed)
   React.useEffect(() => {
     if (bidRequest) {
-      if (typeof bidRequest.categoryId === 'string') setCategoryId(bidRequest.categoryId);
+      setCategoryId(getCategoryIdValue(bidRequest.categoryId));
       if (bidRequest.locationPreference !== undefined) setLocationPreference(bidRequest.locationPreference);
       if (bidRequest.priceRange !== undefined) setPriceRange(bidRequest.priceRange);
       if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(bidRequest.deliveryTimeframe);
@@ -95,22 +102,18 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     // Only fetch if bidRequest is empty/null and productId exists
     if (!bidRequest) {
       let productId: string | null = null;
-      const guestId = localStorage.getItem('productId_guest');
-      if (guestId) {
-        productId = guestId;
-      } else {
-        const keys = Object.keys(localStorage);
-        const productKey = keys.find(k => k.startsWith('productId_'));
-        if (productKey) {
-          productId = localStorage.getItem(productKey);
-        }
+      const keys = Object.keys(localStorage);
+      const productKey = keys.find(k => k.startsWith('productId_'));
+      if (productKey) {
+        productId = localStorage.getItem(productKey);
       }
+
       if (productId) {
         // @ts-ignore
-        dispatch(fetchBidRequestByProductId(productId));
+        dispatch(fetchOpenBidRequestsByProductId(productId));
       }
     }
-  }, [bidRequest, dispatch]);
+  }, [ dispatch]);
 
   const toast = useRef<Toast>(null);
 
@@ -121,8 +124,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   const locationOptions = hardcodedLocations;
 
   const userId = useAppSelector(state => state.user?.id);
-  // Debug: log userId before validation
-  console.log('[BidRequest] userId from Redux (user.id):', userId);
+
 
   // Save form data to bidRequest in Redux slice on change
   React.useEffect(() => {
@@ -131,7 +133,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
         type: 'stepper/setBidRequest',
         payload: {
           ...bidRequest,
-          categoryId,
+          categoryId: getCategoryIdValue(categoryId),
           locationPreference,
           priceRange,
           deliveryTimeframe,
@@ -202,35 +204,31 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     }
 
     // Type guard for categoryId
-    function isCategoryObj(val: unknown): val is { id: string } {
-      return (
-        typeof val === 'object' &&
-        val !== null &&
-        'id' in val &&
-        typeof (val as any).id === 'string'
-      );
-    }
+    // function isCategoryObj(val: unknown): val is { id: string } {
+    //   return (
+    //     typeof val === 'object' &&
+    //     val !== null &&
+    //     'id' in val &&
+    //     typeof (val as any).id === 'string'
+    //   );
+    // }
     const preferences = {
       ...bidRequest,
       clientId: userId,
-      creatorId: userId, // required by backend
+      creatorId: userId,
       productId,
-      categoryId: isCategoryObj(bidRequest.categoryId)
-        ? bidRequest.categoryId.id
-        : bidRequest.categoryId,
+      categoryId: getCategoryIdValue(bidRequest.categoryId),
     };
     console.log('[BidRequest] Sending preferences:', preferences);
 
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
-    // Mark this step as completed in Redux (so it will be in completedSteps)
-    // if (typeof currentStepIndex === 'number') {
-    //   dispatch({ type: 'stepper/markStepCompleted', payload: currentStepIndex });
-    // }
+
 
     try {
-      // קריאה לשרת דרך thunk של Redux
       // @ts-ignore
       const resultAction = await dispatch(saveBidRequest(preferences));
+
+
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
         toast.current?.show({
@@ -239,7 +237,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           detail: 'Bid request opened successfully.',
           life: 4000,
         });
-        // אפשר לעבור לשלב הבא רק אחרי הצלחה
+        // Can proceed to the next step only after success
         setCanGoNext && setCanGoNext(true);
         onComplete && onComplete();
       } else {
@@ -303,7 +301,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           <label htmlFor="category" className="block mb-2 font-medium">Category</label>
           <Dropdown
             id="category"
-            value={categoryId}
+            value={getCategoryIdValue(categoryId)}
             options={categoryOptions}
             onChange={e => !isReadOnly && setCategoryId(e.value)}
             placeholder="Select a category"
@@ -345,13 +343,13 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
         <div className="flex flex-col items-center w-full">
           <label className="block mb-2 font-medium">Rating Preference</label>
-          <Rating
-            value={ratingPreference}
-            onChange={e => !isReadOnly && setRatingPreference(e.value ?? 1)}
-            cancel={false}
+          <NormalizedRating
+            rating={ratingPreference}
+            readOnly={isReadOnly}
+            onChange={value => !isReadOnly && setRatingPreference(value)}
             className="w-full"
-            disabled={isReadOnly}
           />
+
           <div className="text-sm mt-2 text-center">{ratingPreference} Stars</div>
         </div>
 

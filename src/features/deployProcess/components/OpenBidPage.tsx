@@ -53,14 +53,18 @@ export const OpenBidPage = () => {
     return <Tag value={status} severity={severity} />;
   };
 
-  const actionsTemplate = (rowData: BidRequest) => (
-    <Button
-      label="View offers"
-      icon="pi pi-eye"
-      onClick={() => navigate(`/MyBidRequest/${rowData._id}`)}
-      className="p-button-sm"
-    />
-  );
+  const actionsTemplate = (rowData: BidRequest) => {
+    return (
+      <Button
+        label="View offers"
+        icon="pi pi-eye"
+        onClick={() => {
+          navigate(`/MyBidRequest/${rowData._id}`);
+        }}
+        className="p-button-sm"
+      />
+    )
+  };
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
     const dateValue = rowData[field];
@@ -75,6 +79,12 @@ export const OpenBidPage = () => {
   const title = (
     <h2 className="text-xl font-bold mb-4 mt-8"> My BidRequests</h2>
   );
+
+  useEffect(() => {
+    if (bidRequestId) {
+      // Removed debug log
+    }
+  }, [bidRequestId]);
 
   if (loading) {
     return (
@@ -107,7 +117,7 @@ export const OpenBidPage = () => {
   }
 
   return (
-    <div className="p-4" style={{margin:0,padding:0,background:'none'}}>
+    <div className="p-4" style={{ margin: 0, padding: 0, background: 'none' }}>
       {title}
 
       <BidRequestsFilterFields

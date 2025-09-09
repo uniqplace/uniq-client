@@ -106,43 +106,32 @@ const Register: React.FC = () => {
       const res = await axios.post(`${API_BASE_URL}/auth/register`, body);
       if (res.data.success && res.data.user) {
         const user = res.data.user;
+        
         Cookies.set('token', res.data.token, { expires: 7 });
+          
+       const safeUser = {
+  id: user._id || user.id || null,
+  name: user.name || '',
+  email: user.email || '',
+  role: user.role || null,
+  avatar: user.avatar || null,
+  manufacturer: user.manufacturer || null
+};
 
-        // Build a valid Manufacturer object if user is manufacturer
-        let manufacturerObj = null;
-        if (user.role === 'manufacturer' && user.manufacturer) {
-          manufacturerObj = {
-            userId: {
-              _id: user._id || user.id || '',
-              name: user.name || '',
-              email: user.email || '',
-              avatarUrl: user.avatarUrl || user.avatar || ''
-            },
-            name: user.manufacturer.name || user.name || '',
-            categories: user.manufacturer.categories || [],
-            servicesOffered: user.manufacturer.servicesOffered || [],
-            location: user.manufacturer.location || '',
-            availableFrom: user.manufacturer.availableFrom || '',
-            rating: user.manufacturer.rating || 0
-          };
-        }
+if (!safeUser.name || !safeUser.email || !safeUser.role) {
+  console.error('User object missing required fields:', safeUser);
+} else {
+  localStorage.setItem('user', JSON.stringify(safeUser));
+}
 
-        const safeUser = {
+        dispatch(setUser({
           id: user._id || user.id || null,
-          name: user.name || '',
-          email: user.email || '',
-          role: user.role || null,
+          name: user.name,
+          email: user.email,
           avatar: user.avatar || null,
-          manufacturer: manufacturerObj || null
-        };
-
-        if (!safeUser.name || !safeUser.email || !safeUser.role) {
-          console.error('User object missing required fields:', safeUser);
-        } else {
-          localStorage.setItem('user', JSON.stringify(safeUser));
-        }
-
-        dispatch(setUser(safeUser));
+          role: user.role || null,
+          manufacturer: user.manufacturer || null
+        }));
 
         // Register user to Socket.IO
         import('../services/socket').then(({ default: socket }) => {
@@ -317,7 +306,7 @@ const Register: React.FC = () => {
               placeholder="Company Name (optional)"
             />
           </div>
-          
+
           {/* Manufacturer-specific fields are only shown if the selected role is 'manufacturer' */}
           {watchedRole === 'manufacturer' && (
             <ManufacturerFields
@@ -344,7 +333,7 @@ const Register: React.FC = () => {
             type="submit"
             label="Sign Up"
             loading={isSubmitting}
-            onClick={() => console.log("Button clicked!")} 
+            onClick={() => console.log("Button clicked!")}
             className="w-full bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
           />
         </form>
