@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { BidOffer, BidOfferResponse } from "../../../types";
+import type { BidOffer } from "../../../types";
 import type { RootState } from "../../../store";
 
 export const fetchBidOfferById = createAsyncThunk(
@@ -43,10 +43,10 @@ export const fetchBidOffersByRequest = createAsyncThunk(
 );
 
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
-  async (bidOffer: BidOfferResponse, thunkAPI) => {
+  async (bidOffer: BidOffer, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const manufacturerId = state.user?.manufacturer?._id;
+      const manufacturerId = state.user?.manufacturerId;
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${manufacturerId}`, bidOffer,
         {
           withCredentials: true,
