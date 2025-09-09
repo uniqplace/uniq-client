@@ -45,7 +45,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
 
   // Client-side sorting logic
   function sortOffers(offers: BidOffer[], sortOption: 'date' | 'price' | 'rating') {
-    console.log("offers before sorting:", offers);
 
     if (!offers) return [];
     const offersCopy = [...offers];
