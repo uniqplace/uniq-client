@@ -75,13 +75,13 @@ export const fetchBidRequestByProductId = createAsyncThunk(
   }
 );
 
-export const createProduct = createAsyncThunk<Product>(
+export const createProduct = createAsyncThunk<Product, Partial<Product>>(
   'stepper/createProduct',
-  async (_, thunkAPI) => {
+  async (productData, thunkAPI) => {
     try {
       const response = await axios.post(
         `${apiBaseUrl}/create-product`,
-        null,
+        productData ?? {},
         { withCredentials: true }
       );
       return response.data as Product;

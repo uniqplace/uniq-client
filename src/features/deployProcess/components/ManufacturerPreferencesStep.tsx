@@ -51,7 +51,7 @@ const hardcodedLocations = [
 ];
 
 import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/Rating';
+import NormalizedRating from '../../../components/shared/NormalizedRatin';
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const loading = useAppSelector((state) => state.stepper.loading);

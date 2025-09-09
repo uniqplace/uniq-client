@@ -75,10 +75,6 @@ function App() {
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
 
-
-
-
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NewHeader />

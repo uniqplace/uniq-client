@@ -10,7 +10,7 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
-import NormalizedRating from '../../../components/shared/Rating';
+import NormalizedRating from '../../../components/shared/NormalizedRatin';
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -169,11 +169,23 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                       readOnly
                       style={{ fontSize: '1rem' }}
                     />
-
                   </div>
-                  {/* Response */}
+                  {/* Note */}
                   <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">
                     <span>{offer.note || 'No note provided'}</span>
+                  </div>
+                  {/* Chat Button */}
+                  <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
+                    <Button
+                      className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
+                      icon="pi pi-comments"
+                      aria-label="Chat"
+                    ></Button>
+                    <Button
+                      className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
+                      icon="pi pi-comments"
+                      aria-label="Chat"
+                    />
                   </div>
                 </div>
               ) : null

@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import type { BidOffer } from "../../../types";
 import { useAppDispatch } from "../../../hooks/hooks";
 import { fetchBidOfferById } from "../slices/BidOfferSlice";
-import NormalizedRating from "../../../components/shared/Rating";
+import NormalizedRating from "../../../components/shared/NormalizedRatin";
 
 const BidOfferDetails: React.FC = () => {
     const { BidOfferId } = useParams<{ BidOfferId: string }>();
