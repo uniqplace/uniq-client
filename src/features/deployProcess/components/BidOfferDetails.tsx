@@ -22,7 +22,7 @@ const BidOfferDetails: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const encoded = searchParams.get("manufacturerId"); // או 'encodedOffer'
+        const encoded = searchParams.get("manufacturerId");
         if (encoded) {
             try {
                 const decoded = JSON.parse(atob(encoded)) as BidOffer;
