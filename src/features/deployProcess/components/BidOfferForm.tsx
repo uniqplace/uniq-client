@@ -9,30 +9,25 @@ import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
 import type { RootState } from '../../../store';
 import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import type { BidOfferResponse } from '../../../types';
-import { useLocation } from 'react-router-dom';
-
+import type { BidOffer } from '../../../types';
+import { useLocation, useNavigate } from 'react-router-dom';
 const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManufacturerId }: { bidRequestId?: string, manufacturerId?: string }) => {
   const location = useLocation();
-
+  const navigate = useNavigate();
   const bidRequestId = propBidRequestId || location.state?.bidRequestId;
   const manufacturerId = propManufacturerId || location.state?.manufacturerId;
-
   const [price, setPrice] = useState<number | null>(null);
   const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
   const [note, setNote] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
   const [loading, setLoading] = useState(false);
-
   const toast = useRef<Toast>(null);
   const user = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
-
   const errorsRef = useRef({
     price: false,
     estimatedDelivery: false,
   });
-
   const clearForm = () => {
     setPrice(null);
     setEstimatedDelivery(null);
@@ -40,17 +35,13 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
     setAttachmentUrl('');
     errorsRef.current = { price: false, estimatedDelivery: false };
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const errors = {
       price: price == null || price <= 0,
       estimatedDelivery: !estimatedDelivery,
     };
-
     errorsRef.current = errors;
-
     if (errors.price || errors.estimatedDelivery || !user?.id) {
       toast.current?.show({
         severity: 'warn',
@@ -61,11 +52,9 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
       forceUpdate();
       return;
     }
-
     try {
       setLoading(true);
-
-      const newBidOffer: Partial<BidOfferResponse> = {
+      let newBidOffer: Partial<BidOffer> = {
         bidRequestId,
         manufacturerId,
         price: price ?? 0,
@@ -73,8 +62,7 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
         note,
         attachmentUrl,
       };
-
-      await dispatch(AddBidOffer(newBidOffer as BidOfferResponse)).unwrap();
+      const savedBidOffer = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
       dispatch(resetBidOffer());
       toast.current?.show({
         severity: 'success',
@@ -82,10 +70,9 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
         detail: 'Your offer has been submitted successfully.',
         life: 3000,
       });
-
       clearForm();
       forceUpdate();
-
+      navigate(`/BidOfferDetails/${savedBidOffer.data._id}`, { state: { offer: savedBidOffer.data } });
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
@@ -99,15 +86,12 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
       setLoading(false);
     }
   };
-
-  // פתרון לרינדור כשמשתמשים ב-ref:
+  // a solution to rendering ref:
   const [, setRerender] = useState(false);
-  const forceUpdate = () => setRerender(r => !r);
-
+  const forceUpdate = () => setRerender(r => !r);  
   if (!bidRequestId || !manufacturerId) {
     return <div className="text-red-500 text-center">Missing required information to submit an offer.</div>;
   }
-
   return (
     <form
       className="max-w-lg mx-auto mt-10 p-6 border-round shadow-4 surface-card"
@@ -115,7 +99,6 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
     >
       <Toast ref={toast} />
       <h2 className="text-2xl font-semibold mb-5 text-center">Submit Your Offer</h2>
-
       <div className="mb-4">
         <label className="block mb-1">Price (₪)*</label>
         <InputText
@@ -133,7 +116,6 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
           <small className="p-error">Price is required.</small>
         )}
       </div>
-
       <div className="mb-4">
         <label className="block mb-1">Estimated Delivery*</label>
         <Calendar
@@ -148,7 +130,6 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
           <small className="p-error">Delivery date is required.</small>
         )}
       </div>
-
       <div className="mb-4">
         <label className="block mb-1">Note (optional)</label>
         <InputTextarea
@@ -159,7 +140,6 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
           className="w-full"
         />
       </div>
-
       <div className="mb-5">
         <label className="block mb-1">Attachment URL (optional)</label>
         <InputText
@@ -168,7 +148,6 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
           className="w-full"
         />
       </div>
-
       <Button
         type="submit"
         label={loading ? '' : 'Submit Offer'}
@@ -181,5 +160,4 @@ const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManu
     </form>
   );
 };
-
 export default BidOfferForm;

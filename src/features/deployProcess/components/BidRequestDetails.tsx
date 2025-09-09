@@ -5,18 +5,27 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
-
+//import type { BidRequest } from '../../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import { fetchBidRequestById } from '../slices/BidRequestSlice';
 
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
+import { Button } from 'primereact/button';
+import { ArrowLeft } from 'lucide-react';
 
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
+    console.log("bidRequestId from params:", bidRequestId);
+
     const navigate = useNavigate();
+    //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
+    //  const [isLoading, setIsLoading] = useState<boolean>(true);
+    //const [fetchError, setFetchError] = useState<string | null>(null);
+    //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
+
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
@@ -27,6 +36,7 @@ const BidRequestDetails = () => {
     const [hasSubmittedOffer, setHasSubmittedOffer] = useState(false);
     // Always get userOffer from offers
     const userOffer = offers?.find((offer: BidOffer) => offer.manufacturerId?._id === userId);
+
     const submittedAt = userOffer?.createdAt ? new Date(userOffer.createdAt).toLocaleString('en-US') : null;
 
     useEffect(() => {
@@ -100,6 +110,14 @@ const BidRequestDetails = () => {
     return (
         <div className="flex justify-center items-start min-h-screen bg-gray-50">
             <Card className="w-full max-w-2xl shadow-md p-6 rounded-lg">
+                <div className="mb-4">
+                    <Button
+                        label="Back to Requests"
+                        icon={<ArrowLeft size={16} />}
+                        className="p-button-text p-button-sm text-green-600"
+                        onClick={() => navigate(-1)} // חזרה לעמוד הקודם
+                    />
+                </div>
                 <div className="flex items-center gap-4 mb-6">
                     <div>
                         <span id="creator-avatar">
@@ -108,7 +126,7 @@ const BidRequestDetails = () => {
                                 icon={!creatorAvatar ? "pi pi-user" : undefined}
                                 size="large"
                                 shape="circle"
-                                className="border border-gray-300 shadow-sm"
+                                className="border border-gray-300 shadow-sm [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                             />
                         </span>
                         <Tooltip target="#creator-avatar" content={creatorName} />
@@ -198,7 +216,7 @@ const BidRequestDetails = () => {
                     >
                         Submit Offer
                     </button>
-                  
+
                 </div>
             </Card>
         </div>

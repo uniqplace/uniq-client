@@ -9,6 +9,8 @@ import stepperReducer from './features/deployProcess/slices/stepperSlice';
 import socketReducer from './features/socket/socketSlice';
 import manufacturerReducer from './features/user/slices/manufacturerSlice';
 import apiSlice from './api/apiSlice';
+import orderSlice from './features/order/slices/orderSlice';
+
 
 
 export const store = configureStore({
@@ -22,7 +24,8 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
      socket: socketReducer,
     stepper: stepperReducer,
-    manufacturer: manufacturerReducer
+    manufacturer: manufacturerReducer,
+    order: orderSlice,
   },
 
  

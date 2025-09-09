@@ -1,18 +1,16 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import debounce from 'lodash/debounce';
 import CategoryFilters from './CategoryFilters';
 import CreatorFilterSection from './CreatorFilterSection';
 import PriceFilterSection from './PriceFilterSection';
 import FilterActionsSection from './FilterActionsSection';
-import { OverlayPanel } from 'primereact/overlaypanel';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store';
 import type { AppDispatch } from '../../../store';
-import { useGetProductsQuery } from '../slices/productApiSlice';
-import { fetchSubCategories } from '../thunks/marketplaceThunks';
-import { updateFilters } from '../slices/marketplaceSlice';
+import { fetchCreatorsAndManufacturers } from '../thunks/marketplaceThunks';
+import { setMaxPrice, updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
+import FilterSection from './FilterSection';
 
 // Helper to parse filters from URLSearchParams
 function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxProductPrice: number) {
@@ -43,18 +41,16 @@ function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxPr
     };
 }
 
-
-const FiltersBar: React.FC = () => {
+const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
     // Ref for AutoComplete input
     const dispatch: AppDispatch = useDispatch();
     const { filters, creators, products, maxPrice: globalMaxPrice } = useSelector((state: RootState) => state.marketplace);
     const navigate = useNavigate();
     const location = useLocation();
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
-    const [creator, setCreator] = React.useState(initialCreator);
-    const [searchValue, setSearchValue] = React.useState<string | null>(null);
-    const [filteredCreators, setFilteredCreators] = React.useState(creators);
-    const [categoryFilters, setCategoryFilters] = React.useState<string[]>(() => {
+    const [creator, setCreator] = useState(initialCreator);
+    const [filteredCreators, setFilteredCreators] = useState(creators);
+    const [categoryFilters, setCategoryFilters] = useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
         const mainCategory = params.get('category');
         const subCategoriesParam = params.get('subCategories');
@@ -98,7 +94,7 @@ const FiltersBar: React.FC = () => {
     const maxProductPrice = globalMaxPrice && globalMaxPrice > pageMaxPrice ? globalMaxPrice : pageMaxPrice;
     React.useEffect(() => {
         if (pageMaxPrice > (globalMaxPrice || 0)) {
-            dispatch({ type: 'marketplace/setMaxPrice', payload: pageMaxPrice });
+            dispatch(setMaxPrice(pageMaxPrice));
         }
     }, [pageMaxPrice, globalMaxPrice, dispatch]);
 
@@ -115,7 +111,6 @@ const FiltersBar: React.FC = () => {
         }
         return [minProductPrice, maxProductPrice];
     });
-    const pricePanelRef = useRef<OverlayPanel>(undefined!);
     useEffect(() => {
         if (products && products.length > 0) {
             setPriceRange(prev => {
@@ -146,9 +141,14 @@ const FiltersBar: React.FC = () => {
             dispatch(updateFilters({ ...filters, ...urlFilters }));
         }
     }, [location.search, creators]);
+
     useEffect(() => {
-        dispatch(fetchSubCategories());
-    }, []);
+        dispatch(fetchCreatorsAndManufacturers());
+    }, [dispatch]);
+    useEffect(() => {
+        handleFilter();
+    }, [priceRange, creator]);
+
     const hasActiveFilters = () => {
         return Boolean(creator) ||
             (Array.isArray(categoryFilters) && categoryFilters.length > 0) ||
@@ -158,18 +158,7 @@ const FiltersBar: React.FC = () => {
     // Build filters for RTK Query
     const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
     const subCategoriesArr = categoryFilters.filter(id => id !== mainCategory);
-    const queryFilters = React.useMemo(() => ({
-        q: searchValue || undefined,
-        category: mainCategory,
-        subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
-        creator: creator?.value || undefined,
-        minPrice: priceRange[0] !== minProductPrice ? priceRange[0] : undefined,
-        maxPrice: priceRange[1] !== maxProductPrice ? priceRange[1] : undefined,
-        page: 1,
-    }), [searchValue, mainCategory, subCategoriesArr, creator, priceRange, minProductPrice, maxProductPrice]);
 
-    // Use RTK Query hook
-    const { data: productsData, refetch } = useGetProductsQuery(queryFilters);
     useEffect(() => {
         if (productsData && Array.isArray(productsData)) {
             dispatch({ type: 'marketplace/setProducts', payload: productsData });
@@ -208,78 +197,85 @@ const FiltersBar: React.FC = () => {
         return params;
     };
 
-    const handleFilter = () => {
+    const handleFilter = async () => {
         const params = buildFilterParams();
         dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-        refetch();
     };
-    const searchCreator = useRef(
-        debounce((event: { query: string }) => {
-            setFilteredCreators(
-                creators.filter((c: { label: string }) =>
-                    c.label.toLowerCase().includes(event.query.toLowerCase())
-                )
-            );
-            setSearchValue(event.query);
-        }, 100)
-    ).current;
 
+    const searchCreator = (event: { query: string }) => {
+        setFilteredCreators(
+            creators.filter((c: { label: string }) =>
+                c.label.toLowerCase().includes(event.query.toLowerCase())
+            )
+        );
+    };
 
     const handleReset = () => {
-    // Helper to build reset params
-    const buildResetParams = () => {
-        const params = new URLSearchParams(location.search);
-        params.delete('creator');
-        params.delete('category');
-        params.delete('subCategories');
-        params.delete('minPrice');
-        params.delete('maxPrice');
-        params.set('page', '1');
-        return params;
-    };
-    const params = buildResetParams();
-    setCategoryFilters([]);
-    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+        // Helper to build reset params
+        const buildResetParams = () => {
+            const params = new URLSearchParams(location.search);
+            params.delete('creator');
+            params.delete('category');
+            params.delete('subCategories');
+            params.delete('minPrice');
+            params.delete('maxPrice');
+            params.set('page', '1');
+            return params;
+        };
+        const params = buildResetParams();
+        setCategoryFilters([]);
+        setPriceRange([minProductPrice, maxProductPrice]);
+        setCreator(null);
+        dispatch(updateFilters({ ...filters, category: undefined, subCategories: undefined, creator: '', priceRange: [minProductPrice, maxProductPrice] }));
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
     return (
-        <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
-            <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
-                <aside
-                    className="p-6 bg-white rounded shadow flex flex-col gap-6 w-full md:w-64 mb-8 relative"
-                    style={{ minWidth: 220, maxWidth: 320 }}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter') handleFilter();
-                    }}
-                >
-                    <FilterActionsSection
-                        handleFilter={handleFilter}
-                        handleReset={handleReset}
-                        hasActiveFilters={hasActiveFilters()}
-                    />
-                    <CategoryFilters
-                        selected={categoryFilters}
-                        onChange={setCategoryFilters}
-                    />
-                    <CreatorFilterSection
-                        creator={creator}
-                        searchValue={searchValue}
-                        filteredCreators={filteredCreators}
-                        searchCreator={searchCreator}
-                        setCreator={setCreator}
-                        setSearchValue={setSearchValue}
-                    />
-                    <PriceFilterSection
-                        priceRange={priceRange}
-                        setPriceRange={setPriceRange}
-                        minProductPrice={minProductPrice}
-                        maxProductPrice={maxProductPrice}
-                        pricePanelRef={pricePanelRef}
-                    />
-                </aside>
+        <>
+            <div style={{ position: 'relative', minWidth: 0, display: 'flex', alignItems: 'flex-start' }}>
+                <div style={{ minWidth: 220, maxWidth: 320, width: '100%', zIndex: 20 }}>
+                    <aside
+                        className="p-6 bg-white rounded shadow flex flex-col gap-4 w-full md:w-64 mb-8 relative"
+                        style={{ minWidth: 220, maxWidth: 320 }}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') handleFilter();
+                        }}
+                    >
+                        <FilterActionsSection
+                            handleReset={handleReset}
+                            hasActiveFilters={hasActiveFilters()}
+                        />
+
+                        <FilterSection title="Price Range" icon="pi pi-dollar">
+                            <PriceFilterSection
+                                priceRange={priceRange}
+                                setPriceRange={setPriceRange}
+                                minProductPrice={minProductPrice}
+                                maxProductPrice={maxProductPrice}
+                            />
+                        </FilterSection>
+
+                        <FilterSection title="Categories" icon="pi pi-tags">
+                            <CategoryFilters
+                                selected={categoryFilters}
+                                onChange={setCategoryFilters}
+                                handleFilter={handleFilter}
+                            />
+                        </FilterSection>
+
+                        <FilterSection title="Creator" icon="pi pi-user">
+                            <CreatorFilterSection
+                                creator={creator}
+                                filteredCreators={filteredCreators}
+                                setCreator={setCreator}
+                                searchCreator={searchCreator}
+                            />
+                        </FilterSection>
+                    </aside>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
