@@ -39,10 +39,9 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
-            console.log('User has submitted offer:', hasSubmittedOffer);
-
+          
         }
-        console.log('Offers:', offers, 'UserId:', userId);
+     
     }, [offers, userId]);
 
     if (isLoading) {
