@@ -204,14 +204,14 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     }
 
     // Type guard for categoryId
-    function isCategoryObj(val: unknown): val is { id: string } {
-      return (
-        typeof val === 'object' &&
-        val !== null &&
-        'id' in val &&
-        typeof (val as any).id === 'string'
-      );
-    }
+    // function isCategoryObj(val: unknown): val is { id: string } {
+    //   return (
+    //     typeof val === 'object' &&
+    //     val !== null &&
+    //     'id' in val &&
+    //     typeof (val as any).id === 'string'
+    //   );
+    // }
     const preferences = {
       ...bidRequest,
       clientId: userId,
