@@ -218,8 +218,8 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
             showIcon
             disabled={disabled}
             className="w-full"
-            minDate={new Date()} // אי אפשר לבחור תאריך בעבר
-            dateFormat="yy-mm-dd" // פורמט התצוגה
+            minDate={new Date()} 
+            dateFormat="yy-mm-dd" 
             placeholder="Select a date"
           />
 

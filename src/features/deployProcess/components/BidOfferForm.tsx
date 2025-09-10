@@ -37,26 +37,26 @@ const BidOfferForm = ({
   const user = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
 
-  const errorsRef = useRef({
+  const [errors, setErrors] = useState({
     price: false,
     estimatedDelivery: false,
   });
+  
 
   const clearForm = () => {
     setPrice(null);
     setEstimatedDelivery(null);
     setNote('');
     setAttachmentUrl('');
-    errorsRef.current = { price: false, estimatedDelivery: false };
+    setErrors({ price: false, estimatedDelivery: false });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // --- Validation ---
+  const validateForm = () => {
     const errors = {
       price: price == null || price <= 0,
       estimatedDelivery: !estimatedDelivery,
-    };
-    errorsRef.current = errors;
+    };setErrors(errors);
 
     if (errors.price || errors.estimatedDelivery || !user?.id) {
       toast.current?.show({
@@ -65,39 +65,56 @@ const BidOfferForm = ({
         detail: 'Please fill in all required fields.',
         life: 3000,
       });
-      forceUpdate();
-      return;
+      return false;
     }
+    return true;
+  };
+
+  // --- API call ---
+  const submitOffer = async () => {
+    setLoading(true);
+    let newBidOffer: Partial<BidOffer> = {
+      bidRequestId,
+      manufacturerId,
+      price: price ?? 0,
+      estimatedDelivery: estimatedDelivery
+        ? estimatedDelivery.toISOString()
+        : '',
+      note,
+      attachmentUrl,
+    };
+
+    const res = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
+    return res.data;
+  };
+
+  // --- Clear + Navigate ---
+  const finalizeSubmission = (newBidOffer: BidOffer) => {
+    dispatch(resetBidOffer());
+    toast.current?.show({
+      severity: 'success',
+      summary: 'Offer Sent',
+      detail: 'Your offer has been submitted successfully.',
+      life: 3000,
+    });
+
+    clearForm();
+    forceUpdate();
+    navigate(`/BidOfferDetails/${newBidOffer._id}`, {
+      state: { offer: newBidOffer },
+    });
+  };
+
+  // --- HandleSubmit (רזה יותר) ---
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
-      let newBidOffer: Partial<BidOffer> = {
-        bidRequestId,
-        manufacturerId,
-        price: price ?? 0,
-        estimatedDelivery: estimatedDelivery
-          ? estimatedDelivery.toISOString()
-          : '',
-        note,
-        attachmentUrl,
-      };
-      const res = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
-      newBidOffer = res.data;
-      
-      dispatch(resetBidOffer());
-
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Offer Sent',
-        detail: 'Your offer has been submitted successfully.',
-        life: 3000,
-      });
-
-      clearForm();
-      forceUpdate();
-      navigate(`/BidOfferDetails/${newBidOffer._id}`, {
-        state: { offer: newBidOffer },
-      });
+      const newBidOffer = await submitOffer();
+      finalizeSubmission(newBidOffer);
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
@@ -146,9 +163,9 @@ const BidOfferForm = ({
               }}
               placeholder="Enter your price"
               keyfilter="money"
-              className={classNames({ 'p-invalid': errorsRef.current.price })}
+              className={classNames({ 'p-invalid': errors.price })}
             />
-            {errorsRef.current.price && (
+            {errors.price && (
               <small className="p-error">Price is required.</small>
             )}
           </div>
@@ -161,10 +178,10 @@ const BidOfferForm = ({
               onChange={(e) => setEstimatedDelivery(e.value as Date)}
               showIcon
               placeholder="Select a delivery date"
-              className={classNames({ 'p-invalid': errorsRef.current.estimatedDelivery })}
+              className={classNames({ 'p-invalid': errors.estimatedDelivery })}
               minDate={new Date()}
             />
-            {errorsRef.current.estimatedDelivery && (
+            {errors.estimatedDelivery && (
               <small className="p-error">Delivery date is required.</small>
             )}
           </div>
