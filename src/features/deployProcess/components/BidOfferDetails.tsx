@@ -2,27 +2,49 @@
 import { Card } from 'primereact/card';
 import { Avatar } from 'primereact/avatar';
 import { Divider } from 'primereact/divider';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOfferById } from '../slices/BidOfferSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import type { BidOffer } from '../../../types';
 
 const BidOfferDetails: React.FC = () => {
-  const { BidOfferId } = useParams();
+  const { BidOfferId } = useParams<{ BidOfferId: string }>();
   const dispatch = useDispatch<AppDispatch>();
-  const offer = useSelector((state: RootState) => state.bidOffer.currentBidOffer);
   const loading = useSelector((state: RootState) => state.bidOffer.currentBidOfferLoading);
   const error = useSelector((state: RootState) => state.bidOffer.currentBidOfferError);
   const [imgIndex, setImgIndex] = useState(0);
   const navigate = useNavigate();
+  const [offer, setOffer] = useState<BidOffer | null>(null);
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    if (BidOfferId) {
-      dispatch(fetchBidOfferById(BidOfferId));
-    }
-  }, [BidOfferId, dispatch]);
+        const encoded = searchParams.get("manufacturerId");
+        if (encoded) {
+            try {
+                const decoded = JSON.parse(atob(encoded)) as BidOffer;
+                setOffer(decoded);
+            } catch (err) {
+                console.error("Failed to decode offer from URL", err);
+            }
+        }
+        else if (location.state && (location.state as any).offer) {
+            setOffer((location.state as any).offer);
+            
+        } else if (BidOfferId) {
+           
+            dispatch(fetchBidOfferById(BidOfferId))
+                .unwrap()
+                .then((data: BidOffer) => {
+                    setOffer(data);
+                   
+                })
+               
+        }
+    }, [BidOfferId, location.state]);
 
   if (loading) return <div className="text-center py-8"><span className="pi pi-spin pi-spinner text-2xl" /> Loading...</div>;
   if (error) return <div className="text-red-500 text-center py-8">{error}</div>;
@@ -32,7 +54,13 @@ const BidOfferDetails: React.FC = () => {
     <div className="w-full max-w-2xl mx-auto">
       <button
         className="p-button p-button-sm mb-4"
-        onClick={() => navigate(-1)}
+        onClick={() => {
+                        if (window.history.length > 1) {
+                            navigate(-1);
+                        } else {
+                            navigate('/MyBidRequest');
+                        }
+                    }}
       >
         <span className="pi pi-arrow-left mr-2" /> Back
       </button>
