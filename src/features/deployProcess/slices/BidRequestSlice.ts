@@ -29,7 +29,7 @@ export const getBidRequestsForManufacturer = createAsyncThunk<BidRequest[], void
   async (_, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const manufacturerId = state.user?.manufacturerId;
+      const manufacturerId = state.user?.manufacturerId || state.user?.manufacturer?._id;
      
       // const userId = state.user?.id;
       if (!manufacturerId) {

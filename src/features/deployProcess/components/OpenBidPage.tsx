@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatDeliveryTimeframe } from '../../../utils/date';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -34,15 +35,21 @@ export const OpenBidPage = () => {
     { label: 'Closed', value: 'closed' },
   ];
 
-  const filteredBidRequests = bidRequests.filter((bid) => {
-    const productTitle =
-      typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
-        ? bid.productId.title.toLowerCase()
-        : '';
-    const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredBidRequests = bidRequests
+    .filter((bid) => {
+      const productTitle =
+        typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
+          ? bid.productId.title.toLowerCase()
+          : '';
+      const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
+      const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    });
 
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
@@ -66,14 +73,22 @@ export const OpenBidPage = () => {
     )
   };
 
+  const deliveryTimeframeTemplate = (rowData: BidRequest) => {
+    return formatDeliveryTimeframe(rowData.deliveryTimeframe, 'he-IL');
+  };
+
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
-    const dateValue = rowData[field];
-    if (!dateValue) return '-';
-    if (typeof dateValue === 'string' || dateValue instanceof Date) {
-      const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
-      return dateObj.toLocaleDateString('he-IL');
+    const value = rowData[field];
+    let dateValue: string | Date | undefined = undefined;
+    if (value instanceof Date || typeof value === 'string') {
+      dateValue = value;
+    } else if (typeof value === 'number') {
+      dateValue = new Date(value);
+    } else {
+      // כל ערך אחר לא נתמך
+      return '-';
     }
-    return '-';
+    return formatDeliveryTimeframe(dateValue, 'he-IL');
   };
 
   const title = (
@@ -168,6 +183,7 @@ export const OpenBidPage = () => {
         <Column
           field="deliveryTimeframe"
           header="Delivery Date"
+          body={deliveryTimeframeTemplate}
           sortable
           sortField="deliveryTimeframe"
           dataType="date"
