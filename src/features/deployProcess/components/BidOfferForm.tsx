@@ -11,6 +11,8 @@ import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { BidOffer } from '../../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+
 const BidOfferForm = ({ bidRequestId: propBidRequestId, manufacturerId: propManufacturerId }: { bidRequestId?: string, manufacturerId?: string }) => {
   const location = useLocation();
   const navigate = useNavigate();

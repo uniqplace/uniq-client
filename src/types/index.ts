@@ -38,7 +38,7 @@ export interface Product {
 
 
 export interface Order {
-  _id: string;
+  _id: string | null;
   productId: string;
   buyerId: string;
   creator: { name: string, _id: string };

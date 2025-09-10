@@ -67,7 +67,7 @@ console.log('productIdFromParams', productIdFromParams);
       title: product?.title || '',
       images: product?.images || [],
       creatorName: product?.creator.name || '',
-    },
+    }
   });
 
   const [shipping, setShipping] = useState<string>('standard');
@@ -79,12 +79,15 @@ console.log('productIdFromParams', productIdFromParams);
 
   //Update total amount
   useEffect(() => {
+    console.log('Product or order changed😍😍:', product, order);
+    console.log('Creating order:', order);
     if (product) {
       const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
       const totalAmount = product.price * order.quantity + shippingPrice;
       setOrder(prev => ({ ...prev, totalAmount }));
+      console.log('Creating order:', order);
     }
-  }, [product, order.quantity, shipping]);
+  }, [user, product, order.quantity, shipping]);
 
   if (productLoading) return <div className="loading">Loading Product...</div>;
   if (!product || productError) return <div className="error">Product Not Found</div>;
@@ -105,6 +108,7 @@ console.log('productIdFromParams', productIdFromParams);
 
   const addNewOrder = async () => {
     try {
+      console.log('Creating order:', order);
       await createOrder(order).unwrap();
        dispatch(addOrder(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });

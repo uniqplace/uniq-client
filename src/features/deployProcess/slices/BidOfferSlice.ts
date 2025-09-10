@@ -43,7 +43,7 @@ export const fetchBidOffersByRequest = createAsyncThunk(
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
     async (bidOffer: BidOffer, thunkAPI) => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers`, bidOffer,
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/bidOffers/${bidOffer.manufacturerId}`, bidOffer,
             {
                 withCredentials: true,
             }

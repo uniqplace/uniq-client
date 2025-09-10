@@ -94,6 +94,7 @@ const NotificationBell = () => {
     return () => {
       eventNames.forEach((eventName) => {
         socket.off(eventName);
+       
       });
     };
   }, [user, setCount, setNotifications, toastRef]);
@@ -200,7 +201,7 @@ const NotificationBell = () => {
                         const res = await getUnreadCount(user?.id ?? '');
                         setCount(res.data.count);
                         setIsOpen(false);
-                        if (notification.type === 'NEW_BID' && notification.bidRequestId) {
+                        if (notification.type === socket_events.new_bid && notification.bidRequestId) {
                           navigate(`/MyBidRequests/${notification.bidRequestId}`);
                         } else if (notification.link) {
                           navigate(notification.link);

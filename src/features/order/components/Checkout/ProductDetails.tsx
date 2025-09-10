@@ -9,7 +9,11 @@ interface ProductDetailsProps {
 const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
   return (
     <div className="product-info mb-5">
-      <img src={product.images[0]} alt={product.title} className="product-img" />
+      <img
+        src={product.images && product.images.length > 0 ? product.images[0] : '/default-image.png'}
+        alt={product.title}
+        className="product-img"
+      />
       <div>
         <div className="product-title">{product.title}</div>
         <small className="product-desc">{product.description?.slice(0, 80)}...</small>
