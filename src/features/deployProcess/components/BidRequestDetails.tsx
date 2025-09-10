@@ -1,3 +1,4 @@
+import { getDayDifference } from '../../../utils/dateDiff';
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
 import { useEffect, useState } from 'react';
@@ -185,13 +186,11 @@ const BidRequestDetails = () => {
                                 if (!bidRequest.deliveryTimeframe) return "Not specified";
                                 const dt = new Date(bidRequest.deliveryTimeframe);
                                 if (!isNaN(dt.getTime())) {
-                                    const today = new Date();
-                                    today.setHours(0,0,0,0);
-                                    const diffDays = Math.round((dt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                                    const diffDays = getDayDifference(new Date(), dt);
                                     if (diffDays >= 1 && diffDays < 30) {
                                         return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
                                     } else if (diffDays >= 30 && diffDays < 365) {
-                                        const months = Math.round(diffDays / 30);
+                                        const months = Math.floor(diffDays / 30);
                                         return `${months} month${months === 1 ? '' : 's'}`;
                                     } else {
                                         return dt.toLocaleDateString('en-US');
