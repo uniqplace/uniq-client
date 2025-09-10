@@ -1,7 +1,6 @@
-import { useManufacturerPreferencesForm } from '../../../hooks/useManufacturerPreferencesForm';
 import { getDeliveryLabel } from '../../../utils/deliveryLabel';
 import { getDayDifference } from '../../../utils/dateDiff';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
@@ -64,6 +63,8 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
 }
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
+  // דגל אתחול כדי למנוע dispatch אינסופי
+  const isInitializing = useRef(false);
   const loading = useAppSelector((state) => state.stepper.loading);
 
   // Redux stepper state (must be above localStorage logic)
@@ -80,27 +81,31 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Get bidRequest from Redux
   const bidRequest = useAppSelector(state => state.stepper.bidRequest);
-  const {
-    categoryId, setCategoryId,
-    locationPreference, setLocationPreference,
-    priceRange, setPriceRange,
-    deliveryTimeframe, setDeliveryTimeframe,
-    deliveryMethod, setDeliveryMethod,
-    rating, setRating,
-  } = useManufacturerPreferencesForm(bidRequest, isReadOnly);
 
-  const dispatch = useDispatch();
-  // Restore step and form data from Redux on mount (if needed)
+  // סטייטים מקומיים במקום ההוק
+  const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
+  const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: 0, max: 1000 });
+  const [deliveryTimeframe, setDeliveryTimeframe] = useState<Date>(
+    bidRequest?.deliveryTimeframe ? new Date(bidRequest.deliveryTimeframe) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  );
+  const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>(bidRequest?.deliveryMethod ?? 'pickup');
+  const [rating, setRating] = useState<number>(bidRequest?.rating ?? 1);
+
+  // אתחול סטייטים מקומיים בכל שינוי ב-bidRequest (כולל רענון/חזרה אחורה)
   React.useEffect(() => {
     if (bidRequest) {
-      setCategoryId(getCategoryIdValue(bidRequest.categoryId));
-      if (bidRequest.locationPreference !== undefined) setLocationPreference(bidRequest.locationPreference);
-      if (bidRequest.priceRange !== undefined) setPriceRange(bidRequest.priceRange);
-      if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(new Date(bidRequest.deliveryTimeframe));
-      if (bidRequest.deliveryMethod !== undefined) setDeliveryMethod(bidRequest.deliveryMethod);
-      if (bidRequest.rating !== undefined) setRating(bidRequest.rating ?? 1);
+      isInitializing.current = true;
+      setCategoryId(getCategoryIdValue(bidRequest.categoryId ?? null));
+      setLocationPreference(bidRequest.locationPreference ?? null);
+      setPriceRange(bidRequest.priceRange ?? { min: 0, max: 1000 });
+      setDeliveryTimeframe(bidRequest.deliveryTimeframe ? new Date(bidRequest.deliveryTimeframe) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      setDeliveryMethod(bidRequest.deliveryMethod ?? 'pickup');
+      setRating(bidRequest.rating ?? 1);
+      setTimeout(() => { isInitializing.current = false; }, 0);
     }
   }, [bidRequest]);
+  const dispatch = useDispatch();
 
   // Prefill logic: on mount, if no bidRequest in Redux and productId exists, fetch from server
   React.useEffect(() => {
@@ -140,7 +145,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Save form data to bidRequest in Redux slice on change
   React.useEffect(() => {
-    if (!isReadOnly) {
+    if (!isReadOnly && !isInitializing.current) {
       const localPayload = {
         categoryId: getCategoryIdValue(categoryId),
         locationPreference,
