@@ -10,6 +10,7 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
+import NormalizedRating from '../../../components/shared/Rating';
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -169,9 +170,22 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                       {offer.estimatedDelivery ? getLeadTime(offer.createdAt, offer.estimatedDelivery) : ''}
                     </span>
                   </div>
-                  {/* Note */}
+                  {/* Note
                   <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
                     <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
+                    <span>{offer.note || 'No note provided'}</span>
+                  </div> */}
+                  {/* Rating */}
+                  <div className="md:col-span-2 text-center">
+                    <NormalizedRating
+                      rating={offer.manufacturerId?.rating}
+                      offers={offers}
+                      readOnly
+                      style={{ fontSize: '1rem' }}
+                    />
+                  </div>
+                  {/* Response */}
+                  <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">
                     <span>{offer.note || 'No note provided'}</span>
                   </div>
                   {/* Chat Button */}
@@ -187,11 +201,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                       aria-label="Chat"
 
                     />
-
-                  </div>
-                  {/* Response */}
-                  <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">
-                    <span>{offer.note || 'No note provided'}</span>
                   </div>
                 </div>
               ) : null
