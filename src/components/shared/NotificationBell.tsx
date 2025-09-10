@@ -7,6 +7,7 @@ import { Tag } from 'primereact/tag';
 import { deduplicateNotifications } from '../../utils/notificationHelpers';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useNotifications';
+  import { useLoadMore } from '../../hooks/useLoadMore';
 
 // Utility function to check if a value is an object
 const isObject = (value: any): boolean => {
@@ -24,6 +25,20 @@ const eventIcons: Record<string, string> = {
 
 
 const NotificationBell = () => {
+
+  // Handler for notification click (must be before return)
+  const handleNotificationClick = async (e: any) => {
+    if (!e.value || !isObject(e.value)) return;
+    const notification = e.value;
+    await markNotificationAsRead(notification._id);
+    setIsOpen(false);
+    if (notification.type === 'NEW_BID' && notification.bidRequestId) {
+      navigate(`/MyBidRequests/${notification.bidRequestId}`);
+    } else if (notification.link) {
+      navigate(notification.link);
+    }
+  };
+
   const navigate = useNavigate();
   const {
     count,
@@ -36,6 +51,7 @@ const NotificationBell = () => {
     loadMore,
     markNotificationAsRead,
   } = useNotifications();
+  const { handleLoadMore } = useLoadMore(hasMore, loading, loadMore);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
@@ -120,17 +136,7 @@ const NotificationBell = () => {
                     key={isOpen ? 'open' : 'closed'}
                     options={deduplicateNotifications(notifications)}
                     optionLabel="title"
-                    onChange={async (e) => {
-                      if (!e.value || !isObject(e.value)) return;
-                      const notification = e.value;
-                      await markNotificationAsRead(notification._id);
-                      setIsOpen(false);
-                      if (notification.type === 'NEW_BID' && notification.bidRequestId) {
-                        navigate(`/MyBidRequests/${notification.bidRequestId}`);
-                      } else if (notification.link) {
-                        navigate(notification.link);
-                      }
-                    }}
+                    onChange={handleNotificationClick}
                     itemTemplate={(notification) => (
                       <div className="p-2 border-b text-sm cursor-pointer flex items-center gap-2">
                         <Tag
@@ -156,25 +162,15 @@ const NotificationBell = () => {
                 </div>
               )}
               <div className="p-0 border-t border-gray-200">
-                {/* {(user.role === 'admin' || user.role === 'manufacturer') && (
-                  <Button
-                    label="Show all bid request notifications"
-                    className="w-full p-button-sm p-button-info"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/myBidRequestsNotifications');
-                    }}
-                  />
-                )} */}
                 {/* Removed auto-triggered loadMore to prevent multiple API calls */}
                 <div style={{ padding: 0, margin: 0 }}>
                   <Button
                     label="Load more notifications"
                     icon="pi pi-chevron-down"
-                    onClick={loadMore}
+                    onClick={handleLoadMore}
                     className="p-button-sm w-full flex items-center justify-center px-4 pb-4 pt-2"
                     style={{ borderRadius: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, width: '100%' }}
-                    disabled={!hasMore}
+                    disabled={!hasMore || loading}
                   />
                 </div>
               </div>

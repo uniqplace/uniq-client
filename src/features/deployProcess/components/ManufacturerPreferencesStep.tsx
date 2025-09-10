@@ -218,16 +218,12 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       productId,
       categoryId: getCategoryIdValue(bidRequest.categoryId),
     };
-    console.log('🍟🍟[BidRequest] Sending preferences:', preferences);
-
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
 
 
     try {
       // @ts-ignore
       const resultAction = await dispatch(saveBidRequest(preferences));
-      console.log('🍔🍔 Save bid request resultAction:', resultAction);
-      
 
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
