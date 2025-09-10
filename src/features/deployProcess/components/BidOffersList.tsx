@@ -10,7 +10,7 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
-import NormalizedRating from '../../../components/shared/NormalizedRatin';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
 
 
 interface BidOffersListProps {

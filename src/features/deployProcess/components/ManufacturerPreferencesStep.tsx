@@ -12,7 +12,7 @@ import { Toast } from 'primereact/toast';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
 import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/Rating';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
 
 const priceRangeMin = 0;
 const priceRangeMax = 1000;
@@ -51,9 +51,6 @@ const hardcodedLocations = [
   { label: 'Eilat', value: 'eilat' },
   { label: 'General', value: 'general' },
 ];
-
-import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/NormalizedRatin';
 
 function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
   if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
@@ -346,7 +343,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           <NormalizedRating
             rating={rating}
             readOnly={isReadOnly}
-            onChange={value => !isReadOnly && setRating(value)}
+            onChange={(value:number) => !isReadOnly && setRating(value)}
             className="w-full"
           />
 
