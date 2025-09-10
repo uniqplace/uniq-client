@@ -1,5 +1,3 @@
-
-
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidOffer } from "../../../types";
@@ -107,16 +105,16 @@ const bidOfferSlice = createSlice({
         state.error = action.payload as string;
       })
       // Fetch single bid offer by ID
-      .addCase(fetchBidOfferById.pending, (state: any) => {
+      .addCase(fetchBidOfferById.pending, (state) => {
         state.currentBidOfferLoading = true;
         state.currentBidOfferError = null;
         state.currentBidOffer = null;
       })
-      .addCase(fetchBidOfferById.fulfilled, (state: any, action: any) => {
+      .addCase(fetchBidOfferById.fulfilled, (state, action) => {
         state.currentBidOfferLoading = false;
         state.currentBidOffer = action.payload;
       })
-      .addCase(fetchBidOfferById.rejected, (state: any, action: any) => {
+      .addCase(fetchBidOfferById.rejected, (state, action) => {
         state.currentBidOfferLoading = false;
         state.currentBidOfferError = action.payload as string;
         state.currentBidOffer = null;

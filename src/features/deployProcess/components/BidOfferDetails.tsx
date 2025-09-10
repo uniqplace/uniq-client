@@ -1,3 +1,11 @@
+// Helper functions for image navigation
+function getPrevImageIndex(currentIndex: number, imagesLength: number): number {
+  return currentIndex === 0 ? imagesLength - 1 : currentIndex - 1;
+}
+
+function getNextImageIndex(currentIndex: number, imagesLength: number): number {
+  return currentIndex === imagesLength - 1 ? 0 : currentIndex + 1;
+}
 
 import { Card } from 'primereact/card';
 import { Avatar } from 'primereact/avatar';
@@ -94,7 +102,7 @@ const BidOfferDetails: React.FC = () => {
                       <button
                         className="absolute left-0 top-1/2 -translate-y-1/2 hover:text-blue-600"
                         style={{ zIndex: 2, background: 'none', boxShadow: 'none', border: 'none', padding: 0 }}
-                        onClick={() => setImgIndex(i => i === 0 ? (offer.bidRequestId?.productId?.images?.length ?? 1) - 1 : i - 1)}
+                        onClick={() => setImgIndex(i => getPrevImageIndex(i, offer.bidRequestId?.productId?.images?.length ?? 1))}
                         title="Previous image"
                       >
                         <span className="pi pi-chevron-left text-xl" />
@@ -102,7 +110,7 @@ const BidOfferDetails: React.FC = () => {
                       <button
                         className="absolute right-0 top-1/2 -translate-y-1/2 hover:text-blue-600"
                         style={{ zIndex: 2, background: 'none', boxShadow: 'none', border: 'none', padding: 0 }}
-                        onClick={() => setImgIndex(i => i === ((offer.bidRequestId?.productId?.images?.length ?? 1) - 1) ? 0 : i + 1)}
+                        onClick={() => setImgIndex(i => getNextImageIndex(i, offer.bidRequestId?.productId?.images?.length ?? 1))}
                         title="Next image"
                       >
                         <span className="pi pi-chevron-right text-xl" />

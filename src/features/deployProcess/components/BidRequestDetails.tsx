@@ -49,7 +49,7 @@ const BidRequestDetails = () => {
     }, [bidRequestId, dispatch]);
 
     useEffect(() => {
-        console.log('Fetched offers:', offers,hasSubmittedOffer);
+   
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
           

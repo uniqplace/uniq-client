@@ -233,7 +233,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                           style={{ backgroundColor: '#25D366', borderColor: '#25D366', color: '#fff', width: '44px', height: '44px', minWidth: '44px', fontSize: '1.3rem', boxShadow: '0 2px 8px rgba(37,211,102,0.15)', transition: 'transform 0.2s' }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            // ניווט לדף ההזמנה עם כל הנתונים הנדרשים
+                           // Navigate to order page with all required data
                             navigate(`/checkout/${offer.bidRequestId.productId._id ?? ''}`, {
                               state: {
                                 product: {

@@ -6,17 +6,26 @@ interface ProductDetailsProps {
   product: Product;
 }
 
+const getProductImage = (product?: Product): string => {
+  if (!product || !product.images || product.images.length === 0) return '/default-image.png';
+  return product.images[0];
+};
+
+const getProductTitle = (product?: Product): string => {
+  return product?.title || '';
+};
+
 const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
   if (!product) return null;
   return (
     <div className="product-info mb-5">
       <img
-        src={product.images && product.images.length > 0 ? product.images[0] : '/default-image.png'}
-        alt={product.title}
+        src={getProductImage(product)}
+        alt={getProductTitle(product)}
         className="product-img"
       />
       <div>
-        <div className="product-title">{product.title}</div>
+        <div className="product-title">{getProductTitle(product)}</div>
         <small className="product-desc">{product.description?.slice(0, 80)}...</small>
       </div>
     </div>
