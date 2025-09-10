@@ -34,15 +34,21 @@ export const OpenBidPage = () => {
     { label: 'Closed', value: 'closed' },
   ];
 
-  const filteredBidRequests = bidRequests.filter((bid) => {
-    const productTitle =
-      typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
-        ? bid.productId.title.toLowerCase()
-        : '';
-    const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredBidRequests = bidRequests
+    .filter((bid) => {
+      const productTitle =
+        typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
+          ? bid.productId.title.toLowerCase()
+          : '';
+      const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
+      const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    });
 
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
@@ -64,6 +70,18 @@ export const OpenBidPage = () => {
         className="p-button-sm"
       />
     )
+  };
+
+  const deliveryTimeframeTemplate = (rowData: BidRequest) => {
+    const value = rowData.deliveryTimeframe;
+    if (!value) return '-';
+    let dateObj: Date;
+    if (typeof value === 'string' || typeof value === 'number') {
+      dateObj = new Date(value);
+    } else {
+      dateObj = value as Date;
+    }
+    return dateObj instanceof Date && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('he-IL') : '-';
   };
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
@@ -168,6 +186,7 @@ export const OpenBidPage = () => {
         <Column
           field="deliveryTimeframe"
           header="Delivery Date"
+          body={deliveryTimeframeTemplate}
           sortable
           sortField="deliveryTimeframe"
           dataType="date"
