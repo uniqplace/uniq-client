@@ -67,7 +67,7 @@ export const OrderCard = ({ order, onShowDetails, currentTab, refetchOrders }: O
           visible={!!showStatusOrder}
           status={showStatusOrder as OrderStatus}
           onHide={() => setShowStatusOrder(null)}
-          orderId={order._id}
+          orderId={order._id ?? ''}
           currentTab={currentTab}
           refetchOrders={refetchOrders}
         />
