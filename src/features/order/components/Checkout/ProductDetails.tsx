@@ -7,6 +7,7 @@ interface ProductDetailsProps {
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
+  if (!product) return null;
   return (
     <div className="product-info mb-5">
       <img

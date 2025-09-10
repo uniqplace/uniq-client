@@ -115,13 +115,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
 
   //Update total amount
   useEffect(() => {
-    console.log('Product or order changed😍😍:', product, order);
-    console.log('Creating order:', order);
+
     if (product) {
       const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
       const totalAmount = product.price * order.quantity + shippingPrice;
       setOrder(prev => ({ ...prev, totalAmount }));
-      console.log('Creating order:', order);
     }
   }, [user, product, order.quantity, shipping]);
 
@@ -141,7 +139,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
 
   const addNewOrder = async () => {
     try {
-      console.log('Creating order:', order);
       await createOrder(order).unwrap();
        dispatch(addOrder(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
