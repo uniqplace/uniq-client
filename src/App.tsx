@@ -31,8 +31,8 @@ import BidRequestDetails from './features/deployProcess/components/BidRequestDet
 import ManufacturerBidRequests from './features/deployProcess/components/ManufacturerBidRequests';
 import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper';
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
-import PrivateRoute from './utils/PrivateRoute';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
+import { PrivateRoute } from './utils/PrivateRoute';
 
 
 
@@ -94,16 +94,17 @@ function App() {
           <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
           <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
           <Route path="/checkout/:productId" element={<CheckoutPage />} />
-          <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
-          <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
-          <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
           <Route
             path="/myBidRequests/:bidRequestId"
             element={
               <PrivateRoute>
                 <BidRequestDetails />
-              </PrivateRoute>}
+              </PrivateRoute>
+            }
           />
+          <Route path="/MyBidRequest" element={<BidRequestsTabs />} />
+          <Route path="/myBidRequestsNotifications" element={<MyBidRequestsNotifications />} />
+          <Route path="/myBidRequests" element={<ManufacturerBidRequests />} />
           <Route path="/BidOffer" element={<BidOfferForm />} />
           <Route path="/MyBidRequest/:bidRequestId" element={<OpenBidPage />} />
           <Route path="/MyBidRequest" element={<OpenBidPage />} />

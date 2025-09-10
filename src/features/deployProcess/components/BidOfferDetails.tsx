@@ -1,128 +1,140 @@
-// BidOfferDetails.tsx
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { Card } from "primereact/card";
-import { Button } from "primereact/button";
-import { Avatar } from "primereact/avatar";
-import { ArrowLeft } from "lucide-react";
-import type { BidOffer } from "../../../types";
-import { useAppDispatch } from "../../../hooks/hooks";
-import { fetchBidOfferById } from "../slices/BidOfferSlice";
-import NormalizedRating from "../../../components/shared/NormalizedRating";
-
+import { Card } from 'primereact/card';
+import { Avatar } from 'primereact/avatar';
+import { Divider } from 'primereact/divider';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchBidOfferById, setCurrentBidOffer } from '../slices/BidOfferSlice';
+import type { RootState, AppDispatch } from '../../../store';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import type { BidOffer } from '../../../types';
 const BidOfferDetails: React.FC = () => {
     const { BidOfferId } = useParams<{ BidOfferId: string }>();
+    const dispatch = useDispatch<AppDispatch>();
+    const loading = useSelector((state: RootState) => state.bidOffer.currentBidOfferLoading);
+    const error = useSelector((state: RootState) => state.bidOffer.currentBidOfferError);
+    const [imgIndex, setImgIndex] = useState(0);
+    const navigate = useNavigate();
+    const [offer, setOffer] = useState<BidOffer | null>(null);
     const location = useLocation();
     const [searchParams] = useSearchParams();
-
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-
-    const [offer, setOffer] = useState<BidOffer | null>(null);
-    const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const encoded = searchParams.get("manufacturerId");
         if (encoded) {
+            const decoded = JSON.parse(atob(encoded)) as BidOffer;
             try {
-                const decoded = JSON.parse(atob(encoded)) as BidOffer;
                 setOffer(decoded);
+                setCurrentBidOffer(decoded);
             } catch (err) {
                 console.error("Failed to decode offer from URL", err);
-            } finally {
-                setLoading(false);
             }
         }
         else if (location.state && (location.state as any).offer) {
             setOffer((location.state as any).offer);
-            setLoading(false);
+            setCurrentBidOffer((location.state as any).offer);
         } else if (BidOfferId) {
-            setLoading(true);
             dispatch(fetchBidOfferById(BidOfferId))
                 .unwrap()
                 .then((data: BidOffer) => {
                     setOffer(data);
-                    setLoading(false);
                 })
-                .catch(() => setLoading(false));
         }
     }, [BidOfferId, location.state]);
-
-    if (loading) return <div className="text-center py-8">Loading...</div>;
-    if (!offer) return <div className="text-center py-8 text-red-500">Offer not found</div>;
-
+    
+    if (loading) return <div className="text-center py-8"><span className="pi pi-spin pi-spinner text-2xl" /> Loading...</div>;
+    if (error) return <div className="text-red-500 text-center py-8">{error}</div>;
+    if (!offer) return <div className="text-gray-500 text-center py-8">No offer found.</div>;
+    
     return (
-        <div className="max-w-3xl mx-auto p-4">
-            {/* --- Back button --- */}
-            <div className="mb-4">
-                <Button
-                    icon={<ArrowLeft />}
-                    label="Back"
-                    className="p-button-text"
-                    onClick={() => {
-                        if (window.history.length > 1) {
-                            navigate(-1);
-                        } else {
-                            navigate('/MyBidRequest');
-                        }
-                    }}
-
-                />
-            </div>
-
-            {/* --- Card with offer --- */}
-            <Card className="shadow-lg border-round-lg p-6 space-y-6">
-                {/* Manufacturer Info */}
-                <div className="flex gap-4 items-center mb-6">
-                    <Avatar
-                        image={offer.manufacturerId?.userId?.avatarUrl || "/default-avatar.png"}
-                        shape="circle"
-                        size="xlarge"
-                        className="[&>img]:w-full [&>img]:h-full [&>img]:object-cover"
-                    />
-                    <div className="flex flex-col">
-                        <div className="flex justify-between w-full gap-2">
-                            <span className="font-medium">Manufacturer Name:</span>
-                            <span className="font-semibold">{offer.manufacturerId?.userId?.name}</span>
-                        </div>
-                        <div className="flex justify-between w-full mt-1 gap-4">
-                            <span className="font-medium">Manufacturer Rating:</span>
-                            <NormalizedRating
-                                rating={offer.manufacturerId?.rating}
-                                offers={offer} // גם הצעה בודדת עובדת
-                                readOnly
-                            />
-
-                        </div>
+        <div className="w-full max-w-2xl mx-auto">
+            <button
+                className="p-button p-button-sm mb-4"
+                onClick={() => {
+                    if (window.history.length > 1) {
+                        navigate(`/myBidRequests/${offer.bidRequestId?._id}`);
+                    } else {
+                        navigate('/MyBidRequest');
+                    }
+                }}
+            >
+                <span className="pi pi-arrow-left mr-2" /> Back
+            </button>
+            <Card className="shadow-md p-4 rounded-lg">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="flex flex-col items-center">
+                        <Avatar
+                            image={typeof offer.bidRequestId?.creatorId?.avatarUrl === 'string' && offer.bidRequestId.creatorId.avatarUrl ? offer.bidRequestId.creatorId.avatarUrl : undefined}
+                            icon={!(typeof offer.bidRequestId?.creatorId?.avatarUrl === 'string' && offer.bidRequestId.creatorId.avatarUrl) ? "pi pi-user" : undefined}
+                            size="large"
+                            shape="circle"
+                            className="mb-2 border border-gray-300 shadow-sm [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
+                        />
+                        <div className="font-semibold text-gray-800">{offer.bidRequestId?.creatorId?.name || 'Unknown Creator'}</div>
+                        <div className="text-xs text-gray-500">{offer.bidRequestId?.creatorId?.email}</div>
+                        <div className="text-xs text-gray-400">Role: {offer.bidRequestId?.creatorId?.role}</div>
+                    </div>
+                    <Divider layout="vertical" className="mx-4" />
+                    <div className="flex flex-col items-start">
+                        <div className="font-semibold text-lg text-gray-800 mb-1">Product</div>
+                        {Array.isArray(offer.bidRequestId?.productId?.images) && offer.bidRequestId.productId.images.length > 0 && (
+                            <div className="flex flex-col items-center mb-2">
+                                <div className="relative">
+                                    <img
+                                        src={offer.bidRequestId?.productId?.images?.[imgIndex]}
+                                        alt="Product"
+                                        className="w-32 h-32 object-cover rounded shadow"
+                                    />
+                                    {Array.isArray(offer.bidRequestId?.productId?.images) && offer.bidRequestId.productId.images?.length > 1 && (
+                                        <>
+                                            <button
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 hover:text-blue-600"
+                                                style={{ zIndex: 2, background: 'none', boxShadow: 'none', border: 'none', padding: 0 }}
+                                                onClick={() => setImgIndex(i => i === 0 ? (offer.bidRequestId?.productId?.images?.length ?? 1) - 1 : i - 1)}
+                                                title="Previous image"
+                                            >
+                                                <span className="pi pi-chevron-left text-xl" />
+                                            </button>
+                                            <button
+                                                className="absolute right-0 top-1/2 -translate-y-1/2 hover:text-blue-600"
+                                                style={{ zIndex: 2, background: 'none', boxShadow: 'none', border: 'none', padding: 0 }}
+                                                onClick={() => setImgIndex(i => i === ((offer.bidRequestId?.productId?.images?.length ?? 1) - 1) ? 0 : i + 1)}
+                                                title="Next image"
+                                            >
+                                                <span className="pi pi-chevron-right text-xl" />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                    {imgIndex + 1} / {offer.bidRequestId?.productId?.images?.length ?? 1}
+                                </div>
+                            </div>
+                        )}
+                        <div className="font-medium text-gray-700">{offer.bidRequestId?.productId?.title}</div>
+                        <div className="text-sm text-gray-500 mb-2">{offer.bidRequestId?.productId?.description}</div>
                     </div>
                 </div>
-
-                {/* Offer Details */}
-                <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">Offer Details</h3>
-                    <div className="flex justify-between">
-                        <span className="font-medium">Price:</span>
-                        <span>${offer.price}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="font-medium">Lead Time:</span>
-                        <span>{offer.estimatedDelivery ? new Date(offer.estimatedDelivery).toLocaleDateString() : "Not specified"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="font-medium">Note:</span>
-                        <span>{offer.note || "No note provided"}</span>
-                    </div>
+                <Divider />
+                <div className="flex justify-between items-center mb-2">
+                    <div className="font-semibold text-lg text-gray-800">Your Submitted Offer</div>
                 </div>
-
-                {/* --- Select Manufacturer Button --- */}
-                <div className="mt-6 flex justify-center">
-                    <button className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-                        Select Manufacturer
-                    </button>
+                <div className="mb-2 text-sm text-gray-700">
+                    <span className="font-medium">Price:</span> {offer.price} ₪
+                </div>
+                <div className="mb-2 text-sm text-gray-700">
+                    <span className="font-medium">Estimated Delivery:</span> {offer.estimatedDelivery ? new Date(offer.estimatedDelivery).toLocaleDateString('en-US') : 'N/A'}
+                </div>
+                <div className="mb-2 text-sm text-gray-700">
+                    <span className="font-medium">Note:</span> {offer.note || '—'}
+                </div>
+                <div className="mb-2 text-sm text-gray-700">
+                    <span className="font-medium">Attachment:</span> {offer.attachmentUrl ? <a href={offer.attachmentUrl} target="_blank" rel="noopener noreferrer">View</a> : '—'}
+                </div>
+                <div className="mb-2 text-xs text-gray-500">
+                    <span className="font-medium">Submitted At:</span> {offer.createdAt ? new Date(offer.createdAt).toLocaleString('en-US') : 'N/A'}
                 </div>
             </Card>
         </div>
     );
 };
-
 export default BidOfferDetails;

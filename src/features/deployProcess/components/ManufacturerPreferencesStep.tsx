@@ -51,14 +51,7 @@ const hardcodedLocations = [
 ];
 
 import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/NormalizedRating';
-
-function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
-  if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
-    return categoryId._id;
-  }
-  return categoryId ?? null;
-}
+import NormalizedRating from '../../../components/shared/NormalizedRatin';
 
 function getCategoryIdValue(categoryId: string | { _id: string } | null): string | null {
   if (typeof categoryId === 'object' && categoryId !== null && '_id' in categoryId) {
@@ -226,7 +219,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       productId,
       categoryId: getCategoryIdValue(bidRequest.categoryId),
     };
-    console.log('[BidRequest] Sending preferences:', preferences);
 
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
 

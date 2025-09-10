@@ -165,6 +165,7 @@ export interface Manufacturer {
   servicesOffered?: string[];
 }
 interface BidRequestId {
+  _id?: string;
   productId: ({ title: string }) & { _id?: string } & { description?: string }&{ images?: string[] };
   creatorId?: ({ name: string; email: string; role: string; avatarUrl?: string }) & { _id?: string };
   categoryId: string;

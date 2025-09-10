@@ -18,13 +18,8 @@ import { ArrowLeft } from 'lucide-react';
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
-    console.log("bidRequestId from params:", bidRequestId);
 
     const navigate = useNavigate();
-    //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
-    //  const [isLoading, setIsLoading] = useState<boolean>(true);
-    //const [fetchError, setFetchError] = useState<string | null>(null);
-    //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
 
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
@@ -115,11 +110,7 @@ const BidRequestDetails = () => {
                         icon={<ArrowLeft size={16} />}
                         className="p-button-text p-button-sm text-green-600"
                         onClick={() => {
-                                if (window.history.length > 1) {
-                                    navigate(-1);
-                                } else {
-                                    navigate('/MyBidRequest');
-                                }
+                                navigate('/MyBidRequest');
                             }
                         }
                     />
@@ -148,7 +139,9 @@ const BidRequestDetails = () => {
                             <button
                                 className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
                                 style={{ width: 28, height: 28 }}
-                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`, {
+                                    state: { offer: userOffer },
+                                })}
                                 title="View full offer details"
                             >
                                 <span className="pi pi-arrow-right" />
