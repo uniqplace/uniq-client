@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatDeliveryTimeframe } from '../../../utils/date';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -73,25 +74,21 @@ export const OpenBidPage = () => {
   };
 
   const deliveryTimeframeTemplate = (rowData: BidRequest) => {
-    const value = rowData.deliveryTimeframe;
-    if (!value) return '-';
-    let dateObj: Date;
-    if (typeof value === 'string' || typeof value === 'number') {
-      dateObj = new Date(value);
-    } else {
-      dateObj = value as Date;
-    }
-    return dateObj instanceof Date && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('he-IL') : '-';
+    return formatDeliveryTimeframe(rowData.deliveryTimeframe, 'he-IL');
   };
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
-    const dateValue = rowData[field];
-    if (!dateValue) return '-';
-    if (typeof dateValue === 'string' || dateValue instanceof Date) {
-      const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
-      return dateObj.toLocaleDateString('he-IL');
+    const value = rowData[field];
+    let dateValue: string | Date | undefined = undefined;
+    if (value instanceof Date || typeof value === 'string') {
+      dateValue = value;
+    } else if (typeof value === 'number') {
+      dateValue = new Date(value);
+    } else {
+      // כל ערך אחר לא נתמך
+      return '-';
     }
-    return '-';
+    return formatDeliveryTimeframe(dateValue, 'he-IL');
   };
 
   const title = (

@@ -1,5 +1,6 @@
 import { getDeliveryLabel } from '../../../utils/deliveryLabel';
-import { getDayDifference } from '../../../utils/dateDiff';
+import { calculateDeliveryDate } from '../../../utils/date';
+import { getSliderValue } from '../../../utils/slider';
 import React, { useRef, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Slider } from 'primereact/slider';
@@ -63,7 +64,6 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
 }
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
-  // דגל אתחול כדי למנוע dispatch אינסופי
   const isInitializing = useRef(false);
   const loading = useAppSelector((state) => state.stepper.loading);
 
@@ -82,7 +82,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   // Get bidRequest from Redux
   const bidRequest = useAppSelector(state => state.stepper.bidRequest);
 
-  // סטייטים מקומיים במקום ההוק
   const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
   const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: 0, max: 1000 });
@@ -92,7 +91,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>(bidRequest?.deliveryMethod ?? 'pickup');
   const [rating, setRating] = useState<number>(bidRequest?.rating ?? 1);
 
-  // אתחול סטייטים מקומיים בכל שינוי ב-bidRequest (כולל רענון/חזרה אחורה)
   React.useEffect(() => {
     if (bidRequest) {
       isInitializing.current = true;
@@ -137,10 +135,8 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Memoized slider value for delivery timeframe
   const sliderValue = React.useMemo(() => {
-    const diffDays = getDayDifference(new Date(), deliveryTimeframe);
-    const idx = deliveryOptions.findIndex(opt => opt.value === diffDays);
-    return idx >= 0 ? idx : 6; // default to 7 days if not found
-  }, [deliveryTimeframe]);
+    return getSliderValue(deliveryOptions, deliveryTimeframe);
+  }, [deliveryOptions, deliveryTimeframe]);
 
 
   // Save form data to bidRequest in Redux slice on change
@@ -273,9 +269,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     const selected = deliveryOptions[index];
     if (selected) {
       const days = selected.value;
-      const estimatedDate = new Date();
-      estimatedDate.setDate(estimatedDate.getDate() + days);
-      setDeliveryTimeframe(estimatedDate);
+      setDeliveryTimeframe(calculateDeliveryDate(days));
     }
   };
 

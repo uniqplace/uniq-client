@@ -10,6 +10,7 @@ import type { RootState } from '../../../store';
 import { Tag } from 'primereact/tag';
 import { getBidRequestsForManufacturer } from '../slices/BidRequestSlice';
 import { getNestedFieldValue } from '../../../utils/objectHelpers';
+import { formatDeliveryTimeframe } from '../../../utils/date';
 import BidRequestsFilterFields from '../../../components/shared/BidRequestsFilterFields';
 
 const ManufacturerBidRequests = () => {
@@ -72,16 +73,16 @@ const ManufacturerBidRequests = () => {
   );
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
-    const dateValue = rowData[field];
-
-    if (!dateValue) return '-';
-
-    if (typeof dateValue === 'string' || dateValue instanceof Date) {
-      const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
-      return dateObj.toLocaleDateString('he-IL');
+    const value = rowData[field];
+    let dateValue: string | Date | undefined = undefined;
+    if (value instanceof Date || typeof value === 'string') {
+      dateValue = value;
+    } else if (typeof value === 'number') {
+      dateValue = new Date(value);
+    } else {
+      return '-';
     }
-
-    return '-'; 
+    return formatDeliveryTimeframe(dateValue, 'he-IL');
   };
 
   if (loading) {

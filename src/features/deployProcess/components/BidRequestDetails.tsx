@@ -16,6 +16,23 @@ import type { BidOffer } from '../../../types';
 import { Button } from 'primereact/button';
 import { ArrowLeft } from 'lucide-react';
 
+// Helper function to format delivery timeframe
+export function formatDeliveryTimeframe(deliveryTimeframe: string | Date | undefined): string {
+    if (!deliveryTimeframe) return "Not specified";
+    const dt = new Date(deliveryTimeframe);
+    if (!isNaN(dt.getTime())) {
+        const diffDays = getDayDifference(new Date(), dt);
+        if (diffDays >= 1 && diffDays < 30) {
+            return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
+        } else if (diffDays >= 30 && diffDays < 365) {
+            const months = Math.floor(diffDays / 30);
+            return `${months} month${months === 1 ? '' : 's'}`;
+        } else {
+            return dt.toLocaleDateString('en-US');
+        }
+    }
+    return String(deliveryTimeframe);
+}
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
@@ -43,9 +60,9 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
-          
+
         }
-     
+
     }, [offers, userId]);
 
     if (isLoading) {
@@ -76,7 +93,7 @@ const BidRequestDetails = () => {
     // Handler function for navigation
     const handleNavigation = () => {
         if (bidRequestId) {
-            
+
             console.log('Navigating to BidOffer with:', { bidRequestId, manufacturerId: userId });
             navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
         }
@@ -130,19 +147,19 @@ const BidRequestDetails = () => {
                         <div className="text-sm text-gray-500">Request Creator</div>
                     </div>
                 </div>
-                    {hasSubmittedOffer && submittedAt && (
-                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
-                            Offer submitted at: {submittedAt}
-                            <button
-                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
-                                style={{ width: 28, height: 28 }}
-                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
-                                title="View full offer details"
-                            >
-                                <span className="pi pi-arrow-right" />
-                            </button>
-                        </div>
-                    )}
+                {hasSubmittedOffer && submittedAt && (
+                    <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                        Offer submitted at: {submittedAt}
+                        <button
+                            className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                            style={{ width: 28, height: 28 }}
+                            onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                            title="View full offer details"
+                        >
+                            <span className="pi pi-arrow-right" />
+                        </button>
+                    </div>
+                )}
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">
@@ -182,22 +199,7 @@ const BidRequestDetails = () => {
                             <span className="text-lg">Delivery Timeframe:</span>
                         </div>
                         <div className="text-sm text-gray-800 font-medium">
-                            {(() => {
-                                if (!bidRequest.deliveryTimeframe) return "Not specified";
-                                const dt = new Date(bidRequest.deliveryTimeframe);
-                                if (!isNaN(dt.getTime())) {
-                                    const diffDays = getDayDifference(new Date(), dt);
-                                    if (diffDays >= 1 && diffDays < 30) {
-                                        return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
-                                    } else if (diffDays >= 30 && diffDays < 365) {
-                                        const months = Math.floor(diffDays / 30);
-                                        return `${months} month${months === 1 ? '' : 's'}`;
-                                    } else {
-                                        return dt.toLocaleDateString('en-US');
-                                    }
-                                }
-                                return bidRequest.deliveryTimeframe;
-                            })()}
+                            {formatDeliveryTimeframe(bidRequest.deliveryTimeframe)}
                         </div>
                         <div className="font-semibold text-gray-700 flex items-center gap-2">
                             <i className="pi pi-truck text-gray-500 text-lg"></i>
