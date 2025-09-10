@@ -79,7 +79,10 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
   const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: priceRangeMin, max: priceRangeMax });
-  const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>(bidRequest?.deliveryTimeframe ?? '7 days');
+  // Store deliveryTimeframe as a Date (estimated delivery date)
+  const [deliveryTimeframe, setDeliveryTimeframe] = useState<Date>(
+    bidRequest?.deliveryTimeframe ? new Date(bidRequest.deliveryTimeframe) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  );
   const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>(bidRequest?.deliveryMethod ?? 'pickup');
   const [rating, setRating] = useState<number>(bidRequest?.rating ?? 1);
 
@@ -90,7 +93,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       setCategoryId(getCategoryIdValue(bidRequest.categoryId));
       if (bidRequest.locationPreference !== undefined) setLocationPreference(bidRequest.locationPreference);
       if (bidRequest.priceRange !== undefined) setPriceRange(bidRequest.priceRange);
-      if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(bidRequest.deliveryTimeframe);
+  if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(new Date(bidRequest.deliveryTimeframe));
       if (bidRequest.deliveryMethod !== undefined) setDeliveryMethod(bidRequest.deliveryMethod);
       if (bidRequest.rating !== undefined) setRating(bidRequest.rating ?? 1);
     }
@@ -128,20 +131,34 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   // Save form data to bidRequest in Redux slice on change
   React.useEffect(() => {
     if (!isReadOnly) {
-      dispatch({
-        type: 'stepper/setBidRequest',
-        payload: {
-          ...bidRequest,
-          categoryId: getCategoryIdValue(categoryId),
-          locationPreference,
-          priceRange,
-          deliveryTimeframe,
-          deliveryMethod,
-          rating: rating,
-        }
-      });
+      const localPayload = {
+        categoryId: getCategoryIdValue(categoryId),
+        locationPreference,
+        priceRange,
+        deliveryTimeframe: deliveryTimeframe.toISOString(),
+        deliveryMethod,
+        rating: rating,
+      };
+      const reduxPayload = {
+        categoryId: bidRequest?.categoryId,
+        locationPreference: bidRequest?.locationPreference,
+        priceRange: bidRequest?.priceRange,
+        deliveryTimeframe: bidRequest?.deliveryTimeframe,
+        deliveryMethod: bidRequest?.deliveryMethod,
+        rating: bidRequest?.rating,
+      };
+      const isEqual = JSON.stringify(localPayload) === JSON.stringify(reduxPayload);
+      if (!isEqual) {
+        dispatch({
+          type: 'stepper/setBidRequest',
+          payload: {
+            ...bidRequest,
+            ...localPayload,
+          }
+        });
+      }
     }
-  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch]);
+  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch, bidRequest]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,7 +286,10 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     const index = Array.isArray(event.value) ? event.value[0] : event.value;
     const selected = deliveryOptions[index];
     if (selected) {
-      setDeliveryTimeframe(selected.label);
+      const days = selected.value;
+      const estimatedDate = new Date();
+      estimatedDate.setDate(estimatedDate.getDate() + days);
+      setDeliveryTimeframe(estimatedDate);
     }
   };
 
@@ -352,7 +372,14 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
         <div className="flex flex-col items-center w-full">
           <label className="block mb-2 font-medium">Delivery Timeframe</label>
           <Slider
-            value={deliveryOptions.findIndex(opt => opt.label === deliveryTimeframe)}
+            value={(() => {
+              // Find the index of the delivery option whose value matches the difference in days between today and deliveryTimeframe
+              const today = new Date();
+              const diffTime = deliveryTimeframe.getTime() - today.setHours(0,0,0,0);
+              const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+              const idx = deliveryOptions.findIndex(opt => opt.value === diffDays);
+              return idx >= 0 ? idx : 6; // default to 7 days if not found
+            })()}
             onChange={handleDeliveryTimeframeChange}
             min={0}
             max={deliveryOptions.length - 1}
@@ -360,7 +387,16 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
             className="w-full"
             disabled={isReadOnly}
           />
-          <div className="text-sm mt-2 text-center">{deliveryTimeframe}</div>
+          <div className="text-sm mt-2 text-center">{
+            (() => {
+              // Show the label for the selected delivery option
+              const today = new Date();
+              const diffTime = deliveryTimeframe.getTime() - today.setHours(0,0,0,0);
+              const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+              const selected = deliveryOptions.find(opt => opt.value === diffDays);
+              return selected ? selected.label : `${diffDays} days`;
+            })()
+          }</div>
         </div>
 
         <div className="flex flex-col items-center w-full">

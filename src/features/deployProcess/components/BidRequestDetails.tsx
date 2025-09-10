@@ -18,14 +18,7 @@ import { ArrowLeft } from 'lucide-react';
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
-    console.log("bidRequestId from params:", bidRequestId);
-
     const navigate = useNavigate();
-    //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
-    //  const [isLoading, setIsLoading] = useState<boolean>(true);
-    //const [fetchError, setFetchError] = useState<string | null>(null);
-    //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
-
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
@@ -187,8 +180,26 @@ const BidRequestDetails = () => {
                             <i className="pi pi-calendar text-gray-500 text-lg"></i>
                             <span className="text-lg">Delivery Timeframe:</span>
                         </div>
-                        <div className="text-sm text-gray-800 font-medium">{bidRequest.deliveryTimeframe || "Not specified"}</div>
-
+                        <div className="text-sm text-gray-800 font-medium">
+                            {(() => {
+                                if (!bidRequest.deliveryTimeframe) return "Not specified";
+                                const dt = new Date(bidRequest.deliveryTimeframe);
+                                if (!isNaN(dt.getTime())) {
+                                    const today = new Date();
+                                    today.setHours(0,0,0,0);
+                                    const diffDays = Math.round((dt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                                    if (diffDays >= 1 && diffDays < 30) {
+                                        return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
+                                    } else if (diffDays >= 30 && diffDays < 365) {
+                                        const months = Math.round(diffDays / 30);
+                                        return `${months} month${months === 1 ? '' : 's'}`;
+                                    } else {
+                                        return dt.toLocaleDateString('en-US');
+                                    }
+                                }
+                                return bidRequest.deliveryTimeframe;
+                            })()}
+                        </div>
                         <div className="font-semibold text-gray-700 flex items-center gap-2">
                             <i className="pi pi-truck text-gray-500 text-lg"></i>
                             <span className="text-lg">Delivery Method:</span>

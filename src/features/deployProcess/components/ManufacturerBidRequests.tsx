@@ -33,15 +33,22 @@ const ManufacturerBidRequests = () => {
     { label: 'Closed', value: 'closed' },
   ];
 
-  const filteredBidRequests = bidRequests.filter((bid) => {
-    const productTitle =
-      typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
-        ? bid.productId.title.toLowerCase()
-        : '';
-    const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
-    return matchesSearch && matchesStatus;
-  });
+    // Sort bid requests by date descending (newest first)
+    const filteredBidRequests = bidRequests
+      .filter((bid) => {
+        const productTitle =
+          typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
+            ? bid.productId.title.toLowerCase()
+            : '';
+        const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
+        const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
 
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
