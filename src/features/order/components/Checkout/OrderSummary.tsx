@@ -16,6 +16,14 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order, product, shipping })
     const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
     const totalAmount = productTotal + shippingPrice;
 
+    // Format dates as DD/MM/YYYY
+    const formatDate = (dateStr: string) => {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    const showUpdated = order.updatedAt && order.updatedAt !== order.createdAt;
+
     return (
         <div className="checkout-summary">
             <Divider align="right"><b>Order Summary</b></Divider>
@@ -23,6 +31,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order, product, shipping })
                 <div className="summary-item">
                     <span>{product.title}</span>
                     <Tag value={product.condition} severity="info" />
+                </div>
+                {/* Dates section */}
+                <div className="summary-item mt-2 flex gap-2 items-center">
+                    <Tag value={`Created: ${formatDate(order.createdAt)}`} icon="pi pi-calendar-plus" severity="success" className="text-xs" />
+                    {showUpdated && (
+                        <Tag value={`Updated: ${formatDate(order.updatedAt)}`} icon="pi pi-refresh" severity="warning" className="text-xs" />
+                    )}
                 </div>
                 <Divider />
                 <div className="summary-item">

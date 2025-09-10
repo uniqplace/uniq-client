@@ -1,8 +1,5 @@
 import axios from 'axios';
 import type { NotificationsResponse } from '../types/notification';
-// import getUserIdFromToken from '../utils/getUserIdFromToken';
-// import { useSelector } from 'react-redux';
-// Remove incorrect RootState import
 
 // Generic safeFetch helper for API calls
 async function safeFetch<T>(fn: () => Promise<{ data: T }>, fallback: T, errorMsg: string): Promise<{ data: T }> {
@@ -10,7 +7,12 @@ async function safeFetch<T>(fn: () => Promise<{ data: T }>, fallback: T, errorMs
     return await fn();
   } catch (err) {
     console.error(errorMsg, err);
-    return { data: fallback };
+    return {
+      error: true,
+      message: errorMsg,
+      details: err,
+      data: fallback
+    } as any;
   }
 }
 
@@ -21,13 +23,23 @@ const api = axios.create({
 api.defaults.withCredentials = true;
 
 
+export const getUnreadNotifications = async (userId: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
+  return safeFetch<NotificationsResponse>(
+    async () => {
+      const res = await api.get<NotificationsResponse>(`/notifications/unread`, {
+        params: { userId, page, limit },
+        withCredentials: true,
+      });
+      return { data: res.data };
+    },
+    { notifications: [], pages: 1 },
+    'getUnreadNotifications error:'
+  );
+};
+
 export const getNotifications = async (userId: string, page = 1, limit = 10): Promise<{ data: NotificationsResponse }> => {
   return safeFetch<NotificationsResponse>(
     async () => {
-      if (!userId) {
-        console.error('getNotifications error: User ID is undefined. Ensure the user is authenticated.');
-        throw new Error('User not authenticated');
-      }
       const res = await api.get<NotificationsResponse>(`/notifications`, {
         params: { userId, page, limit },
         withCredentials: true,
@@ -43,11 +55,6 @@ export const getNotifications = async (userId: string, page = 1, limit = 10): Pr
 export const getUnreadCount = async (userId: string | undefined): Promise<{ data: { count: number } }> => {
   return safeFetch<{ count: number }>(
     async () => {
-   
-      if (!userId) {
-        console.error('getUnreadCount error: User ID is undefined. Ensure the user is authenticated.');
-        throw new Error('User not authenticated');
-      }
       const res = await api.get<{ count: number }>(`/notifications/unread-count/user/${userId}`, {
         withCredentials: true,
       });
