@@ -86,16 +86,24 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
     };
 
     const mainCities = [
-      { label: 'תל אביב', value: 'tel_aviv' },
-      { label: 'ירושלים', value: 'jerusalem' },
-      { label: 'חיפה', value: 'haifa' },
-      { label: 'באר שבע', value: 'beer_sheva' },
-      { label: 'ראשון לציון', value: 'rishon_letzion' },
-      { label: 'פתח תקווה', value: 'petah_tikva' },
-      { label: 'אשדוד', value: 'ashdod' },
-      { label: 'נתניה', value: 'netanya' },
-      { label: 'חולון', value: 'holon' },
-      { label: 'בני ברק', value: 'bnei_brak' },
+      { label: 'Tel Aviv', value: 'tel_aviv' },
+      { label: 'Jerusalem', value: 'jerusalem' },
+      { label: 'Haifa', value: 'haifa' },
+      { label: 'Beer Sheva', value: 'beer_sheva' },
+      { label: 'Ashdod', value: 'ashdod' },
+      { label: 'Rishon Lezion', value: 'rishon_lezion' },
+      { label: 'Petah Tikva', value: 'petah_tikva' },
+      { label: 'Netanya', value: 'netanya' },
+      { label: 'Herzliya', value: 'herzliya' },
+      { label: 'Raanana', value: 'raanana' },
+      { label: 'Kfar Saba', value: 'kfar_saba' },
+      { label: 'Modiin', value: 'modiin' },
+      { label: 'Rehovot', value: 'rehovot' },
+      { label: 'Ashkelon', value: 'ashkelon' },
+      { label: 'Afula', value: 'afula' },
+      { label: 'Tiberias', value: 'tiberias' },
+      { label: 'Eilat', value: 'eilat' },
+      { label: 'General', value: 'general' },
     ];
 
     const validate = () => {

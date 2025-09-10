@@ -10,6 +10,7 @@ import type { RootState } from '../../../store';
 import { Tag } from 'primereact/tag';
 import { getBidRequestsForManufacturer } from '../slices/BidRequestSlice';
 import { getNestedFieldValue } from '../../../utils/objectHelpers';
+import { formatDeliveryTimeframe } from '../../../utils/date';
 import BidRequestsFilterFields from '../../../components/shared/BidRequestsFilterFields';
 
 const ManufacturerBidRequests = () => {
@@ -33,15 +34,22 @@ const ManufacturerBidRequests = () => {
     { label: 'Closed', value: 'closed' },
   ];
 
-  const filteredBidRequests = bidRequests.filter((bid) => {
-    const productTitle =
-      typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
-        ? bid.productId.title.toLowerCase()
-        : '';
-    const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
-    return matchesSearch && matchesStatus;
-  });
+    // Sort bid requests by date descending (newest first)
+    const filteredBidRequests = bidRequests
+      .filter((bid) => {
+        const productTitle =
+          typeof bid.productId === 'object' && bid.productId !== null && 'title' in bid.productId
+            ? bid.productId.title.toLowerCase()
+            : '';
+        const matchesSearch = productTitle.includes(searchTerm.toLowerCase());
+        const matchesStatus = selectedStatus ? bid.status === selectedStatus : true;
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
 
   const statusTemplate = (rowData: BidRequest) => {
     const status = rowData.status;
@@ -65,16 +73,16 @@ const ManufacturerBidRequests = () => {
   );
 
   const dateBodyTemplate = (rowData: BidRequest, field: keyof BidRequest) => {
-    const dateValue = rowData[field];
-
-    if (!dateValue) return '-';
-
-    if (typeof dateValue === 'string' || dateValue instanceof Date) {
-      const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
-      return dateObj.toLocaleDateString('he-IL');
+    const value = rowData[field];
+    let dateValue: string | Date | undefined = undefined;
+    if (value instanceof Date || typeof value === 'string') {
+      dateValue = value;
+    } else if (typeof value === 'number') {
+      dateValue = new Date(value);
+    } else {
+      return '-';
     }
-
-    return '-'; 
+    return formatDeliveryTimeframe(dateValue, 'he-IL');
   };
 
   if (loading) {

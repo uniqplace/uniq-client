@@ -1,3 +1,4 @@
+import { getDayDifference } from '../../../utils/dateDiff';
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
 import { useEffect, useState } from 'react';
@@ -15,12 +16,28 @@ import type { BidOffer } from '../../../types';
 import { Button } from 'primereact/button';
 import { ArrowLeft } from 'lucide-react';
 
+// Helper function to format delivery timeframe
+export function formatDeliveryTimeframe(deliveryTimeframe: string | Date | undefined): string {
+    if (!deliveryTimeframe) return "Not specified";
+    const dt = new Date(deliveryTimeframe);
+    if (!isNaN(dt.getTime())) {
+        const diffDays = getDayDifference(new Date(), dt);
+        if (diffDays >= 1 && diffDays < 30) {
+            return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
+        } else if (diffDays >= 30 && diffDays < 365) {
+            const months = Math.floor(diffDays / 30);
+            return `${months} month${months === 1 ? '' : 's'}`;
+        } else {
+            return dt.toLocaleDateString('en-US');
+        }
+    }
+    return String(deliveryTimeframe);
+}
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
 
     const navigate = useNavigate();
-
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
@@ -44,9 +61,9 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
-          
+
         }
-     
+
     }, [offers, userId]);
 
     if (isLoading) {
@@ -77,6 +94,7 @@ const BidRequestDetails = () => {
     // Handler function for navigation
     const handleNavigation = () => {
         if (bidRequestId) {
+
 
             navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
         }
@@ -148,6 +166,7 @@ const BidRequestDetails = () => {
                             </button>
                         </div>
                     )}
+
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">
@@ -186,8 +205,9 @@ const BidRequestDetails = () => {
                             <i className="pi pi-calendar text-gray-500 text-lg"></i>
                             <span className="text-lg">Delivery Timeframe:</span>
                         </div>
-                        <div className="text-sm text-gray-800 font-medium">{bidRequest.deliveryTimeframe || "Not specified"}</div>
-
+                        <div className="text-sm text-gray-800 font-medium">
+                            {formatDeliveryTimeframe(bidRequest.deliveryTimeframe)}
+                        </div>
                         <div className="font-semibold text-gray-700 flex items-center gap-2">
                             <i className="pi pi-truck text-gray-500 text-lg"></i>
                             <span className="text-lg">Delivery Method:</span>

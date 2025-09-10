@@ -1,4 +1,7 @@
-import React, { useState, useRef } from 'react';
+import { getDeliveryLabel } from '../../../utils/deliveryLabel';
+import { calculateDeliveryDate } from '../../../utils/date';
+import { getSliderValue } from '../../../utils/slider';
+import React, { useRef, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Slider } from 'primereact/slider';
 import { SelectButton } from 'primereact/selectbutton';
@@ -9,6 +12,7 @@ import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApi
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Message } from 'primereact/message';
 import { Toast } from 'primereact/toast';
+import { showErrorToast, showSuccessToast } from '../../../utils/toastHelpers';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
 import type { StepProps } from "./Stepper/steps";
@@ -60,6 +64,7 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
 }
 
 const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
+  const isInitializing = useRef(false);
   const loading = useAppSelector((state) => state.stepper.loading);
 
   // Redux stepper state (must be above localStorage logic)
@@ -76,25 +81,29 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Get bidRequest from Redux
   const bidRequest = useAppSelector(state => state.stepper.bidRequest);
+
   const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
   const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
-  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: priceRangeMin, max: priceRangeMax });
-  const [deliveryTimeframe, setDeliveryTimeframe] = useState<string>(bidRequest?.deliveryTimeframe ?? '7 days');
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>(bidRequest?.priceRange ?? { min: 0, max: 1000 });
+  const [deliveryTimeframe, setDeliveryTimeframe] = useState<Date>(
+    bidRequest?.deliveryTimeframe ? new Date(bidRequest.deliveryTimeframe) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  );
   const [deliveryMethod, setDeliveryMethod] = useState<'pickup' | 'shipping'>(bidRequest?.deliveryMethod ?? 'pickup');
   const [rating, setRating] = useState<number>(bidRequest?.rating ?? 1);
 
-  const dispatch = useDispatch();
-  // Restore step and form data from Redux on mount (if needed)
   React.useEffect(() => {
     if (bidRequest) {
-      setCategoryId(getCategoryIdValue(bidRequest.categoryId));
-      if (bidRequest.locationPreference !== undefined) setLocationPreference(bidRequest.locationPreference);
-      if (bidRequest.priceRange !== undefined) setPriceRange(bidRequest.priceRange);
-      if (bidRequest.deliveryTimeframe !== undefined) setDeliveryTimeframe(bidRequest.deliveryTimeframe);
-      if (bidRequest.deliveryMethod !== undefined) setDeliveryMethod(bidRequest.deliveryMethod);
-      if (bidRequest.rating !== undefined) setRating(bidRequest.rating ?? 1);
+      isInitializing.current = true;
+      setCategoryId(getCategoryIdValue(bidRequest.categoryId ?? null));
+      setLocationPreference(bidRequest.locationPreference ?? null);
+      setPriceRange(bidRequest.priceRange ?? { min: 0, max: 1000 });
+      setDeliveryTimeframe(bidRequest.deliveryTimeframe ? new Date(bidRequest.deliveryTimeframe) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      setDeliveryMethod(bidRequest.deliveryMethod ?? 'pickup');
+      setRating(bidRequest.rating ?? 1);
+      setTimeout(() => { isInitializing.current = false; }, 0);
     }
   }, [bidRequest]);
+  const dispatch = useDispatch();
 
   // Prefill logic: on mount, if no bidRequest in Redux and productId exists, fetch from server
   React.useEffect(() => {
@@ -124,24 +133,43 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   const userId = useAppSelector(state => state.user?.id);
 
+  // Memoized slider value for delivery timeframe
+  const sliderValue = React.useMemo(() => {
+    return getSliderValue(deliveryOptions, deliveryTimeframe);
+  }, [deliveryOptions, deliveryTimeframe]);
+
 
   // Save form data to bidRequest in Redux slice on change
   React.useEffect(() => {
-    if (!isReadOnly) {
-      dispatch({
-        type: 'stepper/setBidRequest',
-        payload: {
-          ...bidRequest,
-          categoryId: getCategoryIdValue(categoryId),
-          locationPreference,
-          priceRange,
-          deliveryTimeframe,
-          deliveryMethod,
-          rating: rating,
-        }
-      });
+    if (!isReadOnly && !isInitializing.current) {
+      const localPayload = {
+        categoryId: getCategoryIdValue(categoryId),
+        locationPreference,
+        priceRange,
+        deliveryTimeframe: deliveryTimeframe.toISOString(),
+        deliveryMethod,
+        rating: rating,
+      };
+      const reduxPayload = {
+        categoryId: bidRequest?.categoryId,
+        locationPreference: bidRequest?.locationPreference,
+        priceRange: bidRequest?.priceRange,
+        deliveryTimeframe: bidRequest?.deliveryTimeframe,
+        deliveryMethod: bidRequest?.deliveryMethod,
+        rating: bidRequest?.rating,
+      };
+      const isEqual = JSON.stringify(localPayload) === JSON.stringify(reduxPayload);
+      if (!isEqual) {
+        dispatch({
+          type: 'stepper/setBidRequest',
+          payload: {
+            ...bidRequest,
+            ...localPayload,
+          }
+        });
+      }
     }
-  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch]);
+  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch, bidRequest]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,58 +187,44 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       }
     }
     if (!productId) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No productId found. Please start from the first step.',
-        life: 4000,
-      });
+  showErrorToast(toast, 'No productId found. Please start from the first step.');
       return;
     }
 
     // Use bidRequest from Redux
     if (!bidRequest) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Preferences not found in Redux', life: 4000 });
+  showErrorToast(toast, 'Preferences not found in Redux');
       return;
     }
 
     // Validate that all required fields are present
     if (!bidRequest.categoryId || typeof bidRequest.categoryId !== 'string') {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Category is required', life: 4000 });
+  showErrorToast(toast, 'Category is required');
       return;
     }
     if (!bidRequest.locationPreference) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Location is required', life: 4000 });
+  showErrorToast(toast, 'Location is required');
       return;
     }
     if (!bidRequest.priceRange?.min || !bidRequest.priceRange?.max) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Price range is required', life: 4000 });
+  showErrorToast(toast, 'Price range is required');
       return;
     }
     if (!bidRequest.deliveryTimeframe) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Delivery timeframe is required', life: 4000 });
+  showErrorToast(toast, 'Delivery timeframe is required');
       return;
     }
     if (!bidRequest.deliveryMethod) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Delivery method is required', life: 4000 });
+  showErrorToast(toast, 'Delivery method is required');
       return;
     }
 
     // clientId is required on the server - we will use userId from Redux
     if (!userId) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Client ID is required. Please login.', life: 4000 });
+  showErrorToast(toast, 'Client ID is required. Please login.');
       return;
     }
-
-    // Type guard for categoryId
-    // function isCategoryObj(val: unknown): val is { id: string } {
-    //   return (
-    //     typeof val === 'object' &&
-    //     val !== null &&
-    //     'id' in val &&
-    //     typeof (val as any).id === 'string'
-    //   );
-    // }
+    
     const preferences = {
       ...bidRequest,
       clientId: userId,
@@ -228,31 +242,16 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Bid request opened successfully.',
-          life: 4000,
-        });
+  showSuccessToast(toast, 'Bid request opened successfully.');
         // Can proceed to the next step only after success
         setCanGoNext && setCanGoNext(true);
         onComplete && onComplete();
       } else {
-        toast.current?.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to create bid request. Please try again.',
-          life: 4000,
-        });
+  showErrorToast(toast, 'Failed to create bid request. Please try again.');
       }
     } catch (error: any) {
       console.error('Error creating bid request:', error);
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to create bid request. Please try again.',
-        life: 4000,
-      });
+  showErrorToast(toast, 'Failed to create bid request. Please try again.');
     }
   };
 
@@ -270,7 +269,8 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     const index = Array.isArray(event.value) ? event.value[0] : event.value;
     const selected = deliveryOptions[index];
     if (selected) {
-      setDeliveryTimeframe(selected.label);
+      const days = selected.value;
+      setDeliveryTimeframe(calculateDeliveryDate(days));
     }
   };
 
@@ -353,7 +353,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
         <div className="flex flex-col items-center w-full">
           <label className="block mb-2 font-medium">Delivery Timeframe</label>
           <Slider
-            value={deliveryOptions.findIndex(opt => opt.label === deliveryTimeframe)}
+            value={sliderValue}
             onChange={handleDeliveryTimeframeChange}
             min={0}
             max={deliveryOptions.length - 1}
@@ -361,7 +361,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
             className="w-full"
             disabled={isReadOnly}
           />
-          <div className="text-sm mt-2 text-center">{deliveryTimeframe}</div>
+          <div className="text-sm mt-2 text-center">{getDeliveryLabel(deliveryTimeframe)}</div>
         </div>
 
         <div className="flex flex-col items-center w-full">

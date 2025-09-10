@@ -106,23 +106,23 @@ const Register: React.FC = () => {
       const res = await axios.post(`${API_BASE_URL}/auth/register`, body);
       if (res.data.success && res.data.user) {
         const user = res.data.user;
-        
-        Cookies.set('token', res.data.token, { expires: 7 });
-          
-       const safeUser = {
-  id: user._id || user.id || null,
-  name: user.name || '',
-  email: user.email || '',
-  role: user.role || null,
-  avatar: user.avatar || null,
-  manufacturer: user.manufacturer || null
-};
 
-if (!safeUser.name || !safeUser.email || !safeUser.role) {
-  console.error('User object missing required fields:', safeUser);
-} else {
-  localStorage.setItem('user', JSON.stringify(safeUser));
-}
+        Cookies.set('token', res.data.token, { expires: 7 });
+
+        const safeUser = {
+          id: user._id || user.id || null,
+          name: user.name || '',
+          email: user.email || '',
+          role: user.role || null,
+          avatar: user.avatar || null,
+          manufacturer: user.manufacturer || null
+        };
+
+        if (!safeUser.name || !safeUser.email || !safeUser.role) {
+          console.error('User object missing required fields:', safeUser);
+        } else {
+          localStorage.setItem('user', JSON.stringify(safeUser));
+        }
 
         dispatch(setUser({
           id: user._id || user.id || null,
@@ -267,8 +267,6 @@ if (!safeUser.name || !safeUser.email || !safeUser.role) {
                     </div>
                   )}
                 />
-
-                <label htmlFor="manufacturer" className="text-gray-700 text-sm">Manufacturer</label>
               </div>
             </div>
             {errors.role && <small className="text-red-500 text-sm">{errors.role.message}</small>}
