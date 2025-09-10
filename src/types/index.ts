@@ -131,7 +131,7 @@ export interface BidRequest {
   manufacturers?: BidManufacturer[];
   createdAt: Date;
   updatedAt: Date;
-  ratingPreference?: number;
+  rating?: number;
 }
 
 export interface Filters {
