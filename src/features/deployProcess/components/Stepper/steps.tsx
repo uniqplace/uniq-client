@@ -1,5 +1,5 @@
 // import React, { createRef } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 // import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
@@ -75,7 +75,7 @@ export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCa
 export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
   const { productId } = useBidRequestId();
   const { data: product, error: productsError, isLoading } = useGetProductByIdQuery(productId);
-  const [, setOrderSuccess] = React.useState(false);
+  const [, setOrderSuccess] = useState(false);
   if (!productId) {
     return <AuctionLoadingError productId={productId} />;
   }
