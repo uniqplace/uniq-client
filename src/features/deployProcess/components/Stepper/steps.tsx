@@ -7,6 +7,8 @@ import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
 import { useBidRequestId } from '../../../../hooks/useBidRequestId';
 import AuctionLoadingError from './AuctionLoadingError';
+import { useGetProductByIdQuery } from '../../../marketplace/slices/productApiSlice';
+import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
@@ -70,19 +72,28 @@ export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCa
   </div>
 );
 
-export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
-  <div className="p-4 text-center">
-    <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
-      <span role="img" aria-label="payment">💳</span>
-      Make Payment
-    </h2>
-    <p className="text-gray-700 text-base mb-4">Secure your order by completing the payment.</p>
-    <FinishStepButton onClick={() => {
-      onComplete();
-      setCanGoNext && setCanGoNext(true);
-    }} />
-  </div>
-);
+export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
+  const { productId } = useBidRequestId();
+  const { data: product, error: productsError, isLoading } = useGetProductByIdQuery(productId);
+  const [, setOrderSuccess] = React.useState(false);
+  if (!productId) {
+    return <AuctionLoadingError productId={productId} />;
+  }
+  if (isLoading) {
+    return <div className="p-4 text-center"><span>Loading product...</span></div>;
+  }
+  if (productsError || !product) {
+    return <div className="p-4 text-center text-red-500">Failed to load product.</div>;
+  }
+  return (
+    <div className="p-4">
+      <CheckoutPage product={product} onOrderSuccess={() => {
+        setOrderSuccess(true);
+        setCanGoNext && setCanGoNext(true);
+      }} />
+    </div>
+  );
+};
 
 export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
   <div className="p-4 text-center">

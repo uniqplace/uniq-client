@@ -32,16 +32,18 @@ export const orderSchema = yup.object().shape({
 });
 interface CheckoutPageProps {
   order?: Order;
+  product?: Product;
+  onOrderSuccess?: () => void;
 }
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const productFromState = location.state?.product;
   const toast = useRef<Toast>(null);
-  const currentOrder = location.state?.order as Order;  
-  const product: Product = productFromState || currentOrder?.product;
+  const currentOrder = location.state?.order as Order;
+  const product: Product = props.product || productFromState || currentOrder?.product;
 
   // Initialize order state, using props.order if provided
   const initialQuantity = 1;
@@ -139,11 +141,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const addNewOrder = async () => {
     try {
       await createOrder(order).unwrap();
-       dispatch(addOrder(order));
+      dispatch(addOrder(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
+      if (props.onOrderSuccess) props.onOrderSuccess();
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
     } finally {
+
       setPaymentDialog(false);
     }
   };

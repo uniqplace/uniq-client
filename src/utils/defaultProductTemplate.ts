@@ -8,4 +8,5 @@ export const defaultProductTemplate = {
   condition: 'new',
   location: 'Hardcoded Location',
   tags: ['hardcoded'],
+  status:'published'
 };
