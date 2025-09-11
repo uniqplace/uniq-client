@@ -10,8 +10,10 @@ import { useState } from 'react';
 import type { BidOffer } from '../../../types';
 import { Toast } from 'primereact/toast';
 import ProductImageCarousel from './ProductImageCarousel';
+import { Button } from 'primereact/button';
 const BidOfferDetails: React.FC = () => {
     const { BidOfferId } = useParams<{ BidOfferId: string }>();
+    const userId = useSelector((state: RootState) => state.user.id);
     const dispatch = useDispatch<AppDispatch>();
     const loading = useSelector((state: RootState) => state.bidOffer.currentBidOfferLoading);
     const error = useSelector((state: RootState) => state.bidOffer.currentBidOfferError);
@@ -33,7 +35,7 @@ const BidOfferDetails: React.FC = () => {
                     summary: 'Error',
                     detail: 'Failed to load the offer. Please try again.',
                     life: 3000
-                  });                  
+                });
             }
         }
         else if (location.state && (location.state as any).offer) {
@@ -47,11 +49,11 @@ const BidOfferDetails: React.FC = () => {
                 })
         }
     }, [BidOfferId, location.state]);
-    
+
     if (loading) return <div className="text-center py-8"><span className="pi pi-spin pi-spinner text-2xl" /> Loading...</div>;
     if (error) return <div className="text-red-500 text-center py-8">{error}</div>;
     if (!offer) return <div className="text-gray-500 text-center py-8">No offer found.</div>;
-    
+
     return (
         <div className="w-full max-w-2xl mx-auto">
             <Toast ref={toast} />
@@ -85,7 +87,7 @@ const BidOfferDetails: React.FC = () => {
                     <div className="flex flex-col items-start">
                         <div className="font-semibold text-lg text-gray-800 mb-1">Product</div>
                         {Array.isArray(offer.bidRequestId?.productId?.images) && offer.bidRequestId.productId.images.length > 0 && (
-                               <ProductImageCarousel images={offer.bidRequestId.productId.images} />
+                            <ProductImageCarousel images={offer.bidRequestId.productId.images} />
                         )}
                         <div className="font-medium text-gray-700">{offer.bidRequestId?.productId?.title}</div>
                         <div className="text-sm text-gray-500 mb-2">{offer.bidRequestId?.productId?.description}</div>
@@ -110,6 +112,39 @@ const BidOfferDetails: React.FC = () => {
                 <div className="mb-2 text-xs text-gray-500">
                     <span className="font-medium">Submitted At:</span> {offer.createdAt ? new Date(offer.createdAt).toLocaleString('en-US') : 'N/A'}
                 </div>
+
+                {/* The "Choose Offer" button will be shown only if the logged-in user  is not the one who created the current bid request. */}
+                {userId !== offer.bidRequestId?.creatorId?._id &&
+                    <div className="flex justify-center my-6">
+                        <Button
+                            label="Select thid offer"
+                            icon="pi pi-send"
+                            className="p-button-rounded p-button-sm shadow-lg transition-all duration-200 group-hover:scale-110"
+                            style={{
+                                backgroundColor: '#25D366',
+                                borderColor: '#25D366',
+                                color: '#fff',
+                                fontSize: '1rem',
+                                padding: '0.5rem 1.5rem',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/checkout/${offer.bidRequestId.productId._id ?? ''}`, {
+                                    state: {
+                                        product: {
+                                            ...offer.bidRequestId.productId,
+                                            creator: offer.manufacturerId,
+                                            price: offer.price,
+                                        },
+                                    },
+                                });
+                            }}
+                        />
+                    </div>
+                }
             </Card>
         </div>
     );
