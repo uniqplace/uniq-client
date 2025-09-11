@@ -14,6 +14,7 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
+import { formatDateToISO } from '../../../utils/dateHelpers';
 
 const BidOfferDetails: React.FC = () => {
     const { BidOfferId } = useParams<{ BidOfferId: string }>();
@@ -152,7 +153,10 @@ const BidOfferDetails: React.FC = () => {
                       <Calendar
                         className="w-full"
                         value={editedOffer?.estimatedDelivery ? new Date(editedOffer.estimatedDelivery) : null}
-                        onChange={(e) => setEditedOffer((prev) => prev ? { ...prev, estimatedDelivery: e.value ? e.value.toISOString().split('T')[0] : '' } : prev)}
+                        onChange={(e) => {
+                          const selectedDate = e.value instanceof Date ? e.value : null;
+                          setEditedOffer((prev) => prev ? { ...prev, estimatedDelivery: formatDateToISO(selectedDate) } : prev);
+                        }}
                         dateFormat="yy-mm-dd"
                       />
                     </div>
