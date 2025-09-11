@@ -48,7 +48,6 @@ const NotificationBell = () => {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!user?.id) return;
-    // טוען את מספר ההתראות הלא נקראות מהשרת בהתחלת הקומפוננטה
     const fetchCount = async () => {
       try {
         const res = await getUnreadCount(user?.id ?? '');
@@ -62,7 +61,6 @@ const NotificationBell = () => {
       }
     };
     fetchCount();
-    // מאזין לכל סוגי האירועים מהקובץ הגנרי
     const eventNames = Object.values(socket_events);
     eventNames.forEach((eventName) => {
       socket.on(eventName, (data: any) => {
@@ -169,7 +167,6 @@ const NotificationBell = () => {
                       setNotifications((prev) => prev.filter((item) => item && item._id && item._id !== notification._id));
                       try {
                         await markAsRead(notification._id);
-                        // עדכון הספירה לאחר סימון כה נקראה
                         const res = await getUnreadCount(user?.id ?? '');
                         setCount(res.data.count);
                         setIsOpen(false);
