@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import {  useGetUserProductsQuery } from '../features/marketplace/slices/productApiSlice';
+import { useGetUserProductsQuery } from '../features/marketplace/slices/productApiSlice';
+import { useAppSelector } from '../hooks/hooks';
 import ProductUploadForm from '../features/marketplace/components/ProductUploadForm';
 import { Button } from 'primereact/button';
 import ProductCard from '../features/marketplace/components/ProductCard';
@@ -7,13 +8,14 @@ import { Dialog } from 'primereact/dialog';
 
 const CreatorProductPage: React.FC = () => {
     const [showUploadForm, setShowUploadForm] = useState(false);
-    const { data: products, isLoading, error } = useGetUserProductsQuery({
-      creator: '',
-      category: '',
-      subCategories: [],
-      priceRange: [0, 1000],
-      searchTerm: '',
-    });
+        const creatorId = useAppSelector(state => state.user?.id || state.user?.manufacturerId || '');
+        const { data: products, isLoading, error } = useGetUserProductsQuery({
+            creator: creatorId,
+            category: '',
+            subCategories: [],
+            priceRange: [0, 1000],
+            searchTerm: '',
+        });
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">

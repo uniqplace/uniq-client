@@ -131,7 +131,7 @@ export interface BidRequest {
   manufacturers?: BidManufacturer[];
   createdAt: Date;
   updatedAt: Date;
-  ratingPreference?: number;
+  rating?: number;
 }
 
 export interface Filters {
@@ -165,6 +165,7 @@ export interface Manufacturer {
   servicesOffered?: string[];
 }
 interface BidRequestId {
+  _id?: string;
   productId: ({ title: string }) & { _id?: string } & { description?: string }&{ images?: string[] };
   creatorId?: ({ name: string; email: string; role: string; avatarUrl?: string }) & { _id?: string };
   categoryId: string;
@@ -182,14 +183,6 @@ export interface BidOffer {
   createdAt?: Date;
 }
 
-export interface BidOfferResponse {
-  bidRequestId: string;
-  manufacturerId: string;
-  price: number;
-  estimatedDelivery: string;
-  note?: string;
-  attachmentUrl?: string;
-}
 export interface ManufacturerProfile {
   _id: string;
   userId: User;

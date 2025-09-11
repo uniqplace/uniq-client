@@ -6,6 +6,7 @@ import { Dropdown } from 'primereact/dropdown';
 import type { DropdownChangeEvent } from 'primereact/dropdown';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { useAppSelector } from '../../../hooks/hooks';
+import { Calendar } from 'primereact/calendar';
 
 export interface ManufacturerFieldsRef {
   validate: () => boolean;
@@ -57,44 +58,52 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
     const [showErrors, setShowErrors] = useState(false);
 
     const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
-    
+
     const categoryOptions = (categoriesData?.data || []).map((cat: any) => ({
       label: cat.name,
       value: cat._id,
     }));
-    
+
     const profile = useAppSelector(state => state.manufacturer.profile);
     // if (!profile) {
     // return <div>Loading manufacturer profile...</div>;
     // }
 
-useEffect(() => {
-  // Update states with existing values
-  setServicesOffered(profile?.servicesOffered || []);
-  setCategories(profile?.categories || ['']);
-  setLocation(profile?.location || '');
-  setAvailableFrom(
+    useEffect(() => {
+      // Update states with existing values
+      setServicesOffered(profile?.servicesOffered || []);
+      setCategories(profile?.categories || ['']);
+      setLocation(profile?.location || '');
+      setAvailableFrom(
         profile?.availableFrom && /^\d{4}-\d{2}-\d{2}$/.test(profile.availableFrom.split('T')[0])
           ? profile.availableFrom.split('T')[0]
           : ''
       );
-}, [profile]);
+    }, [profile]);
 
     const updateCategory = (index: number, value: string) => {
-  setCategories(categories.map((c, i) => (i === index ? value : c)));
-};
+      setCategories(categories.map((c, i) => (i === index ? value : c)));
+    };
 
     const mainCities = [
-      { label: 'תל אביב', value: 'tel_aviv' },
-      { label: 'ירושלים', value: 'jerusalem' },
-      { label: 'חיפה', value: 'haifa' },
-      { label: 'באר שבע', value: 'beer_sheva' },
-      { label: 'ראשון לציון', value: 'rishon_letzion' },
-      { label: 'פתח תקווה', value: 'petah_tikva' },
-      { label: 'אשדוד', value: 'ashdod' },
-      { label: 'נתניה', value: 'netanya' },
-      { label: 'חולון', value: 'holon' },
-      { label: 'בני ברק', value: 'bnei_brak' },
+      { label: 'Tel Aviv', value: 'tel_aviv' },
+      { label: 'Jerusalem', value: 'jerusalem' },
+      { label: 'Haifa', value: 'haifa' },
+      { label: 'Beer Sheva', value: 'beer_sheva' },
+      { label: 'Ashdod', value: 'ashdod' },
+      { label: 'Rishon Lezion', value: 'rishon_lezion' },
+      { label: 'Petah Tikva', value: 'petah_tikva' },
+      { label: 'Netanya', value: 'netanya' },
+      { label: 'Herzliya', value: 'herzliya' },
+      { label: 'Raanana', value: 'raanana' },
+      { label: 'Kfar Saba', value: 'kfar_saba' },
+      { label: 'Modiin', value: 'modiin' },
+      { label: 'Rehovot', value: 'rehovot' },
+      { label: 'Ashkelon', value: 'ashkelon' },
+      { label: 'Afula', value: 'afula' },
+      { label: 'Tiberias', value: 'tiberias' },
+      { label: 'Eilat', value: 'eilat' },
+      { label: 'General', value: 'general' },
     ];
 
     const validate = () => {
@@ -199,17 +208,21 @@ useEffect(() => {
             <div className="text-red-500 text-sm mt-1">{errors.location}</div>
           )}
         </div>
-
         {/* Available From */}
         <div className="field mb-4 border border-gray-200 rounded-lg p-6">
           <label className="block text-900 font-semibold mb-3 text-lg">Available From</label>
-          <input
-            type="date"
-            value={availableFrom}
-            onChange={(e) => setAvailableFrom(e.target.value)}
+
+          <Calendar
+            value={availableFrom ? new Date(availableFrom) : null} // מוודא שיש תאריך
+            onChange={(e) => setAvailableFrom(e.value ? (e.value as Date).toISOString().split('T')[0] : '')} // שמירה בפורמט YYYY-MM-DD
+            showIcon
             disabled={disabled}
-            className="w-full p-inputtext"
+            className="w-full"
+            minDate={new Date()} 
+            dateFormat="yy-mm-dd" 
+            placeholder="Select a date"
           />
+
           {showErrors && errors.availableFrom && (
             <div className="text-red-500 text-sm mt-1">{errors.availableFrom}</div>
           )}
