@@ -72,7 +72,7 @@ export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCa
   </div>
 );
 
-export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
+export const PaymentAndOrderStep: React.FC<StepProps> = ({setCanGoNext }) => {
   const { productId } = useBidRequestId();
   const { data: product, error: productsError, isLoading } = useGetProductByIdQuery(productId);
   const [, setOrderSuccess] = useState(false);
