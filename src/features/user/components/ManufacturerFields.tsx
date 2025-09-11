@@ -6,6 +6,7 @@ import { Dropdown } from 'primereact/dropdown';
 import type { DropdownChangeEvent } from 'primereact/dropdown';
 import { useGetAllCategoriesQuery } from '../../marketplace/slices/categoriesApiSlice';
 import { useAppSelector } from '../../../hooks/hooks';
+import { Calendar } from 'primereact/calendar';
 
 export interface ManufacturerFieldsRef {
   validate: () => boolean;
@@ -207,17 +208,21 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
             <div className="text-red-500 text-sm mt-1">{errors.location}</div>
           )}
         </div>
-
         {/* Available From */}
         <div className="field mb-4 border border-gray-200 rounded-lg p-6">
           <label className="block text-900 font-semibold mb-3 text-lg">Available From</label>
-          <input
-            type="date"
-            value={availableFrom}
-            onChange={(e) => setAvailableFrom(e.target.value)}
+
+          <Calendar
+            value={availableFrom ? new Date(availableFrom) : null} // מוודא שיש תאריך
+            onChange={(e) => setAvailableFrom(e.value ? (e.value as Date).toISOString().split('T')[0] : '')} // שמירה בפורמט YYYY-MM-DD
+            showIcon
             disabled={disabled}
-            className="w-full p-inputtext"
+            className="w-full"
+            minDate={new Date()} 
+            dateFormat="yy-mm-dd" 
+            placeholder="Select a date"
           />
+
           {showErrors && errors.availableFrom && (
             <div className="text-red-500 text-sm mt-1">{errors.availableFrom}</div>
           )}

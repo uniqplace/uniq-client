@@ -10,6 +10,8 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
+
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -43,7 +45,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   }, [dispatch, bidRequestId, sortOption]);
 
   const handleRowClick = (offer: BidOffer) => {
-    navigate(`/bidOffers/${offer._id}`, { state: { offer } });
+    navigate(`/BidOfferDetails/${offer._id}`, { state: { offer: offer } });
   };
 
   // Client-side sorting logic
@@ -169,6 +171,13 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                       {offer.estimatedDelivery ? getLeadTime(offer.createdAt, offer.estimatedDelivery) : ''}
                     </span>
                   </div>
+                  {/*Rating */}
+                  <NormalizedRating
+                    rating={offer.manufacturerId?.rating ?? 0}
+                    offers={sortedOffers}   
+                    className="md:col-span-2 flex items-center justify-center"
+                    style={{ fontSize: '1.2rem' }}
+                  />
                   {/* Note */}
                   <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
                     <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
@@ -180,18 +189,8 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                       className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
                       icon="pi pi-comments"
                       aria-label="Chat"
-                    ></Button>
-                    <Button
-                      className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
-                      icon="pi pi-comments"
-                      aria-label="Chat"
-
                     />
 
-                  </div>
-                  {/* Response */}
-                  <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">
-                    <span>{offer.note || 'No note provided'}</span>
                   </div>
                 </div>
               ) : null

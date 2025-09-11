@@ -16,7 +16,7 @@ import { showErrorToast, showSuccessToast } from '../../../utils/toastHelpers';
 import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
 import type { StepProps } from "./Stepper/steps";
-import NormalizedRating from '../../../components/shared/Rating';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
 
 const priceRangeMin = 0;
 const priceRangeMax = 1000;
@@ -232,6 +232,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       productId,
       categoryId: getCategoryIdValue(bidRequest.categoryId),
     };
+
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
 
 
@@ -342,7 +343,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           <NormalizedRating
             rating={rating}
             readOnly={isReadOnly}
-            onChange={value => !isReadOnly && setRating(value)}
+            onChange={(value:number) => !isReadOnly && setRating(value)}
             className="w-full"
           />
 
