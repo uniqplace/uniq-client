@@ -147,7 +147,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
     } finally {
-
       setPaymentDialog(false);
     }
   };
