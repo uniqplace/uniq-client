@@ -14,6 +14,7 @@ import { socket_events } from '../../constants/socketEvents';
 
 import { useAppSelector } from '../../hooks/hooks';
 import type { RootState } from '../../store';
+//import useSocketListeners from '../../hooks/useSocketListeners';
 
 // Utility function to check if a value is an object
 const isObject = (value: any): boolean => {
@@ -66,7 +67,7 @@ const NotificationBell = () => {
 
   useEffect(() => {
     if (!user?.id) return;
-
+   
     const fetchCount = async () => {
       try {
         const res = await getUnreadCount(user?.id ?? '');
