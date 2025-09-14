@@ -3,18 +3,15 @@ import { Avatar } from 'primereact/avatar';
 import { Divider } from 'primereact/divider';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchBidOfferById, setCurrentBidOffer, updateBidOffer } from '../slices/BidOfferSlice';
+import { fetchBidOfferById, setCurrentBidOffer } from '../slices/BidOfferSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import { useEffect, useRef } from 'react';
 import { useState } from 'react';
 import type { BidOffer } from '../../../types';
 import { Toast } from 'primereact/toast';
 import ProductImageCarousel from './ProductImageCarousel';
-import { InputText } from 'primereact/inputtext';
-import { Calendar } from 'primereact/calendar';
-import { InputTextarea } from 'primereact/inputtextarea';
+import BidOfferForm from './BidOfferForm';
 import { Button } from 'primereact/button';
-import { formatDateToISO } from '../../../utils/dateHelpers';
 
 const BidOfferDetails: React.FC = () => {
     const { BidOfferId } = useParams<{ BidOfferId: string }>();
@@ -59,35 +56,15 @@ const BidOfferDetails: React.FC = () => {
         }
     }, [BidOfferId, location.state]);
     
-    const handleSave = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (editedOffer) {
-          dispatch(updateBidOffer(editedOffer))
-            .unwrap()
-            .then(() => {
-              setOffer(editedOffer);
-              setEditing(false);
-              toast.current?.show({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Bid offer updated successfully.',
-                life: 3000,
-              });
-            })
-            .catch(() => {
-              toast.current?.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to update bid offer.',
-                life: 3000,
-              });
-            });
-        }
-      };
+
+    const prepareEditedOffer = (offer: BidOffer | null): BidOffer | null => {
+        if (!offer) return null;
+        return { ...offer }; // Clone the offer object to avoid direct mutations
+    };
 
     const handleEdit = () => {
-      setEditedOffer(offer); // Initialize editedOffer with current offer values
-      setEditing(true);
+        setEditedOffer(prepareEditedOffer(offer)); // Use the helper function to prepare the editedOffer
+        setEditing(true);
     };
 
     if (loading) return <div className="text-center py-8"><span className="pi pi-spin pi-spinner text-2xl" /> Loading...</div>;
@@ -101,7 +78,7 @@ const BidOfferDetails: React.FC = () => {
                 className="p-button p-button-sm mb-4"
                 onClick={() => {
                     if (window.history.length > 1) {
-                        navigate(`/myBidRequests/${offer.bidRequestId?._id}`);
+                        navigate(`/myBidRequests/${offer?.bidRequestId?._id}`);
                     } else {
                         navigate('/MyBidRequest');
                     }
@@ -138,51 +115,13 @@ const BidOfferDetails: React.FC = () => {
                     <div className="font-semibold text-lg text-gray-800">Your Submitted Offer</div>
                 </div>
                 {editing ? (
-                  <form onSubmit={handleSave}>
-                    <div className="mb-2 text-sm text-gray-700">
-                      <label className="font-medium">Price:</label>
-                      <InputText
-                        type="number"
-                        className="w-full"
-                        value={editedOffer?.price?.toString() || ''} // Convert price to string
-                        onChange={(e) => setEditedOffer((prev) => prev ? { ...prev, price: Number(e.target.value) } : prev)}
-                      />
-                    </div>
-                    <div className="mb-2 text-sm text-gray-700">
-                      <label className="font-medium">Estimated Delivery:</label>
-                      <Calendar
-                        className="w-full"
-                        value={editedOffer?.estimatedDelivery ? new Date(editedOffer.estimatedDelivery) : null}
-                        onChange={(e) => {
-                          const selectedDate = e.value instanceof Date ? e.value : null;
-                          setEditedOffer((prev) => prev ? { ...prev, estimatedDelivery: formatDateToISO(selectedDate) } : prev);
-                        }}
-                        dateFormat="yy-mm-dd"
-                      />
-                    </div>
-                    <div className="mb-2 text-sm text-gray-700">
-                      <label className="font-medium">Note:</label>
-                      <InputTextarea
-                        className="w-full"
-                        value={editedOffer?.note || ''}
-                        onChange={(e) => setEditedOffer((prev) => prev ? { ...prev, note: e.target.value } : prev)}
-                        rows={3}
-                      />
-                    </div>
-                    <div className="mb-2 text-sm text-gray-700">
-                      <label className="font-medium">Attachment URL:</label>
-                      <InputText
-                        type="text"
-                        className="w-full"
-                        value={editedOffer?.attachmentUrl || ''}
-                        onChange={(e) => setEditedOffer((prev) => prev ? { ...prev, attachmentUrl: e.target.value } : prev)}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2 mt-4">
-                      <Button type="submit" label="Save" icon="pi pi-check" className="p-button-success" />
-                      <Button type="button" label="Cancel" icon="pi pi-times" className="p-button-secondary" onClick={() => setEditing(false)} />
-                    </div>
-                  </form>
+                    <BidOfferForm
+                        bidRequestId={offer?.bidRequestId?._id}
+                        manufacturerId={offer?.manufacturerId?._id}
+                        initialOffer={editedOffer}
+                        setOffer={setOffer}
+                        setEditing={setEditing}
+                    />
                 ) : (
                   <>
                     <div className="mb-2 text-sm text-gray-700">

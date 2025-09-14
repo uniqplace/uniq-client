@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
@@ -9,28 +9,36 @@ import { Divider } from 'primereact/divider';
 import { classNames } from 'primereact/utils';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
+import { useAppSelector, useAppDispatch } from '../../../hooks/hooks';
+import { AddBidOffer, updateBidOffer } from '../slices/BidOfferSlice';
 import type { RootState } from '../../../store';
-import { AddBidOffer, resetBidOffer } from '../slices/BidOfferSlice';
 import type { BidOffer } from '../../../types';
 
 const BidOfferForm = ({
   bidRequestId: propBidRequestId,
   manufacturerId: propManufacturerId,
+  initialOffer = null,
+  setOffer = () => {}, // Default to no-op function
+  setEditing = () => {}, // Default to no-op function
 }: {
   bidRequestId?: string;
   manufacturerId?: string;
+  initialOffer?: Partial<BidOffer> | null;
+  setOffer?: React.Dispatch<React.SetStateAction<BidOffer | null>>; // Made optional
+  setEditing?: React.Dispatch<React.SetStateAction<boolean>>; // Made optional
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const bidRequestId = propBidRequestId || location.state?.bidRequestId;
   const manufacturerId = propManufacturerId || location.state?.manufacturerId;
+  const bidOfferId = (initialOffer as BidOffer)?._id || location.state?.bidOfferId;
 
-  const [price, setPrice] = useState<number | null>(null);
-  const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(null);
-  const [note, setNote] = useState('');
-  const [attachmentUrl, setAttachmentUrl] = useState('');
+  const [price, setPrice] = useState<number | null>(initialOffer?.price || null);
+  const [estimatedDelivery, setEstimatedDelivery] = useState<Date | null>(
+    initialOffer?.estimatedDelivery ? new Date(initialOffer.estimatedDelivery) : null
+  );
+  const [note, setNote] = useState(initialOffer?.note || '');
+  const [attachmentUrl, setAttachmentUrl] = useState(initialOffer?.attachmentUrl || '');
   const [loading, setLoading] = useState(false);
 
   const toast = useRef<Toast>(null);
@@ -41,22 +49,13 @@ const BidOfferForm = ({
     price: false,
     estimatedDelivery: false,
   });
-  
 
-  const clearForm = () => {
-    setPrice(null);
-    setEstimatedDelivery(null);
-    setNote('');
-    setAttachmentUrl('');
-    setErrors({ price: false, estimatedDelivery: false });
-  };
-
-  // --- Validation ---
   const validateForm = () => {
     const errors = {
       price: price == null || price <= 0,
       estimatedDelivery: !estimatedDelivery,
-    };setErrors(errors);
+    };
+    setErrors(errors);
 
     if (errors.price || errors.estimatedDelivery || !user?.id) {
       toast.current?.show({
@@ -70,89 +69,77 @@ const BidOfferForm = ({
     return true;
   };
 
-  // --- API call ---
-  const submitOffer = async () => {
-    setLoading(true);
-    let newBidOffer: Partial<BidOffer> = {
-      bidRequestId,
-      manufacturerId,
-      price: price ?? 0,
-      estimatedDelivery: estimatedDelivery
-        ? estimatedDelivery.toISOString()
-        : '',
-      note,
-      attachmentUrl,
-    };
-
-    const res = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
-    return res.data;
+  const clearForm = () => {
+    setPrice(null);
+    setEstimatedDelivery(null);
+    setNote('');
+    setAttachmentUrl('');
+    setErrors({ price: false, estimatedDelivery: false });
   };
 
-  // --- Clear + Navigate ---
-  const finalizeSubmission = (newBidOffer: BidOffer) => {
-    dispatch(resetBidOffer());
+  const finalizeSubmission = (message: string, newBidOfferId?: string) => {
+    clearForm();
     toast.current?.show({
       severity: 'success',
-      summary: 'Offer Sent',
-      detail: 'Your offer has been submitted successfully.',
+      summary: 'Success',
+      detail: message,
       life: 3000,
     });
 
-    clearForm();
-    forceUpdate();
-    navigate(`/BidOfferDetails/${newBidOffer._id}`, {
-      state: { offer: newBidOffer },
-    });
+    if (newBidOfferId && !loading) {
+      navigate(`/BidOfferDetails/${newBidOfferId}`);
+    }
   };
 
-  // --- HandleSubmit (רזה יותר) ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
+    const newBidOffer: Partial<BidOffer> = {
+      ...(bidOfferId && { _id: bidOfferId }), // Include _id only if it exists
+      bidRequestId,
+      manufacturerId,
+      price: price ?? 0,
+      estimatedDelivery: estimatedDelivery?.toISOString() || '',
+      note,
+      attachmentUrl,
+    };
+
     try {
       setLoading(true);
-      const newBidOffer = await submitOffer();
-      finalizeSubmission(newBidOffer);
-    } catch (error: any) {
+      if (initialOffer) {
+        // Editing existing offer
+        const updatedOffer = await dispatch(updateBidOffer(newBidOffer as BidOffer)).unwrap();
+        setOffer(updatedOffer);
+        setEditing(false);
+      } else {
+        // Creating new offer
+        const createdOffer = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
+        finalizeSubmission('Bid offer created successfully.', createdOffer.data.id);
+      }
+    } catch (error) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail:
-          typeof error === 'string'
-            ? error
-            : error?.message || JSON.stringify(error) || 'Failed to submit offer.',
-        life: 4000,
+        detail: 'Failed to submit bid offer. Please try again.',
+        life: 3000,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // force rerender for errors
-  const [, setRerender] = useState(false);
-  const forceUpdate = () => setRerender((r) => !r);
-
-  if (!bidRequestId || !manufacturerId) {
-    return (
-      <div className="text-red-500 text-center">
-        Missing required information to submit an offer.
-      </div>
-    );
-  }
-
   return (
     <div className="flex justify-center mt-8">
       <Card className="w-full max-w-lg shadow-4 surface-card border-round-xl">
         <Toast ref={toast} />
         <h2 className="text-2xl font-semibold mb-4 text-center text-primary">
-          Submit Your Offer
+          {initialOffer ? 'Edit Your Offer' : 'Submit Your Offer'}
         </h2>
         <Divider />
 
         <form onSubmit={handleSubmit} className="p-fluid space-y-5">
-          {/* Price */}
           <div>
             <label className="font-medium mb-2 block">Price (₪)*</label>
             <InputText
@@ -165,12 +152,9 @@ const BidOfferForm = ({
               keyfilter="money"
               className={classNames({ 'p-invalid': errors.price })}
             />
-            {errors.price && (
-              <small className="p-error">Price is required.</small>
-            )}
+            {errors.price && <small className="p-error">Price is required.</small>}
           </div>
 
-          {/* Delivery Date */}
           <div>
             <label className="font-medium mb-2 block">Estimated Delivery*</label>
             <Calendar
@@ -186,7 +170,6 @@ const BidOfferForm = ({
             )}
           </div>
 
-          {/* Note */}
           <div>
             <label className="font-medium mb-2 block">Note (optional)</label>
             <InputTextarea
@@ -198,7 +181,6 @@ const BidOfferForm = ({
             />
           </div>
 
-          {/* Attachment */}
           <div>
             <label className="font-medium mb-2 block">Attachment URL (optional)</label>
             <InputText
@@ -208,10 +190,9 @@ const BidOfferForm = ({
             />
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
-            label={loading ? '' : 'Submit Offer'}
+            label={loading ? '' : initialOffer ? 'Save Changes' : 'Submit Offer'}
             icon={loading ? undefined : 'pi pi-check'}
             className="p-button-lg"
             disabled={loading || !user?.id}

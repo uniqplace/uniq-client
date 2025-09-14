@@ -64,7 +64,7 @@ export const updateBidOffer = createAsyncThunk(
         updatedBidOffer,
         { withCredentials: true }
       );
-      return response.data;
+      return response.data.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to update bid offer");
     }
