@@ -198,7 +198,7 @@ const NotificationBell = () => {
                   )}
                 </div>
               )}
-              <div className="px-4 pb-4 pt-2 border-t border-gray-200">
+              {/* <div className="px-4 pb-4 pt-2 border-t border-gray-200">
                 {(user.role === 'admin' || user.role === 'manufacturer') && (
                   <Button
                     label="Show all bid request notifications"
@@ -209,7 +209,7 @@ const NotificationBell = () => {
                     }}
                   />
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
         )}

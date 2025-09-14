@@ -27,7 +27,7 @@ export const fetchBidOffersByRequest = createAsyncThunk(
   ) => {
     try {
       const { bidRequestId, sort } = params;
-      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
+      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
       const response = await axios.get(url, {
         withCredentials: true,
@@ -52,6 +52,21 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
+    }
+  }
+);
+export const updateBidOffer = createAsyncThunk(
+  "BidOffer/update",
+  async (updatedBidOffer: BidOffer, thunkAPI) => {
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/bidOffers/${updatedBidOffer._id}`,
+        updatedBidOffer,
+        { withCredentials: true }
+      );
+      return response.data.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to update bid offer");
     }
   }
 );
@@ -123,6 +138,18 @@ const bidOfferSlice = createSlice({
         state.currentBidOfferLoading = false;
         state.currentBidOfferError = action.payload as string;
         state.currentBidOffer = null;
+      })
+      .addCase(updateBidOffer.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateBidOffer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentBidOffer = action.payload;
+      })
+      .addCase(updateBidOffer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

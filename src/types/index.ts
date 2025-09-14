@@ -129,10 +129,13 @@ export interface BidRequest {
   deliveryMethod: 'pickup' | 'shipping';
   status: 'open' | 'closed' | 'expired';
   manufacturers?: BidManufacturer[];
+  selectedManufacturer?: ManufacturerProfile; // Manufacturer can be an object or just an ID string
   createdAt: Date;
   updatedAt: Date;
   rating?: number;
 }
+
+
 
 export interface Filters {
   category: string;
@@ -164,9 +167,9 @@ export interface Manufacturer {
   categories?: string[];
   servicesOffered?: string[];
 }
-interface BidRequestId {
+export interface BidRequestId {
   _id?: string;
-  productId: ({ title: string }) & { _id?: string } & { description?: string }&{ images?: string[] };
+  productId: ({ title: string }) & { _id?: string } & { description?: string } & { images?: string[] };
   creatorId?: ({ name: string; email: string; role: string; avatarUrl?: string }) & { _id?: string };
   categoryId: string;
 }
