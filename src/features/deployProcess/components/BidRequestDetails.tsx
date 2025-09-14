@@ -91,15 +91,6 @@ const BidRequestDetails = () => {
     const creatorName = isObject(bidRequest.creatorId) ? (bidRequest.creatorId as any).name : 'Unknown Creator';
     const creatorAvatar = isObject(bidRequest.creatorId) ? (bidRequest.creatorId as any).avatarUrl : '';
 
-    // Handler function for navigation
-    const handleNavigation = () => {
-        if (bidRequestId) {
-
-
-            navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
-        }
-    };
-
     // Helper function to get the class string for the status badge
     const getStatusBadgeClass = (status: string | undefined): string => {
         switch (status) {
@@ -117,6 +108,12 @@ const BidRequestDetails = () => {
     // Helper function to validate if a value is a valid date
     const isValidDate = (date: any): boolean => {
         return date instanceof Date && !isNaN(date.getTime());
+    };
+
+    const handleSubmitOffer = () => {
+        navigate('/BidOffer', {
+            state: { bidRequestId, manufacturerId: userId },
+        });
     };
 
     return (
@@ -228,14 +225,13 @@ const BidRequestDetails = () => {
                     </div>
                 </div>
                 <div className="flex justify-end mt-4">
-                    <button
-                        className="p-button p-component p-button-primary"
-                        onClick={handleNavigation}
+                    <Button
+                        label="Submit Offer"
+                        icon="pi pi-check"
+                        className="p-button-primary"
+                        onClick={handleSubmitOffer}
                         disabled={hasSubmittedOffer}
-                    >
-                        Submit Offer
-                    </button>
-
+                    />
                 </div>
             </Card>
         </div>
