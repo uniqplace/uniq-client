@@ -10,7 +10,6 @@ import AuctionLoadingError from './AuctionLoadingError';
 import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../../store';
-import type { Order, Product } from '../../../../types';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
