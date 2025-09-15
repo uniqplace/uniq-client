@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import type { Order, Product, User } from '../../../../types';
@@ -33,6 +33,8 @@ export const orderSchema = yup.object().shape({
 interface CheckoutPageProps {
   order?: Order;
   product?: Product;
+  creator?: { name: string, _id: string };
+  price?: number;
   onOrderSuccess?: () => void;
 }
 
@@ -76,9 +78,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       _id: '',
       productId: fallbackProduct._id,
       buyerId: user.id,
-      creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
+      creator: props.creator
+        ? { name: props.creator.name, _id: props.creator._id }
+        : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
       status: 'pending',
-      totalAmount: initialTotalAmount,
+      totalAmount: typeof props.price === 'number'
+        ? props.price
+        : (product ? product.price * initialQuantity : 0),
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',

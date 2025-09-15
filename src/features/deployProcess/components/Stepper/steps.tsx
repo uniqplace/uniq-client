@@ -7,8 +7,10 @@ import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
 import { useBidRequestId } from '../../../../hooks/useBidRequestId';
 import AuctionLoadingError from './AuctionLoadingError';
-import { useGetProductByIdQuery } from '../../../marketplace/slices/productApiSlice';
 import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../../../store';
+import type { Order, Product } from '../../../../types';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
@@ -73,21 +75,15 @@ export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCa
 );
 
 export const PaymentAndOrderStep: React.FC<StepProps> = ({setCanGoNext }) => {
-  const { productId } = useBidRequestId();
-  const { data: product, error: productsError, isLoading } = useGetProductByIdQuery(productId);
+  const stepper = useSelector((state: RootState) => state.stepper);
+  const bidOffers=useSelector((state: RootState)=> state.bidOffer.offers);
+  const selectedBidOffer=bidOffers.find(offer=>offer.manufacturerId==stepper.bidRequest?.selectedManufacturer)
+  const product=stepper.product;
+  const selectedManufacturer=stepper.bidRequest?.selectedManufacturer
   const [, setOrderSuccess] = useState(false);
-  if (!productId) {
-    return <AuctionLoadingError productId={productId} />;
-  }
-  if (isLoading) {
-    return <div className="p-4 text-center"><span>Loading product...</span></div>;
-  }
-  if (productsError || !product) {
-    return <div className="p-4 text-center text-red-500">Failed to load product.</div>;
-  }
   return (
     <div className="p-4">
-      <CheckoutPage product={product} onOrderSuccess={() => {
+      <CheckoutPage product={product} creator ={{_id:selectedManufacturer?._id||'' , name: selectedManufacturer?.name|| ''}} price={selectedBidOffer?.price } onOrderSuccess={() => {
         setOrderSuccess(true);
         setCanGoNext && setCanGoNext(true);
       }} />

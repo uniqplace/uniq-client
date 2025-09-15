@@ -4,7 +4,7 @@ import axios from 'axios';
 
 
 import { stepsConfig } from '../components/Stepper/steps';
-import type { BidRequest } from '../../../types';
+import type { BidRequest, Product } from '../../../types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -14,16 +14,10 @@ const LOCAL_STORAGE_KEYS = {
   completedSteps: 'completedSteps',
 };
 
-export interface Product {
-  _id: string;
-  CreationStatus: string;
-  title?: string;
-}
-
 interface StepperState {
   currentStepIndex: number | null;
   completedSteps: boolean[];
-  product: Product | null;
+  product?: Product;
   loading: boolean;
   error: string | null;
   bidRequest?: BidRequest | null;
@@ -37,7 +31,7 @@ function getStepIndexByCreationStatus(creationStatus: string): number {
 const initialState: StepperState = {
   currentStepIndex: null,
   completedSteps: new Array(stepsConfig.length).fill(false),
-  product: null,
+  product: undefined,
   loading: false,
   error: null,
   bidRequest: null,
@@ -192,7 +186,7 @@ const stepperSlice = createSlice({
     clearStepper(state) {
       state.currentStepIndex = 0;
       state.completedSteps = new Array(stepsConfig.length).fill(false);
-      state.product = null;
+      state.product = undefined;
       state.loading = false;
       state.error = null;
       state.bidRequest = null;
