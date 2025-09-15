@@ -116,7 +116,7 @@ const BidOfferForm = ({
       } else {
         // Creating new offer
         const createdOffer = await dispatch(AddBidOffer(newBidOffer as BidOffer)).unwrap();
-        finalizeSubmission('Bid offer created successfully.', createdOffer.data.id);
+        finalizeSubmission('Bid offer created successfully.', createdOffer.data._id);
       }
     } catch (error) {
       toast.current?.show({
