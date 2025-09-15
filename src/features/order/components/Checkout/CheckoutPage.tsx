@@ -46,7 +46,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const toast = useRef<Toast>(null);
   const currentOrder = location.state?.order as Order;
   const product: Product = props.product || productFromState || currentOrder?.product;
-
+  const productPrice = props.price || product?.price || 0;
   // Initialize order state, using props.order if provided
   const initialQuantity = 1;
   const [order, setOrder] = useState<Order>(() => {
@@ -75,15 +75,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     }
     return {
       _id: '',
-      productId: fallbackProduct._id,
+      productId: product?._id||fallbackProduct._id,
       buyerId: user.id,
       creator: props.creator
         ? { name: props.creator.name, _id: props.creator._id }
         : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
       status: 'pending',
-      totalAmount: typeof props.price === 'number'
-        ? props.price
-        : (product ? product.price * initialQuantity : 0),
+      totalAmount: productPrice*initialQuantity,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',
@@ -124,7 +122,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   useEffect(() => {
     if (product) {
       const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
-      const totalAmount = product.price * order.quantity + shippingPrice;
+      const totalAmount = productPrice * order.quantity + shippingPrice;
       setOrder(prev => ({ ...prev, totalAmount }));
     }
   }, [product, order.quantity, shipping]);
