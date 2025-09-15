@@ -49,7 +49,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 
   // Initialize order state, using props.order if provided
   const initialQuantity = 1;
-  const initialTotalAmount = product ? product.price * initialQuantity : 0;
   const [order, setOrder] = useState<Order>(() => {
     const fallbackProduct: Product = product || {
       _id: '',
