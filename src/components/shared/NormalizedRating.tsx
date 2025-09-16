@@ -3,10 +3,10 @@ import { Rating } from "primereact/rating";
 import type { BidOffer } from "../../types";
 
 interface NormalizedRatingProps {
-  rating?: number;                  // דירוג היצרן
-  offers?: BidOffer | BidOffer[];   // אם רוצים לחשב maxRating אוטומטית
-  maxRating?: number;               // אפשר לתת ידנית
-  readOnly?: boolean;               // ברירת מחדל: true
+  rating?: number;                  
+  offers?: BidOffer | BidOffer[]; 
+  maxRating?: number;               
+  readOnly?: boolean;               
   onChange?: (value: number) => void;
   className?: string;
   style?: React.CSSProperties;
