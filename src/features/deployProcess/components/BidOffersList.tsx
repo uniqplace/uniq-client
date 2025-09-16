@@ -180,7 +180,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   {/* Rating */}
                   <div className="md:col-span-2 text-center">
                     <NormalizedRating
-                      rating={offer.manufacturerId?.rating}
+                      rating={offer.manufacturerId?.rating ?? 0}
                       offers={offers}
                       readOnly
                       style={{ fontSize: '1rem' }}

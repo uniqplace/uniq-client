@@ -18,17 +18,17 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     payments: paymentsReducer,
     user: userReducer,
-     auth: authSliceReducer,
-     bidOffer: BidOfferSlice,
-     bidRequest: BidRequestSlice,
+    auth: authSliceReducer,
+    bidOffer: BidOfferSlice,
+    bidRequest: BidRequestSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
-     socket: socketReducer,
+    socket: socketReducer,
     stepper: stepperReducer,
     manufacturer: manufacturerReducer,
     order: orderSlice,
   },
 
- 
+
 
   // Add the API middleware to the store
   // temporary
