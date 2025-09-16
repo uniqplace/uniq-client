@@ -26,11 +26,9 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      
       const { bidRequestId, sort } = params;
       const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
-        
       const response = await axios.get(url, {
         withCredentials: true,
       });
@@ -41,7 +39,6 @@ export const fetchBidOffersByRequest = createAsyncThunk(
     }
   }
 );
-
 export const AddBidOffer = createAsyncThunk("AddBidOffer",
   async (bidOffer: BidOffer, thunkAPI) => {
     try {
@@ -58,6 +55,21 @@ export const AddBidOffer = createAsyncThunk("AddBidOffer",
     }
   }
 );
+export const updateBidOffer = createAsyncThunk(
+  "BidOffer/update",
+  async (updatedBidOffer: BidOffer, thunkAPI) => {
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/bidOffers/${updatedBidOffer._id}`,
+        updatedBidOffer,
+        { withCredentials: true }
+      );
+      return response.data.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to update bid offer");
+    }
+  }
+);
 
 const getInitialBidOffer = (): Partial<BidOffer> => ({
   price: -1,
@@ -65,20 +77,25 @@ const getInitialBidOffer = (): Partial<BidOffer> => ({
   note: '',
   attachmentUrl: '',
 })
-
 const bidOfferSlice = createSlice({
   name: "BidOffer",
   initialState: {
     bidOffer: getInitialBidOffer(),
     offers: [] as BidOffer[],
     loading: false,
-    error: null as string | null
+    error: null as string | null,
+    currentBidOffer: null as BidOffer | null,
+    currentBidOfferLoading: false,
+    currentBidOfferError: null as string | null,
   },
   reducers: {
     resetBidOffer: (state) => {
       state.bidOffer = getInitialBidOffer();
       state.error = null;
     },
+    setCurrentBidOffer:(state,action)=>{
+      state.currentBidOffer=action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -107,28 +124,36 @@ const bidOfferSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-
-
-
-      .addCase(fetchBidOfferById.pending, (state) => {
+      // Fetch single bid offer by ID
+      .addCase(fetchBidOfferById.pending, (state: any) => {
+        state.currentBidOfferLoading = true;
+        state.currentBidOfferError = null;
+        state.currentBidOffer = null;
+      })
+      .addCase(fetchBidOfferById.fulfilled, (state: any, action: any) => {
+        state.currentBidOfferLoading = false;
+        state.currentBidOffer = action.payload;
+      })
+      .addCase(fetchBidOfferById.rejected, (state: any, action: any) => {
+        state.currentBidOfferLoading = false;
+        state.currentBidOfferError = action.payload as string;
+        state.currentBidOffer = null;
+      })
+      .addCase(updateBidOffer.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchBidOfferById.fulfilled, (state, action) => {
+      .addCase(updateBidOffer.fulfilled, (state, action) => {
         state.loading = false;
-        state.bidOffer = action.payload;
+        state.currentBidOffer = action.payload;
       })
-      .addCase(fetchBidOfferById.rejected, (state, action) => {
+      .addCase(updateBidOffer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      })
-   
-
-
+      });
   },
 });
 
-export const { resetBidOffer } = bidOfferSlice.actions;
+export const { resetBidOffer, setCurrentBidOffer } = bidOfferSlice.actions;
 
 export default bidOfferSlice.reducer;

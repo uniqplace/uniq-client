@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import socket from '../services/socket';
-import {socket_events } from '../constants/socketEvents';
+import { socket_events } from '../constants/socketEvents';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { InputText } from 'primereact/inputtext';
@@ -25,25 +25,22 @@ const Login = () => {
 
   const [searchParams] = useSearchParams();
 
-  // PrivateRoute
-  const fromState = (location.state as any)?.from?.pathname;
-
-  // mail
+  const fromState = (location.state as any)?.from as string;
   const fromQuery = searchParams.get("redirect");
-
   const from = fromQuery || fromState || "/";
 
   useEffect(() => {
     if (user?.email) setEmail(user.email);
     setPassword('');
   }, [user]);
+  
 
   const handleLogin = async () => {
     setErrorMessage('');
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, 
+      const res = await axios.post(`${API_BASE_URL}/auth/login`,
         { email, password },
-        { 
+        {
           withCredentials: true, // ✅ Add this for cross-site authentication
           headers: {
             'Content-Type': 'application/json',
@@ -58,7 +55,7 @@ const Login = () => {
 
         toast.current?.show({
           severity: 'success',
-          summary: 'Registered',
+          summary: 'logged in',
           detail: 'You have successfully logged in.',
           life: 3000
         });
@@ -138,9 +135,8 @@ const Login = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                isInvalid(email) ? 'border-red-500' : ''
-              }`}
+              className={`w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isInvalid(email) ? 'border-red-500' : ''
+                }`}
               placeholder="Enter your email"
               readOnly={!!user?.email}
             />
@@ -157,9 +153,8 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               toggleMask
               feedback={false}
-              className={`w-full ${
-                isInvalid(password) ? 'border-red-500' : ''
-              }`}
+              className={`w-full ${isInvalid(password) ? 'border-red-500' : ''
+                }`}
               inputClassName="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter your password"
             />

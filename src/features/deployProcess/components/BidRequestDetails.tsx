@@ -1,3 +1,4 @@
+import { getDayDifference } from '../../../utils/dateDiff';
 import { Avatar } from 'primereact/avatar';
 import { Tooltip } from 'primereact/tooltip';
 import { useEffect, useState } from 'react';
@@ -5,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
-//import type { BidRequest } from '../../../types';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
 import { fetchBidRequestById } from '../slices/BidRequestSlice';
@@ -15,17 +16,28 @@ import type { BidOffer } from '../../../types';
 import { Button } from 'primereact/button';
 import { ArrowLeft } from 'lucide-react';
 
+// Helper function to format delivery timeframe
+export function formatDeliveryTimeframe(deliveryTimeframe: string | Date | undefined): string {
+    if (!deliveryTimeframe) return "Not specified";
+    const dt = new Date(deliveryTimeframe);
+    if (!isNaN(dt.getTime())) {
+        const diffDays = getDayDifference(new Date(), dt);
+        if (diffDays >= 1 && diffDays < 30) {
+            return `${diffDays} day${diffDays === 1 ? '' : 's'}`;
+        } else if (diffDays >= 30 && diffDays < 365) {
+            const months = Math.floor(diffDays / 30);
+            return `${months} month${months === 1 ? '' : 's'}`;
+        } else {
+            return dt.toLocaleDateString('en-US');
+        }
+    }
+    return String(deliveryTimeframe);
+}
 
 const BidRequestDetails = () => {
     const { bidRequestId } = useParams();
-    console.log("bidRequestId from params:", bidRequestId);
 
     const navigate = useNavigate();
-    //    const [bidRequest, setBidRequest] = useState<BidRequest | null>(null);
-    //  const [isLoading, setIsLoading] = useState<boolean>(true);
-    //const [fetchError, setFetchError] = useState<string | null>(null);
-    //const manufacturerId = useSelector((state: any) => state.user.manufacturerId);
-
     const dispatch = useDispatch<AppDispatch>();
     const userId = useSelector((state: RootState) => state.user.manufacturerId);
     const offers = useSelector((state: RootState) => state.bidOffer.offers);
@@ -49,9 +61,9 @@ const BidRequestDetails = () => {
     useEffect(() => {
         if (offers && userId) {
             setHasSubmittedOffer(offers.some((offer: any) => offer.manufacturerId?._id === userId));
-          
+
         }
-     
+
     }, [offers, userId]);
 
     if (isLoading) {
@@ -79,15 +91,6 @@ const BidRequestDetails = () => {
     const creatorName = isObject(bidRequest.creatorId) ? (bidRequest.creatorId as any).name : 'Unknown Creator';
     const creatorAvatar = isObject(bidRequest.creatorId) ? (bidRequest.creatorId as any).avatarUrl : '';
 
-    // Handler function for navigation
-    const handleNavigation = () => {
-        if (bidRequestId) {
-            
-            console.log('Navigating to BidOffer with:', { bidRequestId, manufacturerId: userId });
-            navigate('/BidOffer', { state: { bidRequestId, manufacturerId: userId } });
-        }
-    };
-
     // Helper function to get the class string for the status badge
     const getStatusBadgeClass = (status: string | undefined): string => {
         switch (status) {
@@ -107,6 +110,12 @@ const BidRequestDetails = () => {
         return date instanceof Date && !isNaN(date.getTime());
     };
 
+    const handleSubmitOffer = () => {
+        navigate('/BidOffer', {
+            state: { bidRequestId, manufacturerId: userId },
+        });
+    };
+
     return (
         <div className="flex justify-center items-start min-h-screen bg-gray-50">
             <Card className="w-full max-w-2xl shadow-md p-6 rounded-lg">
@@ -115,7 +124,10 @@ const BidRequestDetails = () => {
                         label="Back to Requests"
                         icon={<ArrowLeft size={16} />}
                         className="p-button-text p-button-sm text-green-600"
-                        onClick={() => navigate(-1)} // חזרה לעמוד הקודם
+                        onClick={() => {
+                                navigate('/MyBidRequest');
+                            }
+                        }
                     />
                 </div>
                 <div className="flex items-center gap-4 mb-6">
@@ -142,13 +154,16 @@ const BidRequestDetails = () => {
                             <button
                                 className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
                                 style={{ width: 28, height: 28 }}
-                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`)}
+                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`, {
+                                    state: { offer: userOffer },
+                                })}
                                 title="View full offer details"
                             >
                                 <span className="pi pi-arrow-right" />
                             </button>
                         </div>
                     )}
+
                 <Divider />
                 <div className="mb-4">
                     <div className="grid grid-cols-2 gap-6 items-center">
@@ -187,8 +202,9 @@ const BidRequestDetails = () => {
                             <i className="pi pi-calendar text-gray-500 text-lg"></i>
                             <span className="text-lg">Delivery Timeframe:</span>
                         </div>
-                        <div className="text-sm text-gray-800 font-medium">{bidRequest.deliveryTimeframe || "Not specified"}</div>
-
+                        <div className="text-sm text-gray-800 font-medium">
+                            {formatDeliveryTimeframe(bidRequest.deliveryTimeframe)}
+                        </div>
                         <div className="font-semibold text-gray-700 flex items-center gap-2">
                             <i className="pi pi-truck text-gray-500 text-lg"></i>
                             <span className="text-lg">Delivery Method:</span>
@@ -209,14 +225,13 @@ const BidRequestDetails = () => {
                     </div>
                 </div>
                 <div className="flex justify-end mt-4">
-                    <button
-                        className="p-button p-component p-button-primary"
-                        onClick={handleNavigation}
+                    <Button
+                        label="Submit Offer"
+                        icon="pi pi-check"
+                        className="p-button-primary"
+                        onClick={handleSubmitOffer}
                         disabled={hasSubmittedOffer}
-                    >
-                        Submit Offer
-                    </button>
-
+                    />
                 </div>
             </Card>
         </div>
