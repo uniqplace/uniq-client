@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, ImageGallery, CreatorCard } from '../components/shared';
+import { Button, ImageGallery, CreatorCard, RatingComponent } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
 import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks/marketplaceThunks';
@@ -139,6 +139,10 @@ const ProductPage: React.FC = () => {
                   <span className={`px-4 py-2 rounded-full text-sm font-semibold shadow-lg ${getStatusColor(currentProduct.status)}`}>
                     {currentProduct.status ? currentProduct.status.toUpperCase() : ''}
                   </span>
+                </div>
+                {/* RatingComponent */}
+                <div className="mt-4">
+                  <RatingComponent itemId={currentProduct._id} itemType="product" />
                 </div>
               </div>
             </div>
