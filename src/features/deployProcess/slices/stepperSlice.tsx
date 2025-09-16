@@ -151,9 +151,10 @@ export const fetchOpenBidRequestsByProductId = createAsyncThunk(
   async (productId: string, thunkAPI) => {
     try {
       const response = await axios.get(
-        `${apiBaseUrl}/bidRequests/product/${productId}/open`,
+        `${apiBaseUrl}/bidRequests/product/${productId}`,
         { withCredentials: true }
       );
+      console.log('Fetched open bid requests:', response.data);
       // Returns the first bid request from the array
       return response.data.bidRequests[0] as BidRequest;
     } catch (err: any) {

@@ -23,6 +23,7 @@ const eventIcons: Record<string, string> = {
   bid_sent_confirmation: '✅',
   general_notification: '🔔',
   register_user: '👤',
+  new_bid_offer: '💼',
   connect: '🔗',
 };
 const NotificationBell = () => {
@@ -43,7 +44,7 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   const user = useAppSelector((state: RootState) => state.user);
-  // Ref למיכל התראות (scroll container)
+
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -51,6 +52,7 @@ const NotificationBell = () => {
     const fetchCount = async () => {
       try {
         const res = await getUnreadCount(user?.id ?? '');
+        console.log('Unread count:', res.data.count);
         setCount(res.data.count);
       } catch (err) {
         if (toastRef.current) {

@@ -4,6 +4,7 @@ export const socket_events = {
   new_order: 'new_order',
   bid_response: 'bid_response',
   general_notification: 'general_notification',
+  new_bid_offer: 'new_bid_offer',
   bid_sent_confirmation: 'bid_sent_confirmation',
   connect: 'connect',
 };
