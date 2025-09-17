@@ -34,6 +34,10 @@ export interface Product {
   tags: string[];
   createdAt: Date;
   updatedAt: Date;
+  rating?: number;
+  ratingCount?: number;
+  sales?: number;
+  stock?: number;
 }
 
 
@@ -143,6 +147,7 @@ export interface Filters {
   priceRange: [number, number];
   searchTerm: string;
   creator: string;
+  rating?: number | null;
 }
 // 11. Category Filters
 export type CategoryFiltersType = string[];

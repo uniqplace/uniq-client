@@ -25,18 +25,20 @@ const ProductPage: React.FC = () => {
 
   useEffect(() => {
     if (product) {
-      dispatch(clearSelectedProduct());
       dispatch({ type: 'marketplace/setSelectedProduct', payload: product });
-      return;
-    }
-    if (id) {
+    } else if (id) {
       dispatch(fetchProduct(id));
     }
+
     return () => {
       dispatch(clearSelectedProduct());
     };
   }, [id, dispatch, product]);
-  
+
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to the top of the page on load
+  }, []);
+
   const handleBackToMarketplace = () => {
     navigate(-1);
   };
@@ -83,7 +85,7 @@ const ProductPage: React.FC = () => {
       </div>
     );
   }
-    const handleBuyNow = () => {
+  const handleBuyNow = () => {
     navigate(`/checkout/${currentProduct._id}`, { state: { product: currentProduct } });
   };
 
@@ -117,9 +119,9 @@ const ProductPage: React.FC = () => {
           {/* Image Gallery Section */}
           <div className="lg:sticky lg:top-8 lg:self-start">
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-              <ImageGallery 
-                images={currentProduct.images} 
-                productTitle={currentProduct.title} 
+              <ImageGallery
+                images={currentProduct.images}
+                productTitle={currentProduct.title}
               />
             </div>
           </div>
@@ -140,6 +142,15 @@ const ProductPage: React.FC = () => {
                     {currentProduct.status ? currentProduct.status.toUpperCase() : ''}
                   </span>
                 </div>
+                {/* Sales Information */}
+                {typeof currentProduct.sales === 'number' && currentProduct.sales > 0 && (
+                  <div className="flex items-center gap-4 mt-4">
+                    <i className="pi pi-shopping-cart text-orange-500 text-xl"></i>
+                    <span className="text-lg font-medium text-gray-700">
+                      {currentProduct.sales} units sold
+                    </span>
+                  </div>
+                )}
                 {/* RatingComponent */}
                 <div className="mt-4">
                   <RatingComponent itemId={currentProduct._id} itemType="product" />
@@ -229,17 +240,20 @@ const ProductPage: React.FC = () => {
                     {formattedPrice}
                   </span>
                 </div>
+                {/* Subtle Stock Information */}
+                <div className="text-gray-700 text-center">
+                  {currentProduct.stock ? `${currentProduct.stock} units available` : 'Out of stock'}
+                </div>
                 <button
                   onClick={handleBuyNow}
-                  disabled={currentProduct.status !== 'published'}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg ${
-                    currentProduct.status === 'published'
+                  disabled={currentProduct.status !== 'published' || !currentProduct.stock}
+                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg ${currentProduct.status === 'published' && currentProduct.stock
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <i className="pi pi-shopping-cart mr-3"></i>
-                  {currentProduct.status === 'published' 
+                  {currentProduct.status === 'published' && currentProduct.stock
                     ? `Buy Now - ${formattedPrice}`
                     : 'Not Available'
                   }

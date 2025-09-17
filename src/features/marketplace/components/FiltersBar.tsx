@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CategoryFilters from './CategoryFilters';
 import CreatorFilterSection from './CreatorFilterSection';
@@ -11,6 +11,7 @@ import { fetchCreatorsAndManufacturers } from '../thunks/marketplaceThunks';
 import { setMaxPrice, updateFilters } from '../slices/marketplaceSlice';
 import type { Product } from '../../../types';
 import FilterSection from './FilterSection';
+import RatingFilter from './RatingFilter';
 
 // Helper to parse filters from URLSearchParams
 function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxProductPrice: number) {
@@ -33,11 +34,13 @@ function parseUrlFilters(params: URLSearchParams, minProductPrice: number, maxPr
     const minPrice = params.get('minPrice') ? Number(params.get('minPrice')) : minProductPrice;
     const maxPrice = params.get('maxPrice') ? Number(params.get('maxPrice')) : maxProductPrice;
     const priceRange: [number, number] = [minPrice, maxPrice];
+    const rating = params.get('rating') ? Number(params.get('rating')) : null;
     return {
         category,
         subCategories: subCategoriesArr.length > 0 ? subCategoriesArr : undefined,
         creator,
         priceRange,
+        rating,
     };
 }
 
@@ -50,6 +53,7 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
     const initialCreator = creators.find((c: { label: string; value: string; avatar?: string }) => c.value === filters.creator) || null;
     const [creator, setCreator] = useState(initialCreator);
     const [filteredCreators, setFilteredCreators] = useState(creators);
+    const [rating, setRating] = useState<number | null>(null);
     const [categoryFilters, setCategoryFilters] = useState<string[]>(() => {
         const params = new URLSearchParams(window.location.search);
         const mainCategory = params.get('category');
@@ -130,13 +134,18 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
             creators.find((c: { label: string; value: string; avatar?: string }) => c.value === urlFilters.creator) || null
         );
         setPriceRange(urlFilters.priceRange);
+        setRating(urlFilters.rating);
 
         const filtersMatch =
             filters.creator === urlFilters.creator &&
             Array.isArray(filters.priceRange) &&
             filters.priceRange[0] === urlFilters.priceRange[0] &&
-            filters.priceRange[1] === urlFilters.priceRange[1];
-        const hasAnyUrlFilter = urlFilters.creator || urlFilters.priceRange[0] !== minProductPrice || urlFilters.priceRange[1] !== maxProductPrice;
+            filters.priceRange[1] === urlFilters.priceRange[1] &&
+            filters.rating === urlFilters.rating;
+        const hasAnyUrlFilter = urlFilters.creator ||
+            urlFilters.priceRange[0] !== minProductPrice ||
+            urlFilters.priceRange[1] !== maxProductPrice ||
+            urlFilters.rating;
         if (hasAnyUrlFilter && !filtersMatch) {
             dispatch(updateFilters({ ...filters, ...urlFilters }));
         }
@@ -145,15 +154,17 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
     useEffect(() => {
         dispatch(fetchCreatorsAndManufacturers());
     }, [dispatch]);
+
     useEffect(() => {
         handleFilter();
-    }, [priceRange, creator]);
+    }, [priceRange, creator, rating]);
 
     const hasActiveFilters = () => {
         return Boolean(creator) ||
             (Array.isArray(categoryFilters) && categoryFilters.length > 0) ||
             priceRange[0] !== minProductPrice ||
-            priceRange[1] !== maxProductPrice;
+            priceRange[1] !== maxProductPrice ||
+            (rating !== null && rating !== undefined);
     };
     // Build filters for RTK Query
     const mainCategory = categoryFilters.length > 0 ? categoryFilters[0] : undefined;
@@ -194,12 +205,17 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
         } else {
             params.delete('creator');
         }
+        if (rating !== null && rating !== undefined) {
+            params.set('rating', rating.toString());
+        } else {
+            params.delete('rating');
+        }
         return params;
     };
 
     const handleFilter = async () => {
         const params = buildFilterParams();
-        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange }));
+        dispatch(updateFilters({ ...filters, category: mainCategory, subCategories: mainCategory ? subCategoriesArr : undefined, creator: creator?.value || '', priceRange, rating }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
@@ -220,6 +236,7 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
             params.delete('subCategories');
             params.delete('minPrice');
             params.delete('maxPrice');
+            params.delete('rating');
             params.set('page', '1');
             return params;
         };
@@ -227,7 +244,8 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
         setCategoryFilters([]);
         setPriceRange([minProductPrice, maxProductPrice]);
         setCreator(null);
-        dispatch(updateFilters({ ...filters, category: undefined, subCategories: undefined, creator: '', priceRange: [minProductPrice, maxProductPrice] }));
+        setRating(null);
+        dispatch(updateFilters({ ...filters, category: undefined, subCategories: undefined, creator: '', priceRange: [minProductPrice, maxProductPrice], rating: 0 }));
         navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
     };
 
@@ -271,6 +289,10 @@ const FiltersBar: React.FC<{ productsData: any }> = ({ productsData }) => {
                                 setCreator={setCreator}
                                 searchCreator={searchCreator}
                             />
+                        </FilterSection>
+
+                        <FilterSection title="Rating" icon="pi pi-star">
+                            <RatingFilter rating={rating} setRating={setRating} />
                         </FilterSection>
                     </aside>
                 </div>
