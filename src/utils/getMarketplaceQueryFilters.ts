@@ -10,5 +10,6 @@ export function getMarketplaceQueryFilters(params: URLSearchParams, page: number
     rating: params.get('rating') ? Number(params.get('rating')) : undefined,
     q: params.get('q') || '',
     page,
+    sortBy: params.get('sortBy') || 'default', // Add sortBy parameter
   };
 }

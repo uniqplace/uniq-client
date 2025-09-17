@@ -34,6 +34,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       maxPrice?: number;
       page?: number;
       rating?: number;
+      sortBy?: string; // Add sortBy to the query parameters
     }>({
       query: (params) => {
         const query = new URLSearchParams();
@@ -47,6 +48,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         if (typeof params.minPrice === 'number') query.append('minPrice', params.minPrice.toString());
         if (typeof params.maxPrice === 'number') query.append('maxPrice', params.maxPrice.toString());
         if (params.page) query.append('page', params.page.toString());
+        if (params.sortBy) query.append('sortBy', params.sortBy); // Add sortBy parameter
         return `/products/search?${query.toString()}`;
       },
     }),

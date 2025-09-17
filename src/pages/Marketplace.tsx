@@ -9,6 +9,7 @@ import FiltersBar from '../features/marketplace/components/FiltersBar'; import {
 import SearchBar from '../features/marketplace/components/SearchBar';
 import { useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
+import SortOptions from '../features/marketplace/components/SortOptions';
 
 // Helper to parse subCategories from URLSearchParams
 
@@ -80,6 +81,7 @@ const Marketplace: React.FC = () => {
         <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
         <div className="mb-6">
           <SearchBar />
+          <SortOptions />
         </div>
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-64 flex-shrink-0">

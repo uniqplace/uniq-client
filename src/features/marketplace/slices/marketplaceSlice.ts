@@ -15,6 +15,7 @@ interface MarketplaceState {
   categories: Category[];
   subCategories: Record<string, SubCategory[]>;
   maxPrice?: number;
+  sortBy: string; // Add sortBy field to the state
 }
 
 const initialState: MarketplaceState = {
@@ -37,6 +38,7 @@ const initialState: MarketplaceState = {
   categories: [],
   subCategories: {},
   maxPrice: Number.NEGATIVE_INFINITY,
+  sortBy: 'default', // Initialize sortBy with default value
 };
 
 const marketplaceSlice = createSlice({
@@ -102,6 +104,9 @@ const marketplaceSlice = createSlice({
     setRating: (state, action: PayloadAction<number | null>) => {
       state.filters.rating = action.payload;
     },
+    updateSortBy(state, action: PayloadAction<string>) {
+      state.sortBy = action.payload; // Add reducer to update sortBy
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -130,6 +135,7 @@ export const {
   removeProduct,
   setMaxPrice,
   setRating,
+  updateSortBy,
 } = marketplaceSlice.actions;
 
 export default marketplaceSlice.reducer;
