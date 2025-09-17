@@ -1,12 +1,15 @@
-// features/aiProduct/aiProductSlice.ts
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+// src/features/aiProduct/aiProductSlice.ts
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";   
+import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
-type ParamStatus = "confirmed" | "missing" | "skipped";
-type ParamSource = "ai" | "user";
-type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
+// ==== Types ====
+export type ParamStatus = "confirmed" | "missing" | "skipped";
+export type ParamSource = "ai" | "user";
+export type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
 
-interface ProductParam {
+export interface ProductParam {
   id: string;
   label: string;
   type: ParamType;
@@ -25,59 +28,119 @@ interface ProductParam {
   validation?: { valid: boolean; issues?: string[] };
 }
 
-interface ProductPayload {
+export interface ProductSummary {
+  requiredTotal: number;
+  requiredConfirmed: number;
+  requiredSkippedApproved: number;
+  requiredMissing: number;
+  optionalProvided: number;
+  addedByUser: number;
+  completenessScore: number;
+  blocking: boolean;
+}
+
+export interface AuditEntry {
+  at: string;
+  actor: "user" | "system" | "ai";
+  action: string;
+  details?: any;
+}
+
+export interface ProductPayload {
   sessionId: string;
   productName?: string;
-  category: { id: string; name: string; confidence: number };
+  category?: { id: string; name: string; confidence: number };
   aiVersion?: string;
   params: ProductParam[];
-  summary: {
-    requiredTotal: number;
-    requiredConfirmed: number;
-    requiredSkippedApproved: number;
-    requiredMissing: number;
-    optionalProvided: number;
-    addedByUser: number;
-    completenessScore: number;
-    blocking: boolean;
-  };
-  audit: Array<{
-    at: string;
-    actor: "user" | "system" | "ai";
-    action: string;
-    details?: any;
-  }>;
+  summary?: ProductSummary;
+  audit: AuditEntry[];
   locale?: { currency?: string; units?: "metric" | "imperial"; language?: string };
+  status: "idle" | "drafting" | "refining" | "validating" | "locked" | "error";
+  error?: string;
 }
 
-interface AiProductState {
-  payload: ProductPayload | null;
-}
-
-const initialState: AiProductState = {
-  payload: null,
+// ==== Initial State ====
+const initialState: ProductPayload = {
+  sessionId: uuidv4(),
+  params: [],
+  audit: [],
+  status: "idle",
 };
 
+// ==== Thunks ====
+export const generateDraft = createAsyncThunk(
+  "aiProduct/generateDraft",
+  async (payload: { userText: string; locale?: any }) => {
+    const res = await axios.post("/api/ai/spec/draft", {
+      sessionId: initialState.sessionId,
+      ...payload,
+    });
+    return res.data;
+  }
+);
+
+export const refineSpec = createAsyncThunk(
+  "aiProduct/refineSpec",
+  async (payload: { userInstruction: string; params: ProductParam[]; locale?: any }) => {
+    const res = await axios.post("/api/ai/spec/refine", {
+      sessionId: initialState.sessionId,
+      ...payload,
+    });
+    return res.data;
+  }
+);
+
+export const validateSpec = createAsyncThunk(
+  "aiProduct/validateSpec",
+  async (params: ProductParam[]) => {
+    const res = await axios.post("/api/product/validate", {
+      sessionId: initialState.sessionId,
+      params,
+    });
+    return res.data;
+  }
+);
+
+export const lockSpec = createAsyncThunk(
+  "aiProduct/lockSpec",
+  async (payload: { category: any; params: ProductParam[] }) => {
+    const res = await axios.post("/api/product/lock", {
+      sessionId: initialState.sessionId,
+      ...payload,
+    });
+    return res.data;
+  }
+);
+
+// ==== Slice ====
 const aiProductSlice = createSlice({
   name: "aiProduct",
   initialState,
   reducers: {
-    setPayload(state, action: PayloadAction<ProductPayload>) {
-      state.payload = action.payload;
+    addParam(state, action: PayloadAction<ProductParam>) {
+      state.params.push({ ...action.payload, source: "user" });
+      state.audit.push({
+        at: new Date().toISOString(),
+        actor: "user",
+        action: "add_param",
+        details: { id: action.payload.id },
+      });
     },
-    confirmParam(state, action: PayloadAction<{ id: string; value: any }>) {
-      if (!state.payload) return;
-      const param = state.payload.params.find(p => p.id === action.payload.id);
+    updateParam(state, action: PayloadAction<{ id: string; value: any }>) {
+      const param = state.params.find((p) => p.id === action.payload.id);
       if (param) {
-        param.status = "confirmed";
         param.value = action.payload.value;
-        param.source = "user";
-        param.validation = { valid: true };
+        param.status = "confirmed";
+        state.audit.push({
+          at: new Date().toISOString(),
+          actor: "user",
+          action: "update_param",
+          details: { id: param.id, value: action.payload.value },
+        });
       }
     },
     skipParam(state, action: PayloadAction<{ id: string; reason?: string }>) {
-      if (!state.payload) return;
-      const param = state.payload.params.find(p => p.id === action.payload.id);
+      const param = state.params.find((p) => p.id === action.payload.id);
       if (param) {
         param.status = "skipped";
         param.skipConfirmation = {
@@ -85,51 +148,46 @@ const aiProductSlice = createSlice({
           confirmedAt: new Date().toISOString(),
           reason: action.payload.reason,
         };
+        state.audit.push({
+          at: new Date().toISOString(),
+          actor: "user",
+          action: "skip_param",
+          details: { id: param.id },
+        });
       }
     },
-    addParam(state, action: PayloadAction<ProductParam>) {
-      if (!state.payload) return;
-      state.payload.params.push({
-        ...action.payload,
-        source: "user",
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(generateDraft.pending, (state) => {
+        state.status = "drafting";
+      })
+      .addCase(generateDraft.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.params = action.payload.params;
+        state.summary = action.payload.summary;
+        state.category = action.payload.category;
+        state.aiVersion = action.payload.aiVersion;
+      })
+      .addCase(refineSpec.pending, (state) => {
+        state.status = "refining";
+      })
+      .addCase(refineSpec.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.params = action.payload.updatedParams;
+        state.summary = action.payload.summary;
+      })
+      .addCase(validateSpec.pending, (state) => {
+        state.status = "validating";
+      })
+      .addCase(validateSpec.fulfilled, (state, action) => {
+        state.status = action.payload.blocking ? "error" : "idle";
+      })
+      .addCase(lockSpec.fulfilled, (state) => {
+        state.status = "locked";
       });
-    },
-    updateSummary(state) {
-      if (!state.payload) return;
-      const required = state.payload.params.filter(p => p.requiredByAI);
-      const optional = state.payload.params.filter(p => !p.requiredByAI);
-
-      state.payload.summary = {
-        requiredTotal: required.length,
-        requiredConfirmed: required.filter(p => p.status === "confirmed").length,
-        requiredSkippedApproved: required.filter(p => p.status === "skipped").length,
-        requiredMissing: required.filter(p => p.status === "missing").length,
-        optionalProvided: optional.filter(p => p.status === "confirmed").length,
-        addedByUser: state.payload.params.filter(p => p.source === "user").length,
-        completenessScore: Math.round(
-          (required.filter(p => p.status === "confirmed" || p.status === "skipped").length / required.length) * 100
-        ),
-        blocking: required.some(p => p.status === "missing"),
-      };
-    },
-    finalizeProduct(state) {
-      if (!state.payload) return;
-      // כאן בעתיד תבצעי קריאת API לשרת לשמירת מוצר
-    },
-    resetSession(state) {
-      state.payload = null;
-    },
   },
 });
 
-export const {
-  setPayload,
-  confirmParam,
-  skipParam,
-  addParam,
-  updateSummary,
-  finalizeProduct,
-  resetSession,
-} = aiProductSlice.actions;
-
+export const { addParam, updateParam, skipParam } = aiProductSlice.actions;
 export default aiProductSlice.reducer;
