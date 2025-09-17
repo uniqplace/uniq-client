@@ -241,3 +241,6 @@ interface ProductPayload {
   }>;
   locale?: { currency?: string; units?: "metric" | "imperial"; language?: string };
 }
+// ProductPayload interface below is not in use. Example usage to avoid TS error:
+const _unusedProductPayload: ProductPayload | undefined = undefined;
+
