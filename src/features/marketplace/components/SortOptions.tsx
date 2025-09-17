@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateSortBy } from '../slices/marketplaceSlice';
 import { Dropdown } from 'primereact/dropdown';
-import { PiSortAscending, PiSortDescending, PiStar, PiFire, PiClock, PiBookOpen } from 'react-icons/pi';
+import { sortOptions } from '../../../constants/sortOptions';
+import * as Icons from 'react-icons/pi';
 
 const SortOptions: React.FC = () => {
     const dispatch = useDispatch();
@@ -11,19 +12,10 @@ const SortOptions: React.FC = () => {
     const navigate = useNavigate();
     const sortBy = useSelector((state: any) => state.marketplace.sortBy);
 
-    const sortOptions = [
-        { label: 'Best Selling', value: 'bestSelling', aliases: ['default'], icon: <PiFire className="text-orange-500" /> },
-        { label: 'Highest Rated', value: 'highestRated', icon: <PiStar className="text-yellow-500" /> },
-        { label: 'Newest', value: 'newest', icon: <PiClock className="text-purple-500" /> },
-        { label: 'Price: Low to High', value: 'priceLowHigh', icon: <PiSortAscending className="text-green-500" /> },
-        { label: 'Price: High to Low', value: 'priceHighLow', icon: <PiSortDescending className="text-red-500" /> },
-        { label: 'A - Z', value: 'a-z', icon: <PiBookOpen className="text-blue-500" /> },
-    ];
-
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const sortByParam = params.get('sortBy') || 'default';
-        const matchedOption = sortOptions.find(option => option.value === sortByParam || option.aliases?.includes(sortByParam));
+        const matchedOption = sortOptions.find((option: any) => option.value === sortByParam || option.aliases?.includes(sortByParam));
         dispatch(updateSortBy(matchedOption ? matchedOption.value : 'bestSelling'));
     }, [location.search, dispatch]);
 
@@ -37,9 +29,10 @@ const SortOptions: React.FC = () => {
     };
 
     const customOptionTemplate = (option: any) => {
+        const IconComponent = (Icons as any)[option.icon];
         return (
             <div className="flex items-center gap-2">
-                {option.icon}
+                {IconComponent && <IconComponent className={option.iconClass} />}
                 <span>{option.label}</span>
             </div>
         );
@@ -47,9 +40,10 @@ const SortOptions: React.FC = () => {
 
     const selectedOptionTemplate = (option: any) => {
         if (!option) return null;
+        const IconComponent = (Icons as any)[option.icon];
         return (
             <div className="flex items-center gap-2">
-                {option.icon}
+                {IconComponent && <IconComponent className={option.iconClass} />}
                 <span>{option.label}</span>
             </div>
         );
