@@ -10,6 +10,7 @@ import socketReducer from './features/socket/socketSlice';
 import manufacturerReducer from './features/user/slices/manufacturerSlice';
 import apiSlice from './api/apiSlice';
 import orderSlice from './features/order/slices/orderSlice';
+import aiProductSlice from './features/product Idea & AI/slices/aiProductSlice';
 
 
 
@@ -26,6 +27,7 @@ export const store = configureStore({
     stepper: stepperReducer,
     manufacturer: manufacturerReducer,
     order: orderSlice,
+    aiProduct: aiProductSlice,
   },
 
 
