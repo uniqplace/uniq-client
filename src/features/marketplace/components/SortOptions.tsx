@@ -1,46 +1,76 @@
 import React, { useEffect } from 'react';
-import { Dropdown } from 'primereact/dropdown';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateSortBy } from '../slices/marketplaceSlice';
+import { Dropdown } from 'primereact/dropdown';
+import { PiSortAscending, PiSortDescending, PiStar, PiFire, PiClock, PiBookOpen } from 'react-icons/pi';
 
 const SortOptions: React.FC = () => {
-  const dispatch = useDispatch();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const sortBy = useSelector((state: any) => state.marketplace.sortBy);
+    const dispatch = useDispatch();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const sortBy = useSelector((state: any) => state.marketplace.sortBy);
 
-  const sortOptions = [
-    { label: 'Default', value: 'default' },
-    { label: 'Best Selling', value: 'bestSelling' },
-    { label: 'Highest Rated', value: 'highestRated' },
-  ];
+    const sortOptions = [
+        { label: 'Best Selling', value: 'bestSelling', aliases: ['default'], icon: <PiFire className="text-orange-500" /> },
+        { label: 'Highest Rated', value: 'highestRated', icon: <PiStar className="text-yellow-500" /> },
+        { label: 'Newest', value: 'newest', icon: <PiClock className="text-purple-500" /> },
+        { label: 'Price: Low to High', value: 'priceLowHigh', icon: <PiSortAscending className="text-green-500" /> },
+        { label: 'Price: High to Low', value: 'priceHighLow', icon: <PiSortDescending className="text-red-500" /> },
+        { label: 'A - Z', value: 'a-z', icon: <PiBookOpen className="text-blue-500" /> },
+    ];
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const sortByParam = params.get('sortBy') || 'default';
-    dispatch(updateSortBy(sortByParam));
-  }, [location.search, dispatch]);
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const sortByParam = params.get('sortBy') || 'default';
+        const matchedOption = sortOptions.find(option => option.value === sortByParam || option.aliases?.includes(sortByParam));
+        dispatch(updateSortBy(matchedOption ? matchedOption.value : 'bestSelling'));
+    }, [location.search, dispatch]);
 
-  const handleSortChange = (value: string) => {
-    dispatch(updateSortBy(value));
-    const params = new URLSearchParams(location.search);
-    params.set('sortBy', value);
-    navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
-  };
+    const handleSortChange = (value: string) => {
+        dispatch(updateSortBy(value));
+        const params = new URLSearchParams(location.search);
+        params.set('sortBy', value);
+        params.delete('page');
+        params.set('page', '1'); // Reset to the first page
+        navigate({ pathname: location.pathname, search: params.toString() }, { replace: false });
+    };
 
-  return (
-    <div className="sort-options">
-      <label htmlFor="sort">Sort By:</label>
-      <Dropdown
-        id="sort"
-        value={sortBy}
-        options={sortOptions}
-        onChange={(e) => handleSortChange(e.value)}
-        placeholder="Select an option"
-      />
-    </div>
-  );
+    const customOptionTemplate = (option: any) => {
+        return (
+            <div className="flex items-center gap-2">
+                {option.icon}
+                <span>{option.label}</span>
+            </div>
+        );
+    };
+
+    const selectedOptionTemplate = (option: any) => {
+        if (!option) return null;
+        return (
+            <div className="flex items-center gap-2">
+                {option.icon}
+                <span>{option.label}</span>
+            </div>
+        );
+    };
+
+    return (
+        <div className="flex flex-col items-end mb-6">
+            <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
+                Sort By
+            </label>
+            <Dropdown
+                id="sort"
+                value={sortBy}
+                options={sortOptions}
+                onChange={(e) => handleSortChange(e.value)}
+                className="w-45 p-inputtext-sm shadow-md border border-gray-300 rounded-lg"
+                itemTemplate={customOptionTemplate}
+                valueTemplate={selectedOptionTemplate}
+            />
+        </div>
+    );
 };
 
 export default SortOptions;

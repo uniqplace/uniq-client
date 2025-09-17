@@ -35,6 +35,10 @@ const ProductPage: React.FC = () => {
     };
   }, [id, dispatch, product]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to the top of the page on load
+  }, []);
+
   const handleBackToMarketplace = () => {
     navigate(-1);
   };
@@ -237,7 +241,7 @@ const ProductPage: React.FC = () => {
                   </span>
                 </div>
                 {/* Subtle Stock Information */}
-                <div className="text-sx text-gray-700 text-center">
+                <div className="text-gray-700 text-center">
                   {currentProduct.stock ? `${currentProduct.stock} units available` : 'Out of stock'}
                 </div>
                 <button

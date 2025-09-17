@@ -28,6 +28,10 @@ const Marketplace: React.FC = () => {
     setPage(pageParam);
   }, [location.search, params]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to the top of the page
+  }, [page]);
+
   // Build filters for RTK Query
   const queryFilters = React.useMemo(() => getMarketplaceQueryFilters(params, page), [params, page]);
   const { data: productsData, error: productsError, isLoading, isFetching } = useGetProductsQuery(queryFilters);
@@ -81,7 +85,6 @@ const Marketplace: React.FC = () => {
         <h1 className="text-2xl font-bold mb-4">Marketplace</h1>
         <div className="mb-6">
           <SearchBar />
-          <SortOptions />
         </div>
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-64 flex-shrink-0">
@@ -89,7 +92,10 @@ const Marketplace: React.FC = () => {
           </div>
           <div className="flex-1">
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
-              <h2 className="text-xl font-semibold mb-4">Products</h2>
+              <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold mb-4 md:mb-0">Products</h2>
+                <SortOptions />
+              </div>
               {isLoading || isFetching || loading ? (
                 <div className="flex flex-col justify-center items-center py-12">
                   <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
