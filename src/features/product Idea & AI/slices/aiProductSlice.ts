@@ -1,63 +1,16 @@
 // src/features/aiProduct/aiProductSlice.ts
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";   
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
-
-// ==== Types ====
-export type ParamStatus = "confirmed" | "missing" | "skipped";
-export type ParamSource = "ai" | "user";
-export type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
-
-export interface ProductParam {
-  id: string;
-  label: string;
-  type: ParamType;
-  requiredByAI: boolean;
-  status: ParamStatus;
-  value?: any;
-  unit?: string;
-  enumOptions?: string[];
-  source: ParamSource;
-  skipConfirmation?: {
-    confirmed: true;
-    confirmedAt: string;
-    reason?: string;
-  };
-  notes?: string;
-  validation?: { valid: boolean; issues?: string[] };
-}
-
-export interface ProductSummary {
-  requiredTotal: number;
-  requiredConfirmed: number;
-  requiredSkippedApproved: number;
-  requiredMissing: number;
-  optionalProvided: number;
-  addedByUser: number;
-  completenessScore: number;
-  blocking: boolean;
-}
-
-export interface AuditEntry {
-  at: string;
-  actor: "user" | "system" | "ai";
-  action: string;
-  details?: any;
-}
-
-export interface ProductPayload {
-  sessionId: string;
-  productName?: string;
-  category?: { id: string; name: string; confidence: number };
-  aiVersion?: string;
-  params: ProductParam[];
-  summary?: ProductSummary;
-  audit: AuditEntry[];
-  locale?: { currency?: string; units?: "metric" | "imperial"; language?: string };
-  status: "idle" | "drafting" | "refining" | "validating" | "locked" | "error";
-  error?: string;
-}
+import type {
+  ProductParam,
+  ProductPayload,
+} from "./aiProductTypes";
+import {
+  generateDraft,
+  refineSpec,
+  validateSpec,
+  lockSpec,
+} from "./aiProductThunks";
 
 // ==== Initial State ====
 const initialState: ProductPayload = {
@@ -66,59 +19,6 @@ const initialState: ProductPayload = {
   audit: [],
   status: "idle",
 };
-
-// ==== Thunks ====
-export const generateDraft = createAsyncThunk(
-  "aiProduct/generateDraft",
-  async (payload: { userText: string; locale?: any }, thunkAPI) => {
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId || initialState.sessionId;
-    const res = await axios.post("/api/ai/spec/draft", {
-      sessionId,
-      ...payload,
-    });
-    return res.data;
-  }
-);
-
-export const refineSpec = createAsyncThunk(
-  "aiProduct/refineSpec",
-  async (payload: { userInstruction: string; params: ProductParam[]; locale?: any }, thunkAPI) => {
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId || initialState.sessionId;
-    const res = await axios.post("/api/ai/spec/refine", {
-      sessionId,
-      ...payload,
-    });
-    return res.data;
-  }
-);
-
-export const validateSpec = createAsyncThunk(
-  "aiProduct/validateSpec",
-  async (params: ProductParam[], thunkAPI) => {
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId || initialState.sessionId;
-    const res = await axios.post("/api/product/validate", {
-      sessionId,
-      params,
-    });
-    return res.data;
-  }
-);
-
-export const lockSpec = createAsyncThunk(
-  "aiProduct/lockSpec",
-  async (payload: { category: any; params: ProductParam[] }, thunkAPI) => {
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId || initialState.sessionId;
-    const res = await axios.post("/api/product/lock", {
-      sessionId,
-      ...payload,
-    });
-    return res.data;
-  }
-);
 
 // ==== Slice ====
 const aiProductSlice = createSlice({
