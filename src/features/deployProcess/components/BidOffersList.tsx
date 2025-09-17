@@ -10,7 +10,8 @@ import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
-import { Rating } from 'primereact/rating';
+import NormalizedRating from '../../../components/shared/NormalizedRating';
+
 interface BidOffersListProps {
   bidRequestId: string;
   setCanGoNext?: (canGo: boolean) => void;
@@ -175,6 +176,19 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                   <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
                     <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
                     <span>{offer.note || 'No note provided'}</span>
+                  </div> 
+                  {/* Rating */}
+                  <div className="md:col-span-2 text-center">
+                    <NormalizedRating
+                      rating={offer.manufacturerId?.rating ?? 0}
+                      offers={offers}
+                      readOnly
+                      style={{ fontSize: '1rem' }}
+                    />
+                  </div>
+                  {/* Response */}
+                  <div className="md:col-span-3 text-center text-gray-500 text-sm md:text-base truncate">
+                    <span>{offer.note || 'No note provided'}</span>
                   </div>
                   {/* Chat Button */}
                   <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
@@ -188,14 +202,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
                       icon="pi pi-comments"
                       aria-label="Chat"
                     />
-                  </div>
-                  {/* Rating */}
-                  <div className="md:col-span-3 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
-                    <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Rating </span>
-                    <span>
-                      <Rating value={offer.manufacturerId.rating || 0} readOnly cancel={false} stars={5} style={{ fontSize: '1.2rem', color: '#F7B500' }} />
-                      <span className="ml-1 text-xs text-gray-600">{offer.manufacturerId.rating ?? '-'}</span>
-                    </span>
                   </div>
                   {/* WhatsApp-style Send button only for selected offer in selection mode */}
                   {isSelectingManufacturer && selectedOfferId === offer._id && (
