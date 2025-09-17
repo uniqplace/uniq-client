@@ -7,6 +7,7 @@ export function getMarketplaceQueryFilters(params: URLSearchParams, page: number
     creator: params.get('creator') || '',
     minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : undefined,
     maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : undefined,
+    rating: params.get('rating') ? Number(params.get('rating')) : undefined,
     q: params.get('q') || '',
     page,
   };

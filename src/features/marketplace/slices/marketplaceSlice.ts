@@ -30,6 +30,7 @@ const initialState: MarketplaceState = {
     subCategories: [],
     priceRange: [0, 1000],
     searchTerm: '',
+    rating: null,
   },
   totalPages: 1,
   creators: [],
@@ -71,6 +72,7 @@ const marketplaceSlice = createSlice({
         priceRange: [0, 1000],
         searchTerm: '',
         creator: '',
+        rating: null,
       };
     },
     addProduct(state, action: PayloadAction<Product>) {
@@ -96,6 +98,9 @@ const marketplaceSlice = createSlice({
     },
     setSubCategories(state, action: PayloadAction<Record<string, SubCategory[]>>) {
       state.subCategories = action.payload;
+    },
+    setRating: (state, action: PayloadAction<number | null>) => {
+      state.filters.rating = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -123,7 +128,8 @@ export const {
   addProduct,
   updateProduct,
   removeProduct,
-  setMaxPrice
+  setMaxPrice,
+  setRating,
 } = marketplaceSlice.actions;
 
 export default marketplaceSlice.reducer;
