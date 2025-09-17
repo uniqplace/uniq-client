@@ -25,7 +25,7 @@ const RatingComponent: React.FC<RatingComponentProps> = ({
   } = useRatingData(itemId, itemType, initialRating, onRatingChange);
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 shadow-md border border-gray-200">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 shadow-md">
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-semibold text-gray-900 flex items-center">
           <i className="pi pi-star mr-2 text-yellow-500"></i>

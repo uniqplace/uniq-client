@@ -36,6 +36,8 @@ export interface Product {
   updatedAt: Date;
   rating?: number;
   ratingCount?: number;
+  sales?: number;
+  stock?: number;
 }
 
 
