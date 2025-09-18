@@ -99,6 +99,9 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       transformResponse:(response : {data:Product})=>response.data,
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
+    getSimilarProducts: builder.query<Product[], string>({
+      query: (id) => `/products/${id}/similar`,
+    }),
   }),
   overrideExisting: false,
 });
@@ -110,4 +113,5 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useGetProductByIdQuery,
+  useGetSimilarProductsQuery,
 } = marketplaceApiSlice;

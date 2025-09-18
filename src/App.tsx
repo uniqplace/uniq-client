@@ -33,6 +33,7 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
+import ParentComponent from './features/marketplace/components/ParentComponent';
 
 
 
@@ -94,6 +95,7 @@ function App() {
           <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
           <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
           <Route path="/checkout/:productId" element={<CheckoutPage />} />
+          <Route path='/similar-products' element={<ParentComponent productId={'68caaf06402f7d6e81e36d18'}/> } />
           <Route
             path="/myBidRequests/:bidRequestId"
             element={
