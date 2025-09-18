@@ -183,6 +183,16 @@ export interface ManufacturerProfile {
   servicesOffered?: string[];
 }
 
+export interface CreatorProfile {
+  _id?: string;
+  userId: string; // ID of the user
+  name: string; // Creator's name
+  location: string; // Creator's location
+  phone: string; // Creator's phone number
+  rating: number; // Creator's rating
+  ratingCount: number; // Number of ratings
+}
+
 // type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source
 // type ParamSource = "ai" | "user";                       // "נוסף ע״י משתמש" = source:"user"
 // type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";

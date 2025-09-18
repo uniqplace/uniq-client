@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { fetchCurrentUser, updateUserProfile } from '../../marketplace/thunks/userThunk'
-import type { ManufacturerProfile, RoleType } from '../../../types';
+import type { ManufacturerProfile, RoleType, CreatorProfile } from '../../../types';
 
 export interface UserState {
   id: string | null;
@@ -19,7 +19,8 @@ export interface UserState {
   rating: number | null;
   manufacturer: ManufacturerProfile | null;
   manufacturerId: string | null;
-
+  creator: CreatorProfile | null;
+  creatorId?: string | null;
 }
 
 const initialState: UserState = {
@@ -34,8 +35,9 @@ const initialState: UserState = {
   error: null,
   rating: null,
   manufacturer: {} as ManufacturerProfile,
-  manufacturerId:null,
-
+  manufacturerId: null,
+  creator: null,
+  creatorId: null,
 };
 
 const userSlice = createSlice({
@@ -51,7 +53,13 @@ const userSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
-    }
+    },
+    setCreatorProfile: (state, action: PayloadAction<CreatorProfile>) => {
+      state.creator = action.payload;
+    },
+    clearCreatorProfile: (state) => {
+      state.creator = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -74,6 +82,7 @@ const userSlice = createSlice({
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         Object.assign(state, action.payload);
         state.loading = false;
+        state.creator = action.payload.creatorProfile || null;
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
@@ -82,5 +91,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, updateUser, clearError } = userSlice.actions;
+export const { setUser, clearUser, updateUser, clearError, setCreatorProfile, clearCreatorProfile } = userSlice.actions;
 export default userSlice.reducer;

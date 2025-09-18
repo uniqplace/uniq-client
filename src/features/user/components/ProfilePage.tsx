@@ -11,11 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import FilesUpload from '../../../components/shared/FilesUpload';
 import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slices/userApiSlice';
 import ManufacturerFields, { type ManufacturerFieldsRef } from './ManufacturerFields';
+import CreatorFields from './CreatorFields';
 import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation, useDeleteImagesMutation } from '../../../api/apiSlice';
 import { updateManufacturerProfile } from '../slices/manufacturerSlice';
 import { updateUser } from '../slices/userSlice';
-import type { ManufacturerProfile } from '../../../types';
+import type { CreatorProfile, ManufacturerProfile } from '../../../types';
 
 const ProfilePage: React.FC = () => {
   const user = useAppSelector(state => state.user);
@@ -196,6 +197,23 @@ const ProfilePage: React.FC = () => {
         };
       }
 
+      if(formData.role === 'creator' && !user.creator) {
+        toast.current?.show({ severity: 'error', summary: 'Validation Error', detail: 'Creator profile data is missing.', life: 3000 });
+        return;
+      }
+      let creatorObj: CreatorProfile | null = null;
+      if(formData.role === 'creator' && user.creator) {
+        creatorObj = {
+          location: user.creator.location || '',
+          phone: user.creator.phone || '',
+          rating: user.creator.rating || 0,
+          ratingCount: user.creator.ratingCount || 0,
+          name: formData.name || user.name || '',
+          userId: user.id || '',
+        };
+        
+      }
+
       const actionResult = await updateUserMutation({
         name: formData.name,
         bio: formData.bio,
@@ -203,7 +221,8 @@ const ProfilePage: React.FC = () => {
         role: formData.role,
         skills: formData.role === 'creator' ? skills : [],
         portfolio: formData.role === 'creator' ? portfolioUrls : [],
-        manufacturer: manufacturerObj
+        manufacturer: manufacturerObj,
+        creator: creatorObj,
       })
       .unwrap();
 
@@ -321,6 +340,11 @@ const ProfilePage: React.FC = () => {
                   handleRemoveItem={handleRemoveItem}
                   disabled={isLoading}
                 />
+              )}
+
+              {/* Creator fields */}
+              {formData.role === 'creator' && editMode && (
+                <CreatorFields initialData={user.creator} />
               )}
 
               {/* Portfolio */}
