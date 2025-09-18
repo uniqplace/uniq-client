@@ -152,26 +152,6 @@ export interface Filters {
 // 11. Category Filters
 export type CategoryFiltersType = string[];
 
-
-
-
-interface UserToBidOffer {
-  _id: string;
-  name: string;
-  avatarUrl?: string;
-  email: string;
-}
-
-export interface Manufacturer {
-  _id?: string;
-  userId: UserToBidOffer;
-  name: string;
-  rating?: number;
-  location?: string;
-  availableFrom?: string;
-  categories?: string[];
-  servicesOffered?: string[];
-}
 export interface BidRequestId {
   _id?: string;
   productId: ({ title: string }) & { _id?: string } & { description?: string } & { images?: string[] };
@@ -192,9 +172,10 @@ export interface BidOffer {
 }
 
 export interface ManufacturerProfile {
-  _id: string;
+  _id?: string;
   userId: User;
   name: string;
+  phone: string;
   categories: string[];
   location: string;
   availableFrom: string;

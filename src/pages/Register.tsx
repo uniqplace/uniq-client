@@ -60,6 +60,7 @@ const Register: React.FC = () => {
   const [categories, setCategories] = useState<string[]>(['']);
   const [location, setLocation] = useState('');
   const [availableFrom, setAvailableFrom] = useState('');
+  const [phone, setPhone] = useState(''); // Added state for phone
 
   const {
     register,
@@ -100,6 +101,7 @@ const Register: React.FC = () => {
           categories,
           location,
           availableFrom,
+          phone, // Include phone in the manufacturer profile
         };
       }
 
@@ -316,6 +318,8 @@ const Register: React.FC = () => {
               setLocation={setLocation}
               availableFrom={availableFrom}
               setAvailableFrom={setAvailableFrom}
+              phone={phone}
+              setPhone={setPhone}
               handleItemChange={(idx, value, setter) =>
                 setter(prev => prev.map((item, i) => (i === idx ? value : item)))
               }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
 import { Button } from 'primereact/button';
@@ -51,6 +50,7 @@ const ProfilePage: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [location, setLocation] = useState('');
   const [availableFrom, setAvailableFrom] = useState('');
+  const [phone, setPhone] = useState('');
   const manufacturerFieldsRef = useRef<ManufacturerFieldsRef>(null);
 
   // Sync state with user on load
@@ -69,6 +69,7 @@ const ProfilePage: React.FC = () => {
     setCategories([]);
     setLocation('');
     setAvailableFrom('');
+    setPhone('');
   }, [user]);
 
   // Reset manufacturer fields if role changes
@@ -78,6 +79,7 @@ const ProfilePage: React.FC = () => {
       setLocation('');
       setAvailableFrom('');
       setServicesOffered([]);
+      setPhone('');
     }
   }, [formData.role]);
 
@@ -174,21 +176,23 @@ const ProfilePage: React.FC = () => {
     // Save user profile
     try {
       // Build valid manufacturer object if needed
-      let manufacturerObj = null;
+      let manufacturerObj: ManufacturerProfile | null = null;
       if (formData.role === 'manufacturer') {
         manufacturerObj = {
           userId: {
-            _id: user.id || '',
+            id: user.id || '',
             name: formData.name || user.name || '',
             email: user.email || '',
-            avatarUrl: user.avatarUrl || user.avatar || ''
+            avatarUrl: user.avatarUrl || user.avatar || '',
+            role: formData.role || 'manufacturer',
           },
           name: formData.name || user.name || '',
           categories,
           location,
           availableFrom,
           servicesOffered,
-          rating
+          rating,
+          phone
         };
       }
 
@@ -215,6 +219,7 @@ const ProfilePage: React.FC = () => {
           availableFrom,
           servicesOffered,
           rating,
+          phone
         };
         dispatch(updateManufacturerProfile(manufacturerPayload as ManufacturerProfile));
       }
@@ -309,6 +314,8 @@ const ProfilePage: React.FC = () => {
                   setLocation={setLocation}
                   availableFrom={availableFrom}
                   setAvailableFrom={setAvailableFrom}
+                  phone={phone}
+                  setPhone={setPhone}
                   handleItemChange={handleItemChange}
                   handleAddItem={handleAddItem}
                   handleRemoveItem={handleRemoveItem}
