@@ -33,7 +33,7 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
-
+import AiProductDebugPanel from './features/product Idea & AI/components/AiProductDebugPanel';
 
 
 
@@ -116,6 +116,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/ai-product-debug" element={<AiProductDebugPanel />} />
         </Routes>
       </MainContent>
     </div>

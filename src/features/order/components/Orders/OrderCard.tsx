@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from 'primereact/button';
 import type { Order, OrderStatus } from '../../../../types';
@@ -20,13 +19,13 @@ export const OrderCard = ({ order, onShowDetails, currentTab, refetchOrders }: O
     <div className="border rounded-lg p-4 shadow-sm bg-white">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <img
-          src={order.product.images[0]}
-          alt={order.product.title}
+          src={order.product?.images?.[0] || "/placeholder.jpg"}
+          alt={order.product?.title || ""}
           className="w-16 h-16 rounded self-start"
         />
 
         <div className="flex-1">
-          <div className="font-semibold">{order.product.title}</div>
+          <div className="font-semibold">{order.product?.title || ""}</div>
           <div className="text-sm text-gray-600">
             Date: {new Date(order.createdAt).toLocaleDateString('he-IL')}
           </div>

@@ -27,7 +27,7 @@ export const fetchBidOffersByRequest = createAsyncThunk(
   ) => {
     try {
       const { bidRequestId, sort } = params;
-      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
+      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
       const response = await axios.get(url, {
         withCredentials: true,

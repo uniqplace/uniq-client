@@ -38,6 +38,7 @@ export interface Product {
   ratingCount?: number;
   sales?: number;
   stock?: number;
+  createdByAI?: boolean;
 }
 
 
@@ -202,49 +203,49 @@ export interface ManufacturerProfile {
   servicesOffered?: string[];
 }
 
-// type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source
-// type ParamSource = "ai" | "user";                       // "נוסף ע״י משתמש" = source:"user"
-// type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
+type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source
+type ParamSource = "ai" | "user";                       // "נוסף ע״י משתמש" = source:"user"
+type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
 
-// interface ProductParam {
-//   id: string;                 // מזהה פנימי יציב (snake_case)
-//   label: string;              // תווית לתצוגה
-//   type: ParamType;
-//   requiredByAI: boolean;      // האם ה-AI סימן כחובה
-//   status: ParamStatus;        // confirmed / missing / skipped
-//   value?: any;                // ערך תקני לאחר נורמליזציה (אם יש)
-//   unit?: string;              // לדוג׳ "mm", "kg"
-//   enumOptions?: string[];     // אם type="enum"
-//   source: ParamSource;        // ai | user (להציג "➕ נוסף ע״י משתמש")
-//   skipConfirmation?: {        // קיים רק אם דולג במפורש
-//     confirmed: true;
-//     confirmedAt: string;      // ISO datetime
-//     reason?: string;
-//   };
-//   notes?: string;             // הערת משתמש/מערכת
-//   validation?: { valid: boolean; issues?: string[] }; // תוצאות ולידציה
-// }
+interface ProductParam {
+  id: string;                 // מזהה פנימי יציב (snake_case)
+  label: string;              // תווית לתצוגה
+  type: ParamType;
+  requiredByAI: boolean;      // האם ה-AI סימן כחובה
+  status: ParamStatus;        // confirmed / missing / skipped
+  value?: any;                // ערך תקני לאחר נורמליזציה (אם יש)
+  unit?: string;              // לדוג׳ "mm", "kg"
+  enumOptions?: string[];     // אם type="enum"
+  source: ParamSource;        // ai | user (להציג "➕ נוסף ע״י משתמש")
+  skipConfirmation?: {        // קיים רק אם דולג במפורש
+    confirmed: true;
+    confirmedAt: string;      // ISO datetime
+    reason?: string;
+  };
+  notes?: string;             // הערת משתמש/מערכת
+  validation?: { valid: boolean; issues?: string[] }; // תוצאות ולידציה
+}
 
-// interface ProductPayload {
-//   sessionId: string;
-//   productName?: string;
-//   category: { id: string; name: string; confidence: number };
-//   aiVersion?: string;
-//   params: ProductParam[];
-//   summary: {
-//     requiredTotal: number;
-//     requiredConfirmed: number;
-//     requiredSkippedApproved: number;
-//     requiredMissing: number;
-//     optionalProvided: number;
-//     addedByUser: number;
-//     completenessScore: number;  // 0-100
-//     blocking: boolean;          // true אם יש required missing ללא skip מאושר
-//   };
-//   audit: Array<{
-//     at: string; actor: "user" | "system" | "ai"; action: string; details?: any;
-//   }>;
-//   locale?: { currency?: string; units?: "metric" | "imperial"; language?: string };
-// }
+export interface ProductPayload {
+  sessionId: string;
+  title: string;
+  description: string;
+  price: number;
+  images: string[];
+  creator?: any;
+  category?: any; 
+  subCategories: any[]; 
+  status: "idle" | "draft" | "drafting" | "refining" | "validating" | "locked" | "error" | "published" | "hidden";
+  condition: "new" | "like_new" | "good" | "fair" | "poor";
+  location: string;
+  tags: string[];
+  params: ProductParam[];
+  audit: any[];
+  summary?: any;
+  aiVersion?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdByAI?: boolean; // האם נוצר ע״י AI
+}
 
 

@@ -31,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     { icon: 'pi pi-info-circle', label: 'About', href: '/about' },
     { icon: 'pi pi-briefcase', label: 'My Bid Requests', href: '/MyBidRequest' },
     { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
+    { icon: 'pi pi-cog', label: 'AI Product Debug', href: '/ai-product-debug' },
   ];
 
   // Add auth items if user is not logged in
