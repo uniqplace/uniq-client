@@ -33,6 +33,7 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
+import CreatorProfilePage from './components/shared/CreatorProfilePage';
 
 
 
@@ -116,6 +117,8 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path='/creator/:creatorId' element={<CreatorProfilePage />} />
+          <Route path="*" element={<div className="p-8 text-center">404 - Page Not Found</div>} />
         </Routes>
       </MainContent>
     </div>

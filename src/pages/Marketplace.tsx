@@ -94,7 +94,12 @@ const Marketplace: React.FC = () => {
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
               <div className="flex flex-col md:flex-row items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold mb-4 md:mb-0">Products</h2>
-                <SortOptions />
+                <div  className="flex flex-col items-end mb-6">
+                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
+                    Sort By
+                  </label>
+                  <SortOptions />
+                </div>
               </div>
               {isLoading || isFetching || loading ? (
                 <div className="flex flex-col justify-center items-center py-12">

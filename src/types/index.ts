@@ -7,6 +7,10 @@ export interface User {
   role: RoleType;
   bio?: string; // Optional field for user bio
   createdAt?: Date;
+  manufacturerId?: string;
+  manufacturer?: ManufacturerProfile;
+  creatorId?: string;
+  creator?: CreatorProfile;
 }
 
 // 2. Creator/Seller
@@ -191,6 +195,7 @@ export interface CreatorProfile {
   phone: string; // Creator's phone number
   rating: number; // Creator's rating
   ratingCount: number; // Number of ratings
+  createdAt?: Date; // Date when the creator's profile was created
 }
 
 // type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source
