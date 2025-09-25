@@ -8,7 +8,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { Avatar } from 'primereact/avatar';
 import { Card } from 'primereact/card';
 import RatingComponent from './RatingComponent';
-import { useGetCreatorProfileQuery } from '../../api/profileApiSlice';
+import { useGetCreatorProfileQuery } from '../../features/user/slices/creatorApiSlice';
 import type { User } from '../../types';
 import { Paginator } from 'primereact/paginator';
 

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { creatorProfileApiSlice } from './profileApiSlice';
-import type { CreatorProfile } from '../types';
+import { creatorApiSlice } from './creatorApiSlice';
+import type { CreatorProfile } from '../../../types';
 
 interface CreatorProfileState {
   profile: CreatorProfile | null;
@@ -14,7 +14,7 @@ const initialState: CreatorProfileState = {
   error: null,
 };
 
-const creatorProfileSlice = createSlice({
+const creatorSlice = createSlice({
   name: 'creatorProfile',
   initialState,
   reducers: {
@@ -22,21 +22,21 @@ const creatorProfileSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addMatcher(
-        creatorProfileApiSlice.endpoints.getCreatorProfile.matchPending,
+        creatorApiSlice.endpoints.getCreatorProfile.matchPending,
         (state) => {
           state.loading = true;
           state.error = null;
         }
       )
       .addMatcher(
-        creatorProfileApiSlice.endpoints.getCreatorProfile.matchFulfilled,
+        creatorApiSlice.endpoints.getCreatorProfile.matchFulfilled,
         (state, action) => {
           state.loading = false;
           state.profile = action.payload.data;
         }
       )
       .addMatcher(
-        creatorProfileApiSlice.endpoints.getCreatorProfile.matchRejected,
+        creatorApiSlice.endpoints.getCreatorProfile.matchRejected,
         (state, action) => {
           state.loading = false;
           state.error = action.error?.message || 'Failed to fetch creator profile';
@@ -45,5 +45,5 @@ const creatorProfileSlice = createSlice({
   },
 });
 
-export const fetchCreatorProfile = creatorProfileApiSlice.endpoints.getCreatorProfile.initiate;
-export default creatorProfileSlice.reducer;
+export const fetchCreatorProfile = creatorApiSlice.endpoints.getCreatorProfile.initiate;
+export default creatorSlice.reducer;

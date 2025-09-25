@@ -180,11 +180,13 @@ export interface ManufacturerProfile {
   userId: User;
   name: string;
   phone: string;
-  categories: string[];
+  categories: string[] | Category[];
   location: string;
   availableFrom: string;
   rating?: number;
   servicesOffered?: string[];
+  ratingCount?: number;
+  createdAt?: Date;
 }
 
 export interface CreatorProfile {
