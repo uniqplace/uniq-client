@@ -17,7 +17,8 @@ const initialState: CreatorProfileState = {
 const creatorProfileSlice = createSlice({
   name: 'creatorProfile',
   initialState,
-  reducers: {},
+  reducers: {
+  },
   extraReducers: (builder) => {
     builder
       .addMatcher(

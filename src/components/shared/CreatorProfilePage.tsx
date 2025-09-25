@@ -8,10 +8,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { Avatar } from 'primereact/avatar';
 import { Card } from 'primereact/card';
 import RatingComponent from './RatingComponent';
-import { useSelector } from 'react-redux';
-import { fetchCreatorProfile } from '../../api/creatorProfileSlice';
-import type { RootState } from '../../store';
-import { useAppDispatch } from '../../hooks/hooks';
+import { useGetCreatorProfileQuery } from '../../api/creatorProfileApiSlice';
 import type { User } from '../../types';
 import { Paginator } from 'primereact/paginator';
 
@@ -21,11 +18,11 @@ interface LocationState {
 
 const CreatorProfilePage: React.FC = () => {
   const { creatorId } = useParams<{ creatorId: string }>();
-  const dispatch = useAppDispatch();
   const location = useLocation();
-  const { profile: creatorProfile, loading, error } = useSelector(
-    (state: RootState) => state.creatorProfile
+  const { data: creatorProfileData, isLoading: loading, error, isFetching: fetching } = useGetCreatorProfileQuery(
+    creatorId!,
   );
+  const creatorProfile = creatorProfileData?.data;
   const locationState = location.state as LocationState | null;
   const [user, _setUser] = useState<User | undefined>(locationState?.user);
   const [queryParams, setQueryParams] = useState<{ q: string, page: number, sortBy: string }>({ q: '', page: 1, sortBy: '' });
@@ -47,13 +44,11 @@ const CreatorProfilePage: React.FC = () => {
   const { data, isLoading: productsLoading, isFetching } = useGetProductsQuery({
     ...queryParams,
     creator: creatorId,
+    isMarketplace: false,
   });
 
-  useEffect(() => {
-    if (creatorId) {
-      dispatch(fetchCreatorProfile(creatorId));
-    }
-  }, [creatorId, dispatch]);
+  // No need for manual dispatch, handled by RTK Query hook
+
 
   const onPageChange = (event: any) => {
     const newPage = event.page + 1; // PrimeReact Paginator is zero-based
@@ -62,7 +57,7 @@ const CreatorProfilePage: React.FC = () => {
     window.history.pushState({}, '', `${location.pathname}?${params.toString()}`);
   };
 
-  if (loading) {
+  if (loading || fetching) {
     return (
       <div className="flex justify-center items-center h-64">
         <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
@@ -71,7 +66,14 @@ const CreatorProfilePage: React.FC = () => {
   }
 
   if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
+    let errorMsg = 'Unknown error';
+    if (typeof error === 'string') errorMsg = error;
+    else if (error && typeof error === 'object') {
+      if ('message' in error && typeof error.message === 'string') errorMsg = error.message;
+      else if ('data' in error && typeof error.data === 'string') errorMsg = error.data;
+      else if ('status' in error) errorMsg = `Status ${error.status}`;
+    }
+    return <div className="text-center text-red-500">{errorMsg}</div>;
   }
 
   if (!creatorProfile) {
@@ -145,11 +147,15 @@ const CreatorProfilePage: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data?.data.map((product: any, index: number) => (
-                  <ProductCard key={index} product={product} />
-                ))}
-              </div>
+              {(!data?.data || data?.data.length === 0) ? (
+                <div className="text-center text-gray-500 py-8">No products found</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data?.data.map((product: any, index: number) => (
+                    <ProductCard key={index} product={product} />
+                  ))}
+                </div>
+              )}
               {data?.totalPages && data?.totalPages > 1 && (
                 <Paginator
                   first={((page - 1) * limit)}

@@ -5,7 +5,7 @@ import type { User } from '../../types';
 
 type UserCardProps = {
   user: User;
-  userType: 'creator' | 'manufacturer';
+  userType: 'creator' | 'manufacturer' | 'admin' | 'customer';
 };
 
 const UserCard: React.FC<UserCardProps> = ({ user, userType }) => {
