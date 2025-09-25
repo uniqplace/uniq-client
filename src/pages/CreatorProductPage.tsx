@@ -80,11 +80,25 @@ const CreatorProductPage: React.FC = () => {
                     ) : aiProducts.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {aiProducts.map(product => (
-                                <ProductCard
-                                    key={product._id}
-                                    product={product}
-                                    editable={true}
-                                />
+                                <div key={product._id} className="flex flex-col h-full">
+                                    <ProductCard
+                                        product={product}
+                                        editable={true}
+                                    />
+                                    <div className="flex gap-2 mt-2 justify-end">
+                                        <Button
+                                            label="Continue to Production"
+                                            icon="pi pi-arrow-right"
+                                            className="p-button-sm bg-blue-500 text-white"
+                                            onClick={() => {
+                                                // Save productId to localStorage for the stepper
+                                                localStorage.setItem('selectedStepperProductId', product._id);
+                                                // Navigate to stepper
+                                                window.location.href = `/create-your-own-product/product-definition`;
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     ) : (

@@ -7,6 +7,7 @@ import { useRef } from 'react';
 import { clearUser } from '../../features/user/slices/userSlice';
 import { clearStepper } from '../../features/deployProcess/slices/stepperSlice';
 import { api } from '../../services/api';
+import { resetProductState } from '../../features/product Idea & AI/slices/aiProductSlice';
 import type { RootState } from '../../store';
 import type { User } from '../../types';
 
@@ -46,6 +47,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     await api.logoutApi();
     dispatch(clearUser());
     dispatch(clearStepper());
+    dispatch(resetProductState());
+    localStorage.removeItem('aiProductState');
     localStorage.clear(); 
     navigate('/login');
   };

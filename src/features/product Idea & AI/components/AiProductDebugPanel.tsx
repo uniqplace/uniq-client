@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Bot, User, Lock } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../../hooks/hooks";
 import type { RootState } from "../../../store";
@@ -11,14 +11,16 @@ import {
 import {
   generateDraft,
   refineSpec,
-  validateSpec,
+  // validateSpec,
   lockSpec,
 } from "../slices/aiProductThunks";
-import { create } from "lodash";
+import { Dialog } from 'primereact/dialog';
+import type { Category, SubCategory } from '../../../types';
 
 export default function AiProductDebugPanel() {
   const dispatch = useAppDispatch();
   const aiProduct = useAppSelector((state: RootState) => state.aiProduct);
+  const user = useAppSelector((state: RootState) => state.user);
 
   const [messages, setMessages] = useState<
     { sender: "user" | "ai"; text: string }[]
@@ -30,6 +32,12 @@ export default function AiProductDebugPanel() {
     return [];
   });
 
+  // Reset chat/messages when user changes (logout/login)
+  useEffect(() => {
+    setMessages([]);
+    localStorage.removeItem("aiProductChat");
+  }, [user?.id]);
+
   const [newParam, setNewParam] = useState<{
     label: string;
     type: ProductParam["type"];
@@ -38,9 +46,12 @@ export default function AiProductDebugPanel() {
 
   const [userText, setUserText] = useState("");
   const [showAddParamRow, setShowAddParamRow] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  // const [pendingLockData, setPendingLockData] = useState<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const paramsTableRef = useRef<HTMLDivElement>(null);
   const addParamRowRef = useRef<HTMLInputElement>(null);
+  const [editProduct, setEditProduct] = useState<any>(null);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,6 +100,37 @@ export default function AiProductDebugPanel() {
     setUserText("");
     setTimeout(scrollToBottom, 100);
   };
+
+  // enums for selects
+  const statusOptions = ["draft", "published", "hidden"];
+  const conditionOptions = ["new", "like_new", "good", "fair", "poor"];
+  // Use categories and subCategories from marketplace slice
+  const categories: Category[] = useAppSelector((state: RootState) => state.marketplace.categories || []);
+  const allSubCategories: Record<string, SubCategory[]> = useAppSelector((state: RootState) => state.marketplace.subCategories || {});
+  const subCategories: SubCategory[] = useMemo(() => {
+    if (!editProduct?.category) return [];
+    return allSubCategories[editProduct.category] || [];
+  }, [editProduct?.category, allSubCategories]);
+
+  // Validation for required fields
+  const requiredFields = [
+    { key: 'title', label: 'Name' },
+    { key: 'description', label: 'Description' },
+    { key: 'price', label: 'Price' },
+    { key: 'tags', label: 'Tags' },
+    { key: 'images', label: 'Image' },
+    { key: 'status', label: 'Status' },
+    { key: 'condition', label: 'Condition' },
+    { key: 'location', label: 'Location' },
+    { key: 'category', label: 'Category' },
+    { key: 'subCategories', label: 'SubCategories' },
+  ];
+  const missingFields = requiredFields.filter(f => {
+    const val = editProduct?.[f.key];
+    if (Array.isArray(val)) return val.length === 0;
+    return !val;
+  });
+  const isSaveDisabled = missingFields.length > 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
@@ -179,7 +221,11 @@ export default function AiProductDebugPanel() {
                         {isRequiredAndEmpty ? (
                           <span className="text-red-500 font-bold">Required</span>
                         ) : (
-                          param.value ?? <span className="text-slate-400">-</span>
+                          typeof param.value === 'object' && param.value !== null
+                            ? Array.isArray(param.value)
+                              ? param.value.join(', ')
+                              : Object.entries(param.value).map(([k, v]) => `${k}: ${v}`).join(', ')
+                            : param.value?.toString() || <span className="text-slate-400">-</span>
                         )}
                       </td>
                       <td className="p-2 flex gap-2 items-center justify-center">
@@ -305,50 +351,209 @@ export default function AiProductDebugPanel() {
 
         <div className="p-4 border-t flex gap-2">
           <button
-            className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 flex items-center gap-2"
-            onClick={async () => {
-              try {
-                const validateRes = await dispatch(validateSpec(aiProduct.params));
-                if (validateRes?.payload?.success) {
-                  const lockRes = await dispatch(
-                    lockSpec({
-                      productData: {
-                        title: aiProduct.title || "AI Generated Product",
-                        description: aiProduct.description || "This product was created using AI assistance.",
-                        price: aiProduct.price ,
-                        images: aiProduct.images || [], 
-                        creator: useAppSelector((state: RootState) => state.user.id),
-                        category: aiProduct.category,
-                        subCategories: aiProduct.subCategories ,
-                        status: aiProduct.status,
-                        condition: aiProduct.condition || 'new',
-                        location: aiProduct.location || "",
-                        tags: aiProduct.tags || [],
-                        params: aiProduct.params,
-                        createdByAI: aiProduct.createdByAI || true,
-                        aiVersion: aiProduct.aiVersion,
-                      }
-                    })
-                  );
-                  if (lockRes?.payload?.success) {
-                    window.alert("Your product has been saved and locked successfully!");
-                  } else {
-                    window.alert(lockRes?.payload?.error || "Failed to lock the product.");
-                  }
-                } else {
-                  window.alert(
-                    validateRes?.payload?.error ||
-                    "Validation failed. Please check your product details."
-                  );
-                }
-              } catch (e) {
-                window.alert("An unexpected error occurred.");
-              }
+            className={`rounded-lg px-4 py-2 flex items-center gap-2 font-semibold transition-colors 
+      ${aiProduct.params.length === 0
+                ? 'bg-green-200 text-white opacity-60 cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700 text-white'}`}
+            disabled={aiProduct.params.length === 0}
+            onClick={() => {
+              if (aiProduct.params.length === 0) return;
+              setEditProduct({
+                title: aiProduct.title || "AI Generated Product",
+                description: aiProduct.description || "This product was created using AI assistance.",
+                price: aiProduct.price,
+                images: aiProduct.images || [],
+                creator: user.id,
+                category: aiProduct.category,
+                subCategories: aiProduct.subCategories,
+                status: aiProduct.status,
+                condition: aiProduct.condition || 'new',
+                location: aiProduct.location || "",
+                tags: aiProduct.tags || [],
+                params: aiProduct.params,
+                createdByAI: aiProduct.createdByAI || true,
+                aiVersion: aiProduct.aiVersion,
+              });
+              setShowConfirmDialog(true);
             }}
           >
             <Lock size={16} /> Yes! I'm sure about my product
           </button>
         </div>
+        <Dialog
+          header="Edit Product"
+          visible={showConfirmDialog}
+          style={{ width: '600px', maxWidth: '90vw' }}
+          onHide={() => setShowConfirmDialog(false)}
+          footer={
+            <div className="flex gap-2 justify-end mt-4">
+              <button
+                className="bg-gray-200 hover:bg-gray-300 rounded px-4 py-2 font-medium"
+                onClick={() => setShowConfirmDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 font-medium disabled:opacity-50"
+                disabled={isSaveDisabled}
+                onClick={async () => {
+                  setShowConfirmDialog(false);
+                  try {
+                    const lockRes = await dispatch(
+                      lockSpec({ productData: editProduct })
+                    );
+                    if (lockRes?.payload?.success) {
+                      window.alert("Your product has been saved and locked successfully!");
+                    } else {
+                      window.alert(lockRes?.payload?.error || "Failed to lock the product.");
+                    }
+                  } catch (e) {
+                    window.alert("An unexpected error occurred.");
+                  }
+                }}
+              >
+                Save
+              </button>
+            </div>
+          }
+        >
+          {editProduct && (
+            <div className="space-y-4 px-2 py-2">
+              {/* Name */}
+              <div>
+                <label className="font-semibold block mb-1">Name</label>
+                <input
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.title ? 'border-red-400' : ''}`}
+                  value={editProduct.title}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, title: e.target.value }))}
+                  placeholder="Product name"
+                />
+                {!editProduct.title && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Description */}
+              <div>
+                <label className="font-semibold block mb-1">Description</label>
+                <textarea
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.description ? 'border-red-400' : ''}`}
+                  value={editProduct.description}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, description: e.target.value }))}
+                  placeholder="Product description"
+                  rows={3}
+                />
+                {!editProduct.description && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Price */}
+              <div>
+                <label className="font-semibold block mb-1">Price</label>
+                <input
+                  type="number"
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.price ? 'border-red-400' : ''}`}
+                  value={editProduct.price}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, price: e.target.value }))}
+                  placeholder="Price"
+                />
+                {!editProduct.price && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Tags */}
+              <div>
+                <label className="font-semibold block mb-1">Tags</label>
+                <input
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.tags?.length ? 'border-red-400' : ''}`}
+                  value={Array.isArray(editProduct.tags) ? editProduct.tags.join(', ') : ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, tags: e.target.value.split(',').map((s: string) => s.trim()) }))}
+                  placeholder="tag1, tag2, ..."
+                />
+                {(!editProduct.tags || !editProduct.tags.length) && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Image */}
+              <div>
+                <label className="font-semibold block mb-1">Image</label>
+                <input
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.images?.length ? 'border-red-400' : ''}`}
+                  value={Array.isArray(editProduct.images) && editProduct.images.length > 0 ? editProduct.images[0] : ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, images: [e.target.value] }))}
+                  placeholder="Image URL"
+                />
+                {Array.isArray(editProduct.images) && editProduct.images[0] && (
+                  <img src={editProduct.images[0]} alt="product" className="mt-2 max-h-32 rounded shadow border" />
+                )}
+                {(!editProduct.images || !editProduct.images.length) && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Category */}
+              <div>
+                <label className="font-semibold block mb-1">Category</label>
+                <select
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.category ? 'border-red-400' : ''}`}
+                  value={editProduct.category || ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, category: e.target.value, subCategories: [] }))}
+                >
+                  <option value="">Select category</option>
+                  {categories.map((cat: any) => (
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                  ))}
+                </select>
+                {!editProduct.category && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* SubCategories */}
+              <div>
+                <label className="font-semibold block mb-1">SubCategories</label>
+                <select
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.subCategories?.length ? 'border-red-400' : ''}`}
+                  value={editProduct.subCategories[0] || ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, subCategories: [e.target.value] }))}
+                  disabled={!editProduct.category}
+                >
+                  <option value="">Select subcategory</option>
+                  {subCategories.map((sub: any) => (
+                    <option key={sub._id} value={sub._id}>{sub.name}</option>
+                  ))}
+                </select>
+                {(!editProduct.subCategories || !editProduct.subCategories.length) && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Status */}
+              <div>
+                <label className="font-semibold block mb-1">Status</label>
+                <select
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.status ? 'border-red-400' : ''}`}
+                  value={editProduct.status || ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, status: e.target.value }))}
+                >
+                  <option value="">Select status</option>
+                  {statusOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                {!editProduct.status && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Condition */}
+              <div>
+                <label className="font-semibold block mb-1">Condition</label>
+                <select
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.condition ? 'border-red-400' : ''}`}
+                  value={editProduct.condition || ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, condition: e.target.value }))}
+                >
+                  <option value="">Select condition</option>
+                  {conditionOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                {!editProduct.condition && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+              {/* Location */}
+              <div>
+                <label className="font-semibold block mb-1">Location</label>
+                <input
+                  className={`w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 ${!editProduct.location ? 'border-red-400' : ''}`}
+                  value={editProduct.location || ''}
+                  onChange={e => setEditProduct((p: any) => ({ ...p, location: e.target.value }))}
+                  placeholder="Location"
+                />
+                {!editProduct.location && <div className="text-red-500 text-xs mt-1">Required</div>}
+              </div>
+            </div>
+          )}
+        </Dialog>
       </div>
     </div>
   );
