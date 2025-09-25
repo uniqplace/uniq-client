@@ -24,7 +24,10 @@ const UserGreeting = () => {
     dispatch(clearManufacturerProfile());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    dispatch(clearStepper());
+    // clear all productsInProgress from Redux
+    const state = (window as any).store?.getState?.();
+    const allProductIds = state?.stepper?.productsInProgress ? Object.keys(state.stepper.productsInProgress) : [];
+    allProductIds.forEach((pid: string) => dispatch(clearStepper({ productId: pid })));
     localStorage.clear(); 
     navigate('/login');
   };

@@ -5,12 +5,12 @@ import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 // import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
 import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
-import { useBidRequestId } from '../../../../hooks/useBidRequestId';
 import AuctionLoadingError from './AuctionLoadingError';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
   setCanGoNext?: (val: boolean) => void;
+  productId?: string;
 }
 
 export interface StepDefinition {
@@ -22,7 +22,7 @@ export interface StepDefinition {
 
 // export const productFormRef = createRef<ProductUploadFormHandle>();
 
-export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
+export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="auction">📤</span>
@@ -42,7 +42,7 @@ export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCa
 );
 
 
-export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
+export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="factory">🏭</span>
@@ -56,7 +56,7 @@ export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete, setCan
   </div>
 );
 
-export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
+export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="contract">📝</span>
@@ -70,7 +70,7 @@ export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCa
   </div>
 );
 
-export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
+export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="payment">💳</span>
@@ -84,7 +84,7 @@ export const PaymentAndOrderStep: React.FC<StepProps> = ({ onComplete, setCanGoN
   </div>
 );
 
-export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
+export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="tracking">📦</span>
@@ -98,7 +98,7 @@ export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCa
   </div>
 );
 
-export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
+export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="done">✅</span>
@@ -112,11 +112,15 @@ export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) 
   </div>
 );
 
-const ViewLiveBidsStep: React.FC<StepProps> = (props) => {
-  const { bidRequestId, productId } = useBidRequestId();
+const ViewLiveBidsStep: React.FC<StepProps> = ({ productId, ...props }) => {
+  // נשלוף את ה-bidRequestId מה-Redux לפי productId
+  const bidRequestId = productId
+    ? (window as any).store?.getState?.()?.stepper?.productsInProgress?.[productId]?.bidRequest?._id
+    : undefined;
 
+  // אם אין bidRequestId, נציג שגיאה
   if (!bidRequestId) {
-    return <AuctionLoadingError productId={productId} />;
+    return <AuctionLoadingError productId={productId || ''} />;
   }
 
   return <BidOffersList {...props} bidRequestId={bidRequestId} />;

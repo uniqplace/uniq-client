@@ -46,7 +46,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const handleLogout = async () => {
     await api.logoutApi();
     dispatch(clearUser());
-    dispatch(clearStepper());
+    // Clear all productsInProgress from Redux
+    const state = (window as any).store?.getState?.();
+    const allProductIds = state?.stepper?.productsInProgress ? Object.keys(state.stepper.productsInProgress) : [];
+    allProductIds.forEach((pid: string) => dispatch(clearStepper({ productId: pid })));
     dispatch(resetProductState());
     localStorage.removeItem('aiProductState');
     localStorage.clear(); 
