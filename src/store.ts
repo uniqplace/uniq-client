@@ -11,7 +11,7 @@ import manufacturerReducer from './features/user/slices/manufacturerSlice';
 import apiSlice from './api/apiSlice';
 import orderSlice from './features/order/slices/orderSlice';
 import aiProductSlice from './features/product Idea & AI/slices/aiProductSlice';
-import creatorProfileReducer from './api/creatorProfileSlice';
+import creatorProfileReducer from './api/profileSlice';
 
 
 

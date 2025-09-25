@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
-import { setCreatorProfile, clearCreatorProfile } from '../slices/userSlice';
+import { setCreatorProfile } from '../slices/userSlice';
 import type { CreatorProfile } from '../../../types';
 
 const mainCities = [
@@ -33,10 +33,6 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
   const [phone, setPhone] = useState(initialData?.phone || '');
   const [errors, setErrors] = useState({ location: '', phone: '' });
   const [touched, setTouched] = useState({ location: false, phone: false });
-
-  useEffect(() => {
-    dispatch(clearCreatorProfile());
-  }, [dispatch]);
 
   const validate = (): boolean => {
     const newErrors = { location: '', phone: '' };

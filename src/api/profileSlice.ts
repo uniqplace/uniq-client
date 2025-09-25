@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { creatorProfileApiSlice } from './creatorProfileApiSlice';
+import { creatorProfileApiSlice } from './profileApiSlice';
 import type { CreatorProfile } from '../types';
 
 interface CreatorProfileState {

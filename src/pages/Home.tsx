@@ -15,8 +15,8 @@ function Home() {
         avatarUrl: "https://res.cloudinary.com/ddrsfqqwv/image/upload/v1757511058/UniqImage/default/temp/8ff1526cbca534671201f98a5dae4def.jpg",
         bio: "",
         role: "creator",
-      }} userType="creator" />
-      <UserCard user={user} userType="creator" />
+      }} />
+      <UserCard user={user} />
     </div>
   );
 }

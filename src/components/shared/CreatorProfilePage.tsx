@@ -8,7 +8,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { Avatar } from 'primereact/avatar';
 import { Card } from 'primereact/card';
 import RatingComponent from './RatingComponent';
-import { useGetCreatorProfileQuery } from '../../api/creatorProfileApiSlice';
+import { useGetCreatorProfileQuery } from '../../api/profileApiSlice';
 import type { User } from '../../types';
 import { Paginator } from 'primereact/paginator';
 
@@ -88,11 +88,17 @@ const CreatorProfilePage: React.FC = () => {
           {/* Creator Info Section */}
           <div className="flex flex-col items-center md:items-start gap-3">
             <Avatar
-              image={user?.avatarUrl || ''}
-              label={!user?.avatarUrl ? creatorProfile.name.charAt(0) : undefined}
-              className="w-16 h-16"
+              image={user?.avatarUrl || undefined}
+              icon={!user?.avatarUrl ? 'pi pi-user' : undefined}
               shape="circle"
-              style={{ backgroundColor: !user?.avatarUrl ? '#1d4ed8' : undefined, color: '#fff', fontSize: 18 }}
+              size="large"
+              style={{
+                backgroundColor: !user?.avatarUrl ? '#e5e7eb' : undefined,
+                color: !user?.avatarUrl ? '#2563eb' : undefined,
+                fontSize: 20,
+                fontWeight: 'bold'
+              }}
+              className='w-12 h-12 [&>img]:w-full [&>img]:h-full [&>img]:object-cover border border-gray-300 shadow-sm'
             />
             <h1 className="text-xl font-bold text-gray-900 text-center md:text-left">{creatorProfile.name}</h1>
           </div>
