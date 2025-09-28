@@ -38,7 +38,7 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
     const newErrors = { location: '', phone: '' };
 
     if (!location.trim()) newErrors.location = 'Location is required';
-    if (!/^\+?[0-9]{7,15}$/.test(phone)) newErrors.phone = 'Invalid phone number';
+    if (!/^\d{10}$/.test(phone)) newErrors.phone = 'Invalid phone number';
 
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => !error);
