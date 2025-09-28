@@ -53,20 +53,22 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
       description: '',
       price: 0,
       images: [],
-      creator: { _id: '', name: '' },
-      creatorName: '',
-      category: '',
-      stock: 0,
+      creator: { id: '', name: '', email: '', role: 'creator' },
+      category: { _id: '', name: '' },
+      subCategories: [],
+      status: 'draft',
+      condition: 'new',
+      location: '',
       tags: [],
-      createdAt: '',
-      updatedAt: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     if (currentOrder) {
       return {
         ...currentOrder,
         productId: currentOrder.productId || fallbackProduct._id,
         buyerId: currentOrder.buyerId || user.id,
-        creator: currentOrder.creator || { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
+        creator: currentOrder.creator || { name: fallbackProduct.creator.name, _id: fallbackProduct.creator.id || fallbackProduct.creator._id || '' },
         product: currentOrder.product || fallbackProduct,
       };
     }
@@ -74,7 +76,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
       _id: '',
       productId: fallbackProduct._id,
       buyerId: user.id,
-      creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
+      creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator.id || fallbackProduct.creator._id || '' },
       status: 'pending',
       totalAmount: initialTotalAmount,
       paymentMethod: 'credit_card',

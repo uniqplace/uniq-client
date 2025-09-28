@@ -1,12 +1,17 @@
 // 1. User (base)
 export interface User {
   id: string;
+  _id?: string; // Optional MongoDB ID
   name: string;
   email: string;
   avatarUrl?: string;
   role: RoleType;
   bio?: string; // Optional field for user bio
   createdAt?: Date;
+  manufacturerId?: string;
+  manufacturer?: ManufacturerProfile;
+  creatorId?: string;
+  creator?: CreatorProfile;
 }
 
 // 2. Creator/Seller
@@ -25,7 +30,7 @@ export interface Product {
   price: number;
   images: string[];
   CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'View Live Bids' | 'Choose Manufacturer' | 'Agree to Terms' | 'Make Payment' | 'Track Delivery' | 'Complete Delivery';
-  creator: Creator;
+  creator: User;
   category: Category;
   subCategories: SubCategory[];
   status: 'draft' | 'published' | 'hidden';
@@ -152,26 +157,6 @@ export interface Filters {
 // 11. Category Filters
 export type CategoryFiltersType = string[];
 
-
-
-
-interface UserToBidOffer {
-  _id: string;
-  name: string;
-  avatarUrl?: string;
-  email: string;
-}
-
-export interface Manufacturer {
-  _id?: string;
-  userId: UserToBidOffer;
-  name: string;
-  rating?: number;
-  location?: string;
-  availableFrom?: string;
-  categories?: string[];
-  servicesOffered?: string[];
-}
 export interface BidRequestId {
   _id?: string;
   productId: ({ title: string }) & { _id?: string } & { description?: string } & { images?: string[] };
@@ -192,14 +177,28 @@ export interface BidOffer {
 }
 
 export interface ManufacturerProfile {
-  _id: string;
+  _id?: string;
   userId: User;
   name: string;
-  categories: string[];
+  phone: string;
+  categories: string[] | Category[];
   location: string;
   availableFrom: string;
   rating?: number;
   servicesOffered?: string[];
+  ratingCount?: number;
+  createdAt?: Date;
+}
+
+export interface CreatorProfile {
+  _id?: string;
+  userId: string; // ID of the user
+  name: string; // Creator's name
+  location: string; // Creator's location
+  phone: string; // Creator's phone number
+  rating: number; // Creator's rating
+  ratingCount: number; // Number of ratings
+  createdAt?: Date; // Date when the creator's profile was created
 }
 
 // type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source

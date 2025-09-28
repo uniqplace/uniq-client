@@ -51,9 +51,6 @@ const SortOptions: React.FC = () => {
 
     return (
         <div className="flex flex-col items-end mb-6">
-            <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
-                Sort By
-            </label>
             <Dropdown
                 id="sort"
                 value={sortBy}

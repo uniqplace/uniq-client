@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Rating } from 'primereact/rating';
 import { Tag } from 'primereact/tag';
 import { useRatingData } from '../../hooks/useRatingData';
@@ -8,6 +9,7 @@ type RatingComponentProps = {
   itemType: string;
   initialRating?: number;
   onRatingChange?: (rating: number) => void;
+  ownerId?: string;
 };
 
 const RatingComponent: React.FC<RatingComponentProps> = ({
@@ -15,7 +17,10 @@ const RatingComponent: React.FC<RatingComponentProps> = ({
   itemType,
   initialRating = 0,
   onRatingChange,
+  ownerId,
 }) => {
+  const user = useSelector((state: any) => state.user);
+  const isSelf = ownerId && user?.id && ownerId === user.id;
   const {
     rating,
     averageRating,
@@ -47,12 +52,16 @@ const RatingComponent: React.FC<RatingComponentProps> = ({
         Your Rating
       </div>
       <div className="flex justify-center">
-        <Rating
-          value={rating}
-          cancel={false}
-          onChange={(e) => handleRating(e.value || 0)}
-          className="text-sm"
-        />
+        {isSelf ? (
+          <span className="text-gray-400 text-xs italic">You cannot rate yourself</span>
+        ) : (
+          <Rating
+            value={rating}
+            cancel={false}
+            onChange={(e) => handleRating(e.value || 0)}
+            className="text-sm"
+          />
+        )}
       </div>
       {error && (
         <p className="text-red-600 mt-2 text-xs font-medium text-center">
