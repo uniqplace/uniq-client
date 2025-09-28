@@ -131,8 +131,11 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
       if (!categories.length || !categories[0]) newErrors.categories = 'Category is required';
       if (!location.trim()) newErrors.location = 'Location is required';
       if (!availableFrom) newErrors.availableFrom = 'Available from date is required';
-      if (!phone.trim() || !/^\d{10}$/.test(phone)) {
-        newErrors.phone = 'Please enter a valid 10-digit phone number';
+      if (
+        !phone.trim() ||
+        !/^(\+)?\d{7,15}$/.test(phone)
+      ) {
+        newErrors.phone = 'Please enter a valid phone number (7-15 digits, optional +)';
       }
 
       setErrors(newErrors);
