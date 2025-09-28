@@ -45,8 +45,5 @@ const creatorSlice = createSlice({
   },
 });
 
-// Thunk to fetch creator profile using RTK Query's initiate action
-export const fetchCreatorProfile = (arg) => (dispatch) => {
-  return dispatch(creatorApiSlice.endpoints.getCreatorProfile.initiate(arg));
-};
+export const fetchCreatorProfile = creatorApiSlice.endpoints.getCreatorProfile.initiate;
 export default creatorSlice.reducer;
