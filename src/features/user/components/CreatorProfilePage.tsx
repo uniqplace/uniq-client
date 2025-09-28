@@ -133,7 +133,7 @@ const CreatorProfilePage: React.FC = () => {
             <RatingComponent
               itemId={creatorProfile._id || ''}
               itemType="creator"
-              ownerId={user?.id ? user.id : undefined}
+              ownerId={user?.id ? user.id : user?._id ? user._id : ''}
             />
           </div>
         </div>

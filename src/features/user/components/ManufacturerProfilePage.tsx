@@ -95,7 +95,7 @@ const ManufacturerProfilePage: React.FC = () => {
             <RatingComponent 
             itemId={manufacturer._id || ''} 
             itemType="manufacturer"
-            ownerId={user?.id ? user.id : undefined}
+            ownerId={user?.id ? user.id : user?._id ? user._id : ''}
             />
           </div>
         </div>

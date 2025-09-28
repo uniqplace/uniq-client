@@ -10,7 +10,7 @@ type UserCardProps = {
 const UserCard: React.FC<UserCardProps> = ({ user }) => {
   return (
     <Link
-      to={`/${user.role}/${user.id}`}
+      to={`/${user.role}/${user.id ? user.id : user._id}`}
       state={{ user }}
       className="flex flex-row items-end gap-3 p-1 rounded-md"
       style={{ width: 'fit-content' }}

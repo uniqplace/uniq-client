@@ -57,10 +57,6 @@ const BidOfferDetails: React.FC = () => {
         }
     }, [BidOfferId, location.state]);
 
-    useEffect(() => {
-        console.log('🍋🍋🍋', offer);
-    }, [offer]);
-
     const prepareEditedOffer = (offer: BidOffer | null): BidOffer | null => {
         if (!offer) return null;
         return { ...offer }; // Clone the offer object to avoid direct mutations
@@ -136,7 +132,7 @@ const BidOfferDetails: React.FC = () => {
                         <div className="flex flex-col items-center min-w-[120px]">
                             {offer.manufacturerId && offer.manufacturerId.userId && (
                                 <UserCard user={{
-                                    id: offer.manufacturerId.userId.id,
+                                    id: offer.manufacturerId.userId.id || offer.manufacturerId.userId._id || '',
                                     name: offer.manufacturerId.userId.name,
                                     email: offer.manufacturerId.userId.email,
                                     avatarUrl: offer.manufacturerId.userId.avatarUrl,

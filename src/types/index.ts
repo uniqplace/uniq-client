@@ -1,6 +1,7 @@
 // 1. User (base)
 export interface User {
   id: string;
+  _id?: string; // Optional MongoDB ID
   name: string;
   email: string;
   avatarUrl?: string;
@@ -29,7 +30,7 @@ export interface Product {
   price: number;
   images: string[];
   CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'View Live Bids' | 'Choose Manufacturer' | 'Agree to Terms' | 'Make Payment' | 'Track Delivery' | 'Complete Delivery';
-  creator: Creator;
+  creator: User;
   category: Category;
   subCategories: SubCategory[];
   status: 'draft' | 'published' | 'hidden';

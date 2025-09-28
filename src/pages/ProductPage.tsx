@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, ImageGallery, CreatorCard, RatingComponent } from '../components/shared';
+import { Button, ImageGallery, RatingComponent } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
 import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks/marketplaceThunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
 import type { Product } from '../types';
+import UserCard from '../components/shared/UserCard';
 
 
 
@@ -95,8 +96,8 @@ const ProductPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
             <button
               onClick={handleBackToMarketplace}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 group"
@@ -105,8 +106,8 @@ const ProductPage: React.FC = () => {
               <span className="font-medium">Back to Marketplace</span>
             </button>
             {currentProduct.creator && (
-              <div className="w-full lg:w-auto">
-                <CreatorCard creator={currentProduct.creator} />
+              <div className="w-full lg:w-auto m-0 p-0 box-border">
+                <UserCard user={currentProduct.creator} />
               </div>
             )}
           </div>
@@ -156,7 +157,7 @@ const ProductPage: React.FC = () => {
               <RatingComponent 
                 itemId={currentProduct._id} 
                 itemType="product" 
-                ownerId={currentProduct.creator?._id} 
+                ownerId={currentProduct.creator?.id || currentProduct.creator?._id} 
               />
                 </div>
               </div>
