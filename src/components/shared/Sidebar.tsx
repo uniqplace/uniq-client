@@ -24,13 +24,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const menuRef = useRef<Menu>(null);
 
   const menuItems = [
-    { icon: 'pi pi-home', label: 'Home', href: '/' },
+    // { icon: 'pi pi-home', label: 'Home', href: '/' },
     { icon: 'pi pi-star', label: 'Marketplace', href: '/marketplace' },
     { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/account/orders' },
     { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
     { icon: 'pi pi-info-circle', label: 'About', href: '/about' },
     { icon: 'pi pi-briefcase', label: 'My Bid Requests', href: '/MyBidRequest' },
-    { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
+    { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' }, // Removed duplicate key
+    { icon: 'pi pi-comments', label: 'Chats', href: '/chat' },
   ];
 
   // Add auth items if user is not logged in

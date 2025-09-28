@@ -20,6 +20,7 @@ const isObject = (value: any): boolean => {
 const eventIcons: Record<string, string> = {
   new_bid: '📨',
   new_order: '🛒',
+  new_bid_offer: '💼',
   bid_sent_confirmation: '✅',
   general_notification: '🔔',
   register_user: '👤',
@@ -186,7 +187,7 @@ const NotificationBell = () => {
                     itemTemplate={(notification) => (
                       <div className="p-2 border-b text-sm cursor-pointer flex items-center gap-2">
                         <Tag
-                          value={eventIcons[notification.type?.toLowerCase()] || ':bell:'}
+                          value={eventIcons[notification.type?.toLowerCase()] || ''}
                           style={{ marginRight: '8px', fontSize: '1.2em', background: '#E0E7FF', color: '#3730A3', borderRadius: '50%', padding: '0.5em' }}
                         />
                         <span className={notification.isRead ? '' : 'font-bold'}>{notification.title}</span>
