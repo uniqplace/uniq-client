@@ -33,8 +33,8 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
-import CreatorProfilePage from './components/shared/CreatorProfilePage';
-import ManufacturerProfilePage from './components/shared/ManufacturerProfilePage';
+import CreatorProfilePage from './features/user/components/CreatorProfilePage';
+import ManufacturerProfilePage from './features/user/components/ManufacturerProfilePage';
 
 
 
