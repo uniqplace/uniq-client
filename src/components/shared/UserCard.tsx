@@ -12,7 +12,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
     <Link
       to={`/${user.role}/${user.id}`}
       state={{ user }}
-      className="flex items-center gap-2 p-1 rounded-md"
+      className="flex flex-row items-end gap-3 p-1 rounded-md"
       style={{ width: 'fit-content' }}
     >
       <Avatar
@@ -28,7 +28,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
           fontWeight: 'bold'
         }}
       />
-      <span className="text-sm font-medium text-gray-800 truncate">{user.name}</span>
+      <span className="text-base font-semibold text-gray-900 truncate mb-1">{user.name}</span>
     </Link>
   );
 };
