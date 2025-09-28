@@ -82,6 +82,10 @@ const ProfilePage: React.FC = () => {
       setServicesOffered([]);
       setPhone('');
     }
+    if (formData.role !== 'creator') {
+      setSkills([]);
+      setPortfolioUrls([]);
+    }
   }, [formData.role]);
 
   // Handle input changes
