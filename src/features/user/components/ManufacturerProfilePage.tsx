@@ -92,7 +92,11 @@ const ManufacturerProfilePage: React.FC = () => {
           </div>
           {/* Rating */}
           <div className="flex flex-col items-center justify-center">
-            <RatingComponent itemId={manufacturer._id || ''} itemType="manufacturer" />
+            <RatingComponent 
+            itemId={manufacturer._id || ''} 
+            itemType="manufacturer"
+            ownerId={user?.id ? user.id : undefined}
+            />
           </div>
         </div>
       </Card>

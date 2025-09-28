@@ -24,7 +24,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
         style={{
           backgroundColor: !user.avatarUrl ? '#e5e7eb' : undefined,
           color: !user.avatarUrl ? '#2563eb' : undefined,
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: 'bold'
         }}
       />

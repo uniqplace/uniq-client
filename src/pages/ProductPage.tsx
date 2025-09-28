@@ -153,7 +153,11 @@ const ProductPage: React.FC = () => {
                 )}
                 {/* RatingComponent */}
                 <div className="mt-4">
-                  <RatingComponent itemId={currentProduct._id} itemType="product" />
+              <RatingComponent 
+                itemId={currentProduct._id} 
+                itemType="product" 
+                ownerId={currentProduct.creator?._id} 
+              />
                 </div>
               </div>
             </div>

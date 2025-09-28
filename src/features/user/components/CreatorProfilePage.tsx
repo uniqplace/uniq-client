@@ -130,7 +130,11 @@ const CreatorProfilePage: React.FC = () => {
           </div>
           {/* Rating */}
           <div className="flex flex-col items-center justify-center">
-            <RatingComponent itemId={creatorProfile._id || ''} itemType="creator" />
+            <RatingComponent
+              itemId={creatorProfile._id || ''}
+              itemType="creator"
+              ownerId={user?.id ? user.id : undefined}
+            />
           </div>
         </div>
       </Card>
