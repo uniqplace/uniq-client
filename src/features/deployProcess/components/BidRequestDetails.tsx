@@ -93,7 +93,7 @@ const BidRequestDetails = () => {
         creatorUser = {
             ...(typeof c === 'object' ? c : {}),
             id: c.id || c._id,
-            role: 'creator',
+            role: c.role || 'creator',
         };
     }
 
@@ -139,9 +139,9 @@ const BidRequestDetails = () => {
                 <div className="flex items-center gap-4 mb-6">
 
                     {creatorUser && (
-                        <div className="flex flex-col items-start">
+                        <div className="flex flex-col items-center">
                             <UserCard user={creatorUser} />
-                            <div className="text-xs text-gray-500 ml-14">Request Creator</div>
+                            <div className="text-xs text-gray-500">Request Creator</div>
                         </div>
                     )}
 
