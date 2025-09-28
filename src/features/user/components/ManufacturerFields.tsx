@@ -76,7 +76,15 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
     useEffect(() => {
       // Update states with existing values
       setServicesOffered(profile?.servicesOffered || []);
-      setCategories(profile?.categories || ['']);
+      if (Array.isArray(profile?.categories) && profile.categories.length > 0) {
+        if (typeof profile.categories[0] === 'string') {
+          setCategories(profile.categories as string[]);
+        } else {
+          setCategories((profile.categories as { _id: string }[]).map((cat) => cat._id));
+        }
+      } else {
+        setCategories([]);
+      }
       setLocation(profile?.location || '');
       setAvailableFrom(
         profile?.availableFrom && /^\d{4}-\d{2}-\d{2}$/.test(profile.availableFrom.split('T')[0])
