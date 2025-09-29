@@ -55,7 +55,7 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
   const validate = (): boolean => {
     const newErrors = { location: '', phone: '', categories: '' };
     if (!location.trim()) newErrors.location = 'Location is required';
-    if (!/^[0-9]{10}$/.test(phone)) newErrors.phone = 'Invalid phone number';
+    if (!/^\d{10}$/.test(phone)) newErrors.phone = 'Invalid phone number';
     if (!categories.length || !categories[0]) newErrors.categories = 'At least one category is required';
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => !error);
