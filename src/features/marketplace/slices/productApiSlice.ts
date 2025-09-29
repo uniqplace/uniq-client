@@ -108,7 +108,7 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         return{
           url: `/products/similar`,
           method: 'POST',
-          body:  embedding
+          body:  {embedding}
         }
       },
     }),

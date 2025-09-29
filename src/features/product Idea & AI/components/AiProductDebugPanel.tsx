@@ -19,7 +19,7 @@ import { Toast } from 'primereact/toast';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../../marketplace/slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
 import { useGetSimilarProductsQuery } from "../../marketplace/slices/productApiSlice";
-import SimilarProductsCarousel from "../../marketplace/components/SimilarProductsCarousel";
+import SimilarProductsCarousel from "./SimilarProductsCarousel";
 import { ProgressSpinner } from "primereact/progressspinner";
 
 export default function AiProductDebugPanel() {
@@ -58,11 +58,11 @@ export default function AiProductDebugPanel() {
   const addParamRowRef = useRef<HTMLInputElement>(null);
   const [editProduct, setEditProduct] = useState<any>(null);
   const toast = useRef<Toast>(null);
-
+  const [embedding, setEmbedding] = useState<number[]>([]);
   const { data: products = [], isLoading } = useGetSimilarProductsQuery(
-    aiProduct?.embedding || [],
+    embedding, 
     {
-      skip: !aiProduct?.embedding || aiProduct.embedding.length === 0
+      skip: !embedding || embedding.length === 0,
     }
   );
 
@@ -86,6 +86,9 @@ export default function AiProductDebugPanel() {
     if (messages.length === 0) {
       dispatch(generateDraft({ userText })).then((res: any) => {
         if (res?.payload) {
+          if (res.payload.embedding) {
+            setEmbedding(res.payload.embedding);  
+          }    
           const aiMsg = res.payload.chat || res.payload.aiResponse;
           if (aiMsg) {
             setMessages((msgs) => {
@@ -99,6 +102,9 @@ export default function AiProductDebugPanel() {
     } else {
       dispatch(refineSpec({ userInstruction: userText, params: aiProduct.params })).then((res: any) => {
         if (res?.payload) {
+             if (res.payload.embedding) {
+            setEmbedding(res.payload.embedding);  
+          } 
           const aiMsg = res.payload.chat || res.payload.aiResponse;
           if (aiMsg) {
             setMessages((msgs) => {
@@ -148,6 +154,7 @@ export default function AiProductDebugPanel() {
   const isSaveDisabled = missingFields.length > 0;
 
   return (
+    <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
       {/* Chat Section */}
       <div className="flex flex-col h-[600px] border rounded-2xl bg-white shadow-sm">
@@ -579,12 +586,13 @@ export default function AiProductDebugPanel() {
             />
           </div>
         )}
-        {!isLoading && products.length > 0 && (
-          <SimilarProductsCarousel products={products} />
-        )}
         <Toast ref={toast} />
       </div>
     </div>
+        {!isLoading && products.length > 0 && (
+          <SimilarProductsCarousel products={products} />
+        )}
+    </>
   );
 }
 

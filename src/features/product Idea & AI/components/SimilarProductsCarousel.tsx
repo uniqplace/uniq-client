@@ -30,16 +30,29 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
 
   const productTemplate = (product: Product) => {
     const imageUrl = product.images?.[0] || "";
+
+    const descriptionStyle = {
+      fontSize: "0.8rem",
+      height: "36px",
+      overflow: "hidden",
+      display: "-webkit-box",
+      WebkitLineClamp: 2, 
+      WebkitBoxOrient: "vertical" as "vertical", 
+      textOverflow: "ellipsis", 
+      lineHeight: "1.2rem",
+      marginBottom: "10px",
+    };
+
     return (
       <Card
         title={product.title}
         subTitle={`$${product.price}`}
         className="p-m-2"
-        style={{ width: "250px" }}
+        style={{ height: "300px" }} 
       >
         <div
           style={{
-            height: "150px",
+            height: "100px", // 2. גובה קשיח וקטן יותר לתמונה
             backgroundColor: imageUrl ? undefined : "#f0f0f0",
             display: "flex",
             alignItems: "center",
@@ -51,22 +64,25 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
             <img
               src={imageUrl}
               alt={product.title}
-              style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "cover" }}
+              // ודא שהתמונה ממלאת את השטח שיועד לה
+              style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
               onError={(e) => ((e.target as HTMLImageElement).src = "")}
             />
           ) : (
             <i className="pi pi-image" style={{ fontSize: "2rem", color: "#aaa" }}></i>
           )}
         </div>
-        <p style={{ fontSize: "0.9rem", height: "40px", overflow: "hidden" }}>
+        <p style={descriptionStyle as React.CSSProperties}> 
           {product.description}
         </p>
-        <Button
-          label="View Details"
-          icon="pi pi-eye"
-          onClick={() => openDialog(product)}
-          className="p-button-sm p-button-outlined"
-        />
+        <div style={{ marginTop: "auto" }}> {/* דחיפת הכפתור לתחתית */}
+          <Button
+            label="View Details"
+            icon="pi pi-eye"
+            onClick={() => openDialog(product)}
+            className="p-button-sm p-button-outlined"
+          />
+        </div>
       </Card>
     );
   };
@@ -76,27 +92,17 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
       <Carousel
         value={products}
         itemTemplate={productTemplate}
-        numVisible={3}
+        numVisible={4} 
         numScroll={1}
         responsiveOptions={[
-          {
-            breakpoint: "1024px",
-            numVisible: 3,
-            numScroll: 1,
-          },
-          {
-            breakpoint: "768px",
-            numVisible: 2,
-            numScroll: 1,
-          },
-          {
-            breakpoint: "560px",
-            numVisible: 1,
-            numScroll: 1,
-          },
+          // שמירה על הגדרות רספונסיביות קודמות
+          { breakpoint: "1200px", numVisible: 3, numScroll: 1 },
+          { breakpoint: "900px", numVisible: 2, numScroll: 1 },
+          { breakpoint: "600px", numVisible: 1, numScroll: 1 },
         ]}
       />
-
+      
+      {/* (קוד הדיאלוג נשאר ללא שינוי, אלא אם נדרשים עדכוני גודל שם) */}
       {selectedProduct && (
         <Dialog
           header={selectedProduct.title}
@@ -105,6 +111,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
           modal
           onHide={closeDialog}
         >
+          {/* ... קוד הדיאלוג ... */}
           <div>
             <div style={{ display: "flex", gap: "10px", overflowX: "auto", marginBottom: "10px" }}>
               {selectedProduct.images.length > 0 ? (
@@ -113,7 +120,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
                     key={idx}
                     src={img}
                     alt={`img-${idx}`}
-                    style={{ height: "100px", objectFit: "cover", borderRadius: "4px" }}
+                    style={{ height: "100px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
                     onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
                   />
                 ))
@@ -135,7 +142,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
 
             <p><strong>Description:</strong> {selectedProduct.description}</p>
             <p><strong>Price:</strong> ${selectedProduct.price}</p>
-            <p><strong>Condition:</strong> <Tag value={selectedProduct.condition}  /></p>
+            <p><strong>Condition:</strong> <Tag value={selectedProduct.condition}  /></p>
             <p><strong>Creator:</strong> {selectedProduct.creator?.name}</p>
             <p><strong>Tags:</strong> {selectedProduct.tags?.map((tag, idx) => <Tag key={idx} value={tag} className="p-mr-1" />)}</p>
             <p><strong>Location:</strong> {selectedProduct.location}</p>
