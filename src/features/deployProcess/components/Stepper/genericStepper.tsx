@@ -32,8 +32,6 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
   // הסרתי את useInitProduct - productId מגיע מההורה
   const stepperState = useAppSelector(state => {
     const products = state.stepper.productsInProgress;
-    console.log('[GenericStepper][useAppSelector] productsInProgress keys:', Object.keys(products));
-    console.log('[GenericStepper][useAppSelector] productsInProgress:', products);
     return productId ? products[productId] : undefined;
   });
   const currentStepIndex = stepperState?.currentStepIndex;
@@ -62,21 +60,23 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
     });
   }, [productId, stepperState, product, currentStepIndex, completedSteps, error, loading]);
 
+
   // כל ה-useEffect-ים ממוקמים אחרי כל ההגדרות
   useEffect(() => {
-    if (!productId || !product || !product.CreationStatus) return;
+    if (!productId || !product || !product.CreationStatus || loading) return;
     const idx = steps.findIndex(s => s.title === product.CreationStatus);
     if (idx >= 0) {
       const completedArr = steps.map((_, i) => i < idx);
       dispatch({ type: 'stepper/setCompletedSteps', payload: { productId, completed: completedArr } });
       dispatch(setCurrentStepIndex({ productId, stepIndex: idx }));
+      // ניווט רק אם ה-stepKey ב-URL שונה מהשלב הנוכחי
       if (stepKey !== steps[idx].key) {
-        navigate(`/create-your-own-product/${steps[idx].key}`, { replace: true });
+        navigate(`/create-your-own-product/${productId}/${steps[idx].key}`, { replace: true });
       }
     } else {
       console.warn('[Stepper] No matching step title found for CreationStatus:', product.CreationStatus);
     }
-  }, [productId, product?._id]);
+  }, [productId, product?._id, loading]);
 
   useEffect(() => {
     if (!productId || !stepKey || loading) return;
@@ -107,7 +107,7 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
       </div>
     );
   }
-  if (!productId) {
+  if (!productId || loading || !product) {
     return <ProgressSpinner />;
   }
 
@@ -119,7 +119,7 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
     } else {
       const nextKey = steps[safeStepIndex + 1]?.key;
       if (nextKey) {
-        navigate(`/create-your-own-product/${nextKey}`);
+        navigate(`/create-your-own-product/${productId}/${nextKey}`);
       } else {
         console.warn('[Stepper] No nextKey found, not navigating');
       }
@@ -136,7 +136,7 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
     if (safeStepIndex !== undefined && safeStepIndex > 0) {
       const prevKey = steps[safeStepIndex - 1]?.key;
       if (prevKey) {
-        navigate(`/create-your-own-product/${prevKey}`);
+        navigate(`/create-your-own-product/${productId}/${prevKey}`);
       }
     }
   };

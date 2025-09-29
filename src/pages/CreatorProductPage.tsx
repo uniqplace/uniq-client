@@ -6,10 +6,12 @@ import { Button } from 'primereact/button';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
+import { useNavigate } from 'react-router-dom';
 
 const CreatorProductPage: React.FC = () => {
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
+    const navigate = useNavigate();
     const creatorId = useAppSelector(state => state.user?.id || state.user?.manufacturerId || '');
     const { data: products, isLoading, error } = useGetUserProductsQuery({
         creator: creatorId,
@@ -19,8 +21,11 @@ const CreatorProductPage: React.FC = () => {
         searchTerm: '',
     });
 
-    const aiProducts = products?.filter(p => p.createdByAI) || [];
-    const manualProducts = products?.filter(p => !p.createdByAI) || [];
+    console.log('[CreatorProductPage] products:', products);
+    const aiProducts = products?.filter(p => p.createdByAI === true || String(p.createdByAI) === 'true') || [];
+    const manualProducts = products?.filter(p => p.createdByAI === false || String(p.createdByAI) === 'false' || !p.createdByAI) || [];
+    console.log('[CreatorProductPage] aiProducts:', aiProducts);
+    
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -79,27 +84,34 @@ const CreatorProductPage: React.FC = () => {
                         <p>Error loading products</p>
                     ) : aiProducts.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {aiProducts.map(product => (
-                                <div key={product._id} className="flex flex-col h-full">
-                                    <ProductCard
-                                        product={product}
-                                        editable={true}
-                                    />
-                                    <div className="flex gap-2 mt-2 justify-end">
-                                        <Button
-                                            label="Continue to Production"
-                                            icon="pi pi-arrow-right"
-                                            className="p-button-sm bg-blue-500 text-white"
-                                            onClick={() => {
-                                                // Save productId to localStorage for the stepper
-                                                localStorage.setItem('selectedStepperProductId', product._id);
-                                                // Navigate to stepper
-                                                window.location.href = `/create-your-own-product/product-definition`;
-                                            }}
+                            {aiProducts.map(product => {
+                                let productId: string = '';
+                                if (typeof product._id === 'string') {
+                                    productId = product._id;
+                                } else if (product._id && typeof product._id === 'object' && '$oid' in product._id) {
+                                    productId = (product._id as { $oid: string }).$oid;
+                                }
+                                console.log('[CreatorProductPage] product:', product, 'productId:', productId);
+                                return (
+                                    <div key={productId} className="flex flex-col h-full">
+                                        <ProductCard
+                                            product={product}
+                                            editable={true}
                                         />
+                                        <div className="flex gap-2 mt-2 justify-end">
+                                            <Button
+                                                label="Continue to Production"
+                                                icon="pi pi-arrow-right"
+                                                className="p-button-sm bg-blue-500 text-white"
+                                                onClick={() => {
+                                                    console.log('[CreatorProductPage] Button clicked! productId:', productId, 'product:', product);
+                                                    navigate(`/create-your-own-product/${productId}/product-definition`);
+                                                }}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <p>No AI generated products found.</p>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import type { Order, Product, User } from '../../../../types';
@@ -25,27 +25,32 @@ export const orderSchema = yup.object().shape({
     street: yup.string().required('Street is required'),
     city: yup.string().required('City is required'),
     state: yup.string().min(2, 'State must be at least 2 characters').required('State is required'),
-    zipCode: yup.string().matches(/^\d{4,10}$/, 'Invalid zip code').required('Zip code is required'),
+    zipCode: yup.string().matches(/^[\d]{4,10}$/, 'Invalid zip code').required('Zip code is required'),
     country: yup.string().required('Country is required'),
   }),
   notes: yup.string().max(500),
 });
+
 interface CheckoutPageProps {
   order?: Order;
+  product?: Product;
+  creator?: { name: string, _id: string };
+  price?: number;
+  onOrderSuccess?: () => void;
 }
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const productFromState = location.state?.product;
   const toast = useRef<Toast>(null);
-  const currentOrder = location.state?.order as Order;  
-  const product: Product = productFromState || currentOrder?.product;
+  const currentOrder = location.state?.order as Order;
+  const product: Product = props.product || productFromState || currentOrder?.product;
+  const productPrice = props.price || product?.price || 0;
 
   // Initialize order state, using props.order if provided
   const initialQuantity = 1;
-  const initialTotalAmount = product ? product.price * initialQuantity : 0;
   const [order, setOrder] = useState<Order>(() => {
     const fallbackProduct: Product = product || {
       _id: '',
@@ -72,11 +77,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
     }
     return {
       _id: '',
-      productId: fallbackProduct._id,
+      productId: product?._id||fallbackProduct._id,
       buyerId: user.id,
-      creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
+      creator: props.creator
+        ? { name: props.creator.name, _id: props.creator._id }
+        : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
       status: 'pending',
-      totalAmount: initialTotalAmount,
+      totalAmount: productPrice*initialQuantity,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',
@@ -110,14 +117,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
-
   const [createOrder] = useCreateOrderMutation();
 
   //Update total amount
   useEffect(() => {
     if (product) {
       const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
-      const totalAmount = product.price * order.quantity + shippingPrice;
+      const totalAmount = productPrice * order.quantity + shippingPrice;
       setOrder(prev => ({ ...prev, totalAmount }));
     }
   }, [product, order.quantity, shipping]);
@@ -139,8 +145,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const addNewOrder = async () => {
     try {
       await createOrder(order).unwrap();
-       dispatch(addOrder(order));
+      dispatch(addOrder(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
+      if (props.onOrderSuccess) props.onOrderSuccess();
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
     } finally {
@@ -173,7 +180,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
           <Button label="Pay Now" onClick={handlePay} className="mt-4 w-full" />
         </div>
       </div>
-
       <Payment
         isVisible={paymentDialog}
         onSave={addNewOrder}

@@ -24,7 +24,7 @@ export interface Product {
   description: string;
   price: number;
   images: string[];
-  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'Send to Marketplace' | 'View Live Bids' | 'Choose Manufacturer' | 'Agree to Terms' | 'Make Payment' | 'Track Delivery' | 'Complete Delivery';
+  CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'View Live Bids'  | 'Order & Payment' | 'Track Delivery' | 'Complete Delivery';
   creator: Creator;
   category: Category;
   subCategories: SubCategory[];

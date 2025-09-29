@@ -15,6 +15,8 @@ import {
   lockSpec,
 } from "../slices/aiProductThunks";
 import { Dialog } from 'primereact/dialog';
+import { Toast } from 'primereact/toast';
+import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../../marketplace/slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
 
 export default function AiProductDebugPanel() {
@@ -52,6 +54,7 @@ export default function AiProductDebugPanel() {
   const paramsTableRef = useRef<HTMLDivElement>(null);
   const addParamRowRef = useRef<HTMLInputElement>(null);
   const [editProduct, setEditProduct] = useState<any>(null);
+  const toast = useRef<Toast>(null);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -104,13 +107,15 @@ export default function AiProductDebugPanel() {
   // enums for selects
   const statusOptions = ["draft", "published", "hidden"];
   const conditionOptions = ["new", "like_new", "good", "fair", "poor"];
-  // Use categories and subCategories from marketplace slice
-  const categories: Category[] = useAppSelector((state: RootState) => state.marketplace.categories || []);
-  const allSubCategories: Record<string, SubCategory[]> = useAppSelector((state: RootState) => state.marketplace.subCategories || {});
-  const subCategories: SubCategory[] = useMemo(() => {
-    if (!editProduct?.category) return [];
-    return allSubCategories[editProduct.category] || [];
-  }, [editProduct?.category, allSubCategories]);
+
+  // Fetch categories from API
+  const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetAllCategoriesQuery();
+  const categories: Category[] = categoriesResponse?.data || [];
+
+  // Fetch subCategories from API based on selected category
+  const selectedCategoryId = editProduct?.category || '';
+  const { data: subCategoriesResponse, isLoading: loadingSubCategories, error: subCategoriesError } = useGetSubCategoriesByCategoryQuery(selectedCategoryId, { skip: !selectedCategoryId });
+  const subCategories: SubCategory[] = subCategoriesResponse || [];
 
   // Validation for required fields
   const requiredFields = [
@@ -302,7 +307,7 @@ export default function AiProductDebugPanel() {
                           if (!newParam.label.trim()) return;
                           dispatch(
                             addParam({
-                              id: Math.random().toString(36).slice(2),
+                              id: crypto.randomUUID(),
                               label: newParam.label,
                               type: newParam.type,
                               requiredByAI: newParam.requiredByAI,
@@ -403,12 +408,12 @@ export default function AiProductDebugPanel() {
                       lockSpec({ productData: editProduct })
                     );
                     if (lockRes?.payload?.success) {
-                      window.alert("Your product has been saved and locked successfully!");
+                      toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Your product has been saved and locked successfully!', life: 4000 });
                     } else {
-                      window.alert(lockRes?.payload?.error || "Failed to lock the product.");
+                      toast.current?.show({ severity: 'error', summary: 'Error', detail: lockRes?.payload?.error || 'Failed to lock the product.', life: 4000 });
                     }
                   } catch (e) {
-                    window.alert("An unexpected error occurred.");
+                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'An unexpected error occurred.', life: 4000 });
                   }
                 }}
               >
@@ -554,6 +559,7 @@ export default function AiProductDebugPanel() {
             </div>
           )}
         </Dialog>
+        <Toast ref={toast} />
       </div>
     </div>
   );

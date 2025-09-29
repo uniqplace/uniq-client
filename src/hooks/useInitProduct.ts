@@ -4,6 +4,7 @@ import {
     fetchProductStatus,
     setCurrentStepIndex,
     clearStepper,
+    setCurrentProductId,
 } from '../features/deployProcess/slices/stepperSlice';
 import { stepsConfig } from '../features/deployProcess/components/Stepper/steps';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
@@ -18,18 +19,10 @@ const useInitProduct = (productIdFromProps?: string): {
 } => {
   const dispatch = useAppDispatch();
   const userId = useAppSelector((state) => state.user?.id);
-  // ניהול productId פנימי בלבד
-  // נטעין productId מ-localStorage אם אין מה-props
-  const [initializedProductId, setInitializedProductId] = useState<string | undefined>(() => {
-    return productIdFromProps || localStorage.getItem('currentProductId') || undefined;
-  });
+  // productId תמיד יגיע מהפרופס או מהשרת, לא מ-localStorage
+  const [initializedProductId, setInitializedProductId] = useState<string | undefined>(productIdFromProps);
   const [loading, setLoading] = useState(false);
-  const hasInitialized = useRef(false);
   const isManualCreateInProgress = useRef(false);
-
-  useEffect(() => {
-    console.log('[useInitProduct] userId:', userId, 'initializedProductId:', initializedProductId, 'productIdFromProps:', productIdFromProps);
-  }, [userId, initializedProductId, productIdFromProps]);
 
   // יצירת מוצר חדש
   const createNewProduct = async () => {
@@ -66,18 +59,18 @@ const useInitProduct = (productIdFromProps?: string): {
   };
 
   useEffect(() => {
-    if (!userId) { console.warn('[useInitProduct] No userId, abort init'); return; }
-    if (hasInitialized.current) return;
+    if (!userId) {
+      setLoading(true);
+      return;
+    }
     if (isManualCreateInProgress.current) return;
     let isMounted = true;
     const initializeProduct = async () => {
-      hasInitialized.current = true;
       setLoading(true);
       try {
-        let id = productIdFromProps || initializedProductId;
-        let product: { CreationStatus: string; _id?: string } | null = null;
+        let id = productIdFromProps;
+        let product: { CreationStatus?: string; _id?: string } | null = null;
         if (id) {
-          // נטען מוצר לפי productId
           try {
             product = await dispatch(fetchProductStatus(id)).unwrap();
             console.log('[useInitProduct] fetched product:', product);
@@ -110,6 +103,12 @@ const useInitProduct = (productIdFromProps?: string): {
           }
           setInitializedProductId(id);
           localStorage.setItem('currentProductId', id); // שמירה ב-localStorage
+          dispatch(setCurrentProductId(id)); // הוספה ל-Redux
+          // אם המוצר לא קיים ב-productsInProgress, הוסף אותו לסטייט דרך fulfilled
+          dispatch({
+            type: 'stepper/createProduct/fulfilled',
+            payload: product
+          });
           const index = stepsConfig.findIndex((s) => s.title === product!.CreationStatus);
           if (id) {
             dispatch(setCurrentStepIndex({ productId: id, stepIndex: index !== -1 ? index : 0 }));

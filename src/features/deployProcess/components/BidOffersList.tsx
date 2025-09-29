@@ -6,6 +6,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
+import { fetchBidRequestByProductId } from '../slices/stepperSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
@@ -16,17 +17,20 @@ interface BidOffersListProps {
   bidRequestId: string;
   setCanGoNext?: (canGo: boolean) => void;
 }
-const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNext }) => {
+const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidRequestId, setCanGoNext }) => {
   // Always allow next step (for now)
   useEffect(() => {
     if (setCanGoNext) setCanGoNext(true);
   }, [setCanGoNext]);
+  const [bidRequestId, setBidRequestId] = useState<string>(initialBidRequestId);
+  const productId = initialBidRequestId; // assume initialBidRequestId is productId if bidRequestId is missing
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<'date' | 'price' | 'rating'>('date');
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
+  const stepper = useSelector((state: RootState) => state.stepper);
   // Manufacturer selection state
   const [isSelectingManufacturer, setIsSelectingManufacturer] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
@@ -35,12 +39,34 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
     { label: 'By Rating', value: 'rating' },
     { label: 'By Date', value: 'date' }
   ];
+
+  // Fetch bidRequestId by productId if needed
   useEffect(() => {
-    if (bidRequestId) {
-      const sortParam = sortOption !== 'date' ? sortOption : undefined;
-      dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
+    if (!bidRequestId && productId) {
+      dispatch(fetchBidRequestByProductId(productId)).then((action: any) => {
+        if (action.payload && action.payload._id) {
+          setBidRequestId(action.payload._id);
+        }
+      });
     }
+  }, [bidRequestId, productId, dispatch]);
+
+  useEffect(() => {
+    console.log('[BidOffersList] bidRequestId:', bidRequestId);
+    if (!bidRequestId || bidRequestId.length < 10) {
+      console.warn('[BidOffersList] bidRequestId is missing or looks invalid:', bidRequestId);
+      return;
+    }
+    const sortParam = sortOption !== 'date' ? sortOption : undefined;
+    dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
   }, [dispatch, bidRequestId, sortOption]);
+
+  useEffect(() => {
+    console.log('[BidOffersList] offers:', offers, 'loading:', loading, 'error:', error);
+    if (offers && offers.length === 0 && bidRequestId) {
+      console.warn('[BidOffersList] No offers found for bidRequestId:', bidRequestId);
+    }
+  }, [offers, loading, error, bidRequestId]);
   // Row click behavior changes depending on selection mode
   const handleRowClick = (offer: BidOffer) => {
     if (isSelectingManufacturer) {
@@ -79,6 +105,11 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   }
   return (
     <Card className="p-2 shadow-2 border-round">
+      {(!bidRequestId || bidRequestId.length < 10) && (
+        <div className="text-red-500 text-center py-5">
+          bidRequestId is missing or invalid: {String(bidRequestId)}
+        </div>
+      )}
       {offers && offers.length > 0 && <h1 className="text-xl font-bold mb-4">Bid Offers for Request #{offers[0]?.bidRequestId?.productId?.title}</h1>}
       <div className="flex justify-between align-items-center mb-3">
         <h2 className="text-2xl font-bold">Received Bids</h2>

@@ -11,49 +11,53 @@ import {
   validateSpec,
   lockSpec,
 } from "./aiProductThunks";
-
+import { saveToLocalStorage, loadFromLocalStorage } from '../../../utils/localStorageUtils';
 
 // ==== Local Storage Helpers ====
 const LOCAL_STORAGE_KEY = 'aiProductState';
 
-function saveToLocalStorage(state: ProductPayload) {
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    // ignore
-  }
-}
-
-function loadFromLocalStorage(): ProductPayload | undefined {
-  try {
-    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (data) return JSON.parse(data);
-  } catch (e) {
-    // ignore
-  }
-  return undefined;
+function validateProductPayload(obj: any): obj is ProductPayload {
+  if (!obj || typeof obj !== 'object') return false;
+  if (typeof obj.sessionId !== 'string') return false;
+  if (typeof obj.title !== 'string') return false;
+  if (typeof obj.description !== 'string') return false;
+  if (typeof obj.price !== 'number') return false;
+  if (!Array.isArray(obj.images)) return false;
+  if (!Array.isArray(obj.subCategories)) return false;
+  if (!Array.isArray(obj.tags)) return false;
+  if (!Array.isArray(obj.params)) return false;
+  if (!Array.isArray(obj.audit)) return false;
+  if (typeof obj.status !== 'string') return false;
+  if (typeof obj.condition !== 'string') return false;
+  if (typeof obj.location !== 'string') return false;
+  if (typeof obj.createdByAI !== 'boolean') return false;
+  // Optionally check other fields
+  return true;
 }
 
 // ==== Initial State ====
-const initialState: ProductPayload = loadFromLocalStorage() || {
-  sessionId: uuidv4(),
-  title: "",
-  description: "",
-  price: 0,
-  images: [],
-  creator: undefined,
-  category: undefined,
-  subCategories: [],
-  status: "draft",
-  condition: "new",
-  location: "",
-  tags: [],
-  params: [],
-  audit: [],
-  summary: undefined,
-  aiVersion: undefined,
-  createdByAI: true
-};
+const loadedState = loadFromLocalStorage<ProductPayload>(LOCAL_STORAGE_KEY);
+const initialState: ProductPayload = validateProductPayload(loadedState)
+  ? loadedState
+  : {
+      sessionId: uuidv4(),
+      title: "",
+      description: "",
+      price: 0,
+      images: [],
+      creator: undefined,
+      category: undefined,
+      subCategories: [],
+      status: "draft",
+      condition: "new",
+      location: "",
+      tags: [],
+      params: [],
+      audit: [],
+      summary: undefined,
+      aiVersion: undefined,
+      createdByAI: true
+    };
 
 // ==== Slice ====
 const aiProductSlice = createSlice({
@@ -68,7 +72,7 @@ const aiProductSlice = createSlice({
         action: "add_param",
         details: { id: action.payload.id },
       });
-      saveToLocalStorage(state);
+      saveToLocalStorage(LOCAL_STORAGE_KEY, state);
     },
     updateParam(state, action: PayloadAction<{ id: string; value: any }>) {
       const param = state.params.find((p) => p.id === action.payload.id);
@@ -81,7 +85,7 @@ const aiProductSlice = createSlice({
           action: "update_param",
           details: { id: param.id, value: action.payload.value },
         });
-        saveToLocalStorage(state);
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     skipParam(state, action: PayloadAction<{ id: string; reason?: string }>) {
@@ -99,15 +103,12 @@ const aiProductSlice = createSlice({
           action: "skip_param",
           details: { id: param.id },
         });
-        saveToLocalStorage(state);
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     resetProductState(state) {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
-      Object.keys(state).forEach(key => {
-        // @ts-ignore
-        state[key] = initialState[key];
-      });
+      Object.assign(state, initialState);
     },
   },
   extraReducers: (builder) => {
@@ -130,7 +131,7 @@ const aiProductSlice = createSlice({
         state.location = action.payload.location || "";
         state.tags = action.payload.tags || [];
         state.locale = action.payload.locale || undefined;
-        saveToLocalStorage(state);
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
@@ -150,18 +151,18 @@ const aiProductSlice = createSlice({
         if (action.payload.location) state.location = action.payload.location;
         if (action.payload.tags) state.tags = action.payload.tags;
         if (action.payload.locale) state.locale = action.payload.locale;
-        saveToLocalStorage(state);
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(validateSpec.pending, (state) => {
         state.status = "validating";
       })
       .addCase(validateSpec.fulfilled, (state, action) => {
         state.status = action.payload.blocking ? "error" : "idle";
-        saveToLocalStorage(state);
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(lockSpec.fulfilled, (state) => {
         state.status = "locked";
-        saveToLocalStorage(state);
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       });
   },
 });

@@ -4,7 +4,7 @@ import axios from 'axios';
 
 
 import { stepsConfig } from '../components/Stepper/steps';
-import type { BidRequest } from '../../../types';
+import type { BidRequest, Product } from '../../../types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -13,12 +13,6 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 //   currentStep: 'currentStep',
 //   completedSteps: 'completedSteps',
 // };
-
-export interface Product {
-  _id: string;
-  CreationStatus: string;
-  title?: string;
-}
 
 interface ProductStepperState {
   product: Product | null;
@@ -34,8 +28,26 @@ interface StepperState {
   currentProductId: string | null;
 }
 
+// --- Local Storage Helpers ---
+const LOCAL_STORAGE_KEY = 'stepperProductsInProgress';
+
+function saveProductsInProgressToStorage(productsInProgress: Record<string, ProductStepperState>) {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(productsInProgress));
+  } catch (e) { /* ignore */ }
+}
+
+function loadProductsInProgressFromStorage(): Record<string, ProductStepperState> {
+  try {
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (data) return JSON.parse(data);
+  } catch (e) { /* ignore */ }
+  return {};
+}
+
+// --- initialState with localStorage ---
 const initialState: StepperState = {
-  productsInProgress: {},
+  productsInProgress: loadProductsInProgressFromStorage(),
   currentProductId: null,
 };
 
@@ -47,7 +59,11 @@ function getStepIndexByCreationStatus(creationStatus: string): number {
 function extractProductId(val: any): string | undefined {
   if (!val) return undefined;
   if (typeof val === 'string') return val;
-  if (typeof val === 'object' && '_id' in val && typeof val._id === 'string') return val._id;
+  if (typeof val === 'object') {
+    if ('_id' in val && typeof val._id === 'string') return val._id;
+    if ('$oid' in val) return val.$oid;
+    if ('_id' in val && typeof val._id === 'object' && '$oid' in val._id) return val._id.$oid;
+  }
   return undefined;
 }
 
@@ -76,7 +92,13 @@ export const fetchBidRequestByProductId = createAsyncThunk(
         `${apiBaseUrl}/bidRequests/product/${productId}`,
         { withCredentials: true }
       );
-      return response.data as BidRequest;
+      // סינון לפי היוזר המחובר והתאריך הכי חדש
+      const state = thunkAPI.getState() as any;
+      const userId = state.user?.id;
+      const bidRequests = response.data.bidRequests || [];
+      const filtered = bidRequests.filter((br: any) => br.creatorId?._id === userId);
+      const sorted = filtered.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return sorted[0] || null;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -92,8 +114,8 @@ export const createProduct = createAsyncThunk<Product, Partial<Product>>(
         productData ?? {},
         { withCredentials: true }
       );
-      console.log('Created product🐶🐶🐶🐶:', response.data);
-      
+
+
       return response.data as Product;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
@@ -135,19 +157,19 @@ export const updateProductStep = createAsyncThunk<
   { productId: string; stepNumber: number }
 >(
   'stepper/updateProductStep',
-async ({ productId, stepNumber }, thunkAPI) => {
-  try {
-    const stepIndex = stepNumber - 1;
-    if (stepIndex < 0 || stepIndex >= stepsConfig.length) {
-      throw new Error(`Invalid stepNumber: ${stepNumber}`);
-    }
-    const stepName = stepsConfig[stepIndex].title;
+  async ({ productId, stepNumber }, thunkAPI) => {
+    try {
+      const stepIndex = stepNumber - 1;
+      if (stepIndex < 0 || stepIndex >= stepsConfig.length) {
+        throw new Error(`Invalid stepNumber: ${stepNumber}`);
+      }
+      const stepName = stepsConfig[stepIndex].title;
       const response = await axios.patch(
         `${apiBaseUrl}/create-product/${productId}/step-${stepNumber}`,
         { step: stepName },
         { withCredentials: true }
       );
-      
+
       return response.data as Product;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
@@ -178,26 +200,36 @@ const stepperSlice = createSlice({
   reducers: {
     setCurrentProductId(state, action: PayloadAction<string | null>) {
       state.currentProductId = action.payload;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
     setCurrentStepIndex(state, action: PayloadAction<{ productId: string; stepIndex: number }>) {
       const { productId, stepIndex } = action.payload;
-      if (!state.productsInProgress[productId]) return;
+      if (!state.productsInProgress[productId]) {
+        return;
+      }
       state.productsInProgress[productId].currentStepIndex = stepIndex;
+      if (stepIndex > 0) {
+        state.productsInProgress[productId].completedSteps[stepIndex - 1] = true;
+      }
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
     setCompletedSteps(state, action: PayloadAction<{ productId: string; completed: boolean[] }>) {
       const { productId, completed } = action.payload;
       if (!state.productsInProgress[productId]) return;
       state.productsInProgress[productId].completedSteps = completed;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
     markStepCompleted(state, action: PayloadAction<{ productId: string; stepIndex: number }>) {
       const { productId, stepIndex } = action.payload;
       if (!state.productsInProgress[productId]) return;
       state.productsInProgress[productId].completedSteps[stepIndex] = true;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
     clearStepper(state, action: PayloadAction<{ productId: string }>) {
       const { productId } = action.payload;
       delete state.productsInProgress[productId];
       if (state.currentProductId === productId) state.currentProductId = null;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
     // ...שאר reducers קיימים, יש לעדכן אותם לפעול לפי productId במידת הצורך...
   },
@@ -242,10 +274,10 @@ const stepperSlice = createSlice({
         state.currentProductId = productId;
       })
       .addCase(fetchProductStatus.fulfilled, (state, action) => {
-        const productId = extractProductId(action.payload._id) || state.currentProductId;
+        const productId = extractProductId(action.payload._id) || state.currentProductId || '';
         if (!productId) return;
         const prod = state.productsInProgress[productId];
-        if (prod) {
+        if (prod && action.payload.CreationStatus) {
           prod.product = action.payload;
           prod.currentStepIndex = getStepIndexByCreationStatus(action.payload.CreationStatus);
         }
@@ -268,7 +300,7 @@ const stepperSlice = createSlice({
         const productId = extractProductId(action.payload._id) || state.currentProductId;
         if (!productId) return;
         const prod = state.productsInProgress[productId];
-        if (prod) {
+        if (prod && action.payload.CreationStatus) {
           prod.product = action.payload;
           prod.currentStepIndex = getStepIndexByCreationStatus(action.payload.CreationStatus);
         }
@@ -292,3 +324,5 @@ export const {
 } = stepperSlice.actions;
 
 export default stepperSlice.reducer;
+
+
