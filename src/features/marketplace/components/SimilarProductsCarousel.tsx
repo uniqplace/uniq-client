@@ -106,7 +106,6 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
           onHide={closeDialog}
         >
           <div>
-            {/* תמונות בגלריה */}
             <div style={{ display: "flex", gap: "10px", overflowX: "auto", marginBottom: "10px" }}>
               {selectedProduct.images.length > 0 ? (
                 selectedProduct.images.map((img, idx) => (
@@ -138,7 +137,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
             <p><strong>Price:</strong> ${selectedProduct.price}</p>
             <p><strong>Condition:</strong> <Tag value={selectedProduct.condition}  /></p>
             <p><strong>Creator:</strong> {selectedProduct.creator?.name}</p>
-            <p><strong>Tags:</strong> {selectedProduct.tags.map((tag, idx) => <Tag key={idx} value={tag} className="p-mr-1" />)}</p>
+            <p><strong>Tags:</strong> {selectedProduct.tags?.map((tag, idx) => <Tag key={idx} value={tag} className="p-mr-1" />)}</p>
             <p><strong>Location:</strong> {selectedProduct.location}</p>
             <p><strong>Status:</strong> {selectedProduct.status}</p>
             <p><strong>Created At:</strong> {new Date(selectedProduct.createdAt).toLocaleDateString()}</p>
@@ -148,23 +147,4 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
     </div>
   );
 };
-
-// פונקציה לעיצוב צבעוני לפי מצב
-const getConditionColor = (condition: Product["condition"]) => {
-  switch (condition) {
-    case "new":
-      return "success";
-    case "like_new":
-      return "info";
-    case "good":
-      return "warning";
-    case "fair":
-      return "help";
-    case "poor":
-      return "danger";
-    default:
-      return "secondary";
-  }
-};
-
 export default SimilarProductsCarousel;

@@ -103,8 +103,14 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       transformResponse:(response : {data:Product})=>response.data,
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
-    getSimilarProducts: builder.query<Product[], string>({
-      query: (id) => `/products/${id}/similar`,
+    getSimilarProducts: builder.query<Product[], number[]>({
+      query: (embedding) =>{
+        return{
+          url: `/products/similar`,
+          method: 'POST',
+          body:  embedding
+        }
+      },
     }),
   }),
   overrideExisting: false,
