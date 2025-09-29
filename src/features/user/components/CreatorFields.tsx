@@ -33,11 +33,16 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
 
   const [location, setLocation] = useState(initialData?.location || '');
   const [phone, setPhone] = useState(initialData?.phone || '');
+  // Type guard to check if an object is a Category with an _id property
+  function isCategory(obj: any): obj is { _id: string } {
+    return obj && typeof obj === 'object' && typeof obj._id === 'string';
+  }
+
   const [categories, setCategories] = useState<string[]>(
     Array.isArray(initialData?.categories) && initialData.categories.length > 0
       ? typeof initialData.categories[0] === 'string'
         ? initialData.categories as string[]
-        : (initialData.categories as { _id: string }[]).map((cat) => cat._id)
+        : (initialData.categories as any[]).filter(isCategory).map((cat) => cat._id)
       : ['']
   );
   const [errors, setErrors] = useState({ location: '', phone: '', categories: '' });
