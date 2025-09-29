@@ -82,18 +82,57 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
   // Add a new empty category dropdown only if all current are selected
   const handleAddCategory = () => {
     if (categories.length > 0 && categories.length < allCategoryOptions.length && categories.every(Boolean)) {
-      setCategories([...categories, '']);
+      const newCategories = [...categories, ''];
+      setCategories(newCategories);
+      // Update profile immediately
+      dispatch(
+        setCreatorProfile({
+          userId: '',
+          name: initialData?.name || '',
+          location,
+          phone,
+          rating: initialData?.rating || 0,
+          ratingCount: initialData?.ratingCount || 0,
+          categories: newCategories.filter(Boolean),
+        })
+      );
     }
   };
 
   // Remove a category dropdown
   const handleRemoveCategory = (idx: number) => {
-    setCategories(categories.filter((_, i) => i !== idx));
+    const newCategories = categories.filter((_, i) => i !== idx);
+    setCategories(newCategories);
+    // Update profile immediately
+    dispatch(
+      setCreatorProfile({
+        userId: '',
+        name: initialData?.name || '',
+        location,
+        phone,
+        rating: initialData?.rating || 0,
+        ratingCount: initialData?.ratingCount || 0,
+        categories: newCategories.filter(Boolean),
+      })
+    );
   };
 
   // Update a specific category
   const handleCategoryChange = (idx: number, value: string) => {
-    setCategories(categories.map((cat, i) => (i === idx ? value : cat)));
+    const newCategories = categories.map((cat, i) => (i === idx ? value : cat));
+    setCategories(newCategories);
+    // Update profile immediately
+    dispatch(
+      setCreatorProfile({
+        userId: '',
+        name: initialData?.name || '',
+        location,
+        phone,
+        rating: initialData?.rating || 0,
+        ratingCount: initialData?.ratingCount || 0,
+        categories: newCategories.filter(Boolean),
+      })
+    );
   };
 
   // Filter out already selected categories for each dropdown
