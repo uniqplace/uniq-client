@@ -81,7 +81,7 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
 
   // Add a new empty category dropdown only if all current are selected
   const handleAddCategory = () => {
-    if (categories.length < allCategoryOptions.length && categories.every(Boolean)) {
+    if (categories.length > 0 && categories.length < allCategoryOptions.length && categories.every(Boolean)) {
       setCategories([...categories, '']);
     }
   };
