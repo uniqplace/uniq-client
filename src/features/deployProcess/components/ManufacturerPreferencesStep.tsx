@@ -64,8 +64,9 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
   return categoryId ?? null;
 }
 
-const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => {
+const ManufacturerPreferencesStep: React.FC<StepProps & { onNextStep?: () => void }> = ({ onComplete, setCanGoNext, productId, currentStepIndex, onNextStep }) => {
   const isInitializing = useRef(false);
+  const [isBidOpened, setIsBidOpened] = useState(false);
 
   // קבלת bidRequest מה-Redux לפי productId מה-props
   const bidRequest = useAppSelector(state => productId ? state.stepper.productsInProgress[productId]?.bidRequest : undefined);
@@ -74,7 +75,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   const stepperState = useAppSelector(state => productId ? state.stepper.productsInProgress[productId] : undefined);
   const loading = stepperState?.loading;
   const completedSteps = stepperState?.completedSteps;
-  const currentStepIndex = stepperState?.currentStepIndex;
+  const currentStepIndexRedux = stepperState?.currentStepIndex;
   // Assuming this step is index 1 (change as needed)
   const thisStepIndex = 1;
   const isStepCompleted = completedSteps?.[thisStepIndex];
@@ -106,6 +107,22 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     }
   }, [bidRequest]);
   const dispatch = useDispatch();
+  const navigateToNextStep = () => {
+    if (typeof currentStepIndex === 'number') {
+      const steps = [
+        'product-definition',
+        'manufacturerPreferences',
+        'viewLiveBids',
+        'orderAndPayment',
+        'tracking',
+        'delivery',
+      ];
+      const nextKey = steps[currentStepIndex + 1];
+      if (nextKey && productId) {
+        window.location.href = `/create-your-own-product/${productId}/${nextKey}`;
+      }
+    }
+  };
 
   // Prefill logic: on mount, if no bidRequest in Redux and productId exists, fetch from server
   React.useEffect(() => {
@@ -229,9 +246,16 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
         showSuccessToast(toast, 'Bid request opened successfully.');
-        // Can proceed to the next step only after success
         setCanGoNext && setCanGoNext(true);
         onComplete && onComplete();
+        setIsBidOpened(true);
+        if (onNextStep) {
+          console.log('onNextStep called from ManufacturerPreferencesStep');
+          onNextStep(); // מעבר אוטומטי לשלב הבא
+        } else {
+          console.log('onNextStep not defined, fallback to navigateToNextStep');
+          navigateToNextStep();
+        }
       } else {
         showErrorToast(toast, 'Failed to create bid request. Please try again.');
       }
@@ -271,7 +295,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   };
 
   const isFormValid = categoryId && locationPreference && priceRange.min && priceRange.max && deliveryTimeframe && deliveryMethod;
-  if (!loading || currentStepIndex !== null) {
+  if (!loading || currentStepIndexRedux !== null) {
     return (
       <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 max-w-3xl mx-auto bg-white rounded shadow" onKeyPress={handleKeyPress}>
         <Toast ref={toast} />
@@ -365,10 +389,21 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           />
         </div>
 
-        <Button type="submit" label="Continue" className="mt-6 w-full" disabled={!isFormValid || isReadOnly} />
+        <Button type="submit" label="Open Bid Request" className="mt-6 w-full" disabled={!isFormValid || isReadOnly} />
       </form>
     );
   };
+
+  React.useEffect(() => {
+    // אם השלב הושלם או שיש מכרז פתוח, נאפשר מעבר לשלב הבא
+    if (setCanGoNext && (isStepCompleted || (bidRequest && bidRequest.productId))) {
+      setCanGoNext(true);
+    }
+  }, [setCanGoNext, isStepCompleted, bidRequest, currentStepIndex]);
+
+  if (isReadOnly && setCanGoNext) {
+    setCanGoNext(true);
+  }
 }
 
 export default ManufacturerPreferencesStep;

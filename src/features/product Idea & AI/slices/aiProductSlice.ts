@@ -8,7 +8,6 @@ import type {
 import {
   generateDraft,
   refineSpec,
-  validateSpec,
   lockSpec,
 } from "./aiProductThunks";
 import { saveToLocalStorage, loadFromLocalStorage } from '../../../utils/localStorageUtils';
@@ -151,13 +150,6 @@ const aiProductSlice = createSlice({
         if (action.payload.location) state.location = action.payload.location;
         if (action.payload.tags) state.tags = action.payload.tags;
         if (action.payload.locale) state.locale = action.payload.locale;
-        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
-      })
-      .addCase(validateSpec.pending, (state) => {
-        state.status = "validating";
-      })
-      .addCase(validateSpec.fulfilled, (state, action) => {
-        state.status = action.payload.blocking ? "error" : "idle";
         saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(lockSpec.fulfilled, (state) => {

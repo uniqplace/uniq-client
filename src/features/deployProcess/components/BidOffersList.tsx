@@ -245,35 +245,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
                         style={{ minWidth: '44px', height: '44px' }}
                       >
                         <div className="flex justify-center">
-                          <Button
-                            label="Select this offer"
-                            icon="pi pi-send"
-                            className="p-button-rounded p-button-sm shadow-lg transition-all duration-200 group-hover:scale-110"
-                            style={{
-                              backgroundColor: '#25D366',
-                              borderColor: '#25D366',
-                              color: '#fff',
-                              fontSize: '1rem',
-                              padding: '0.5rem 1rem',       
-                              display: 'inline-flex',       
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 'auto',                
-                              whiteSpace: 'nowrap',        
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/checkout/${offer.bidRequestId.productId._id ?? ''}`, {
-                                state: {
-                                  product: {
-                                    ...offer.bidRequestId.productId,
-                                    creator: offer.manufacturerId,
-                                    price: offer.price,
-                                  },
-                                },
-                              });
-                            }}
-                          />
                         </div>
                       </span>
                     </div>

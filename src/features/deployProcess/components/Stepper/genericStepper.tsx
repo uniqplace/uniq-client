@@ -48,17 +48,7 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
   const navigate = useNavigate();
   const { stepKey } = useParams<{ stepKey: string }>();
 
-  useEffect(() => {
-    console.log('[GenericStepper]', {
-      productId,
-      stepperState,
-      product,
-      currentStepIndex,
-      completedSteps,
-      error,
-      loading
-    });
-  }, [productId, stepperState, product, currentStepIndex, completedSteps, error, loading]);
+ 
 
 
   // כל ה-useEffect-ים ממוקמים אחרי כל ההגדרות
@@ -164,9 +154,11 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
   // baseStepProps במקום אחד בלבד
   const baseStepProps = {
     product,
-    productId, // הוספת productId לכל שלב
+    productId,
     onComplete: () => setCanGoNext(true),
     setCanGoNext,
+    currentStepIndex: safeStepIndex, // הוספה כאן
+    onNextStep: handleCompleteStep, // העברת handleCompleteStep כ-prop
   };
 
   let renderedStep = null;

@@ -34,6 +34,8 @@ export default function AiProductDebugPanel() {
     return [];
   });
 
+  const [files, setFiles] = useState<File[]>([]);
+
   // Reset chat/messages when user changes (logout/login)
   useEffect(() => {
     setMessages([]);
@@ -67,14 +69,15 @@ export default function AiProductDebugPanel() {
   }
 
   const handleSend = () => {
-    if (!userText.trim()) return;
     setMessages((msgs) => {
       const newMsgs = [...msgs, { sender: "user" as const, text: userText }];
       saveChat(newMsgs);
       return newMsgs;
     });
     if (messages.length === 0) {
-      dispatch(generateDraft({ userText })).then((res: any) => {
+      console.log("first message, generating draft🤷‍♂️🤷‍♂️🤷‍♂️🤷‍♂️");
+      
+      dispatch(generateDraft({ userPrompt: userText, files })).then((res: any) => {
         if (res?.payload) {
           const aiMsg = res.payload.chat || res.payload.aiResponse;
           if (aiMsg) {
@@ -87,7 +90,7 @@ export default function AiProductDebugPanel() {
         }
       });
     } else {
-      dispatch(refineSpec({ userInstruction: userText, params: aiProduct.params })).then((res: any) => {
+      dispatch(refineSpec({ userPrompt: userText, productPayload: aiProduct, files })).then((res: any) => {
         if (res?.payload) {
           const aiMsg = res.payload.chat || res.payload.aiResponse;
           if (aiMsg) {
@@ -101,6 +104,7 @@ export default function AiProductDebugPanel() {
       });
     }
     setUserText("");
+    setFiles([]);
     setTimeout(scrollToBottom, 100);
   };
 
@@ -188,6 +192,35 @@ export default function AiProductDebugPanel() {
             }}
             className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200"
           />
+          {/* File Upload */}
+          <label
+            style={{
+              background: "#E0E7FF",
+              color: "#3730A3",
+              padding: "10px 16px",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+            }}
+          >
+            :paperclip: Upload
+            <input
+              type="file"
+              multiple
+              onChange={(e) => {
+                if (e.target.files) {
+                  setFiles(Array.from(e.target.files)); // שמירה במערך
+                }
+              }}
+              style={{ display: "none" }}
+            />
+          </label>
+
+
+
+
           <button
             onClick={handleSend}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center justify-center"

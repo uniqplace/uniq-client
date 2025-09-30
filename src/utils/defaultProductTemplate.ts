@@ -1,17 +1,17 @@
 export const defaultProductTemplate = {
-  title: 'Test Product',
+  title: 'יStyleMe',
   description: 'This is a hardcoded product',
-  price: 123,
+  price: 100,
   images: [],
   category: {
-    _id: "64a7f0c8f1f1e2b4c8d0e9a1",
-    name: "Hard category"
+    _id: "68da45f3dc51c4a168a3c871",
+    name: "home systems",
   },
   subCategories: [],
   condition: 'new' as 'new' | 'like_new' | 'good' | 'fair' | 'poor',
   location: 'Hardcoded Location',
   tags: ['hardcoded'],
-  status: "published" as "published" | "draft" | "hidden",
+  status: "draft" as "published" | "draft" | "hidden",
   stock: 10,
   createdByAI: true,
 };

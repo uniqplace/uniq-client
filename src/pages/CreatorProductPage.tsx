@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useGetUserProductsQuery } from '../features/marketplace/slices/productApiSlice';
-import { useAppSelector } from '../hooks/hooks';
+import { useAppSelector, useAppDispatch } from '../hooks/hooks';
 import ProductUploadForm from '../features/marketplace/components/ProductUploadForm';
 import { Button } from 'primereact/button';
 import ProductCard from '../features/marketplace/components/ProductCard';
 import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { useNavigate } from 'react-router-dom';
+import {  setCurrentProductId } from '../features/deployProcess/slices/stepperSlice';
+
 
 const CreatorProductPage: React.FC = () => {
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const creatorId = useAppSelector(state => state.user?.id || state.user?.manufacturerId || '');
     const { data: products, isLoading, error } = useGetUserProductsQuery({
         creator: creatorId,
@@ -21,21 +24,30 @@ const CreatorProductPage: React.FC = () => {
         searchTerm: '',
     });
 
-    console.log('[CreatorProductPage] products:', products);
     const aiProducts = products?.filter(p => p.createdByAI === true || String(p.createdByAI) === 'true') || [];
     const manualProducts = products?.filter(p => p.createdByAI === false || String(p.createdByAI) === 'false' || !p.createdByAI) || [];
-    console.log('[CreatorProductPage] aiProducts:', aiProducts);
-    
 
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Creator's Products</h1>
-                <Button
-                    label="Add Product"
-                    icon="pi pi-plus"
-                    onClick={() => setShowUploadForm(true)}
-                />
+                <div className="flex gap-2">
+                    <Button
+                        label="Add Product"
+                        icon="pi pi-plus"
+                        onClick={() => setShowUploadForm(true)}
+                    />
+                    <Button
+                        label="Create Your Own Product"
+                        icon="pi pi-cog"
+                        onClick={() => {
+                            localStorage.removeItem('currentProductId');
+                            localStorage.removeItem('stepperProductsInProgress');
+                            dispatch(setCurrentProductId(null));
+                            navigate('/create-your-own-product/product-definition'); // אין יצירה ידנית, רק ניווט
+                        }}
+                    />
+                </div>
                 <Dialog
                     header="Add Product"
                     visible={showUploadForm}
@@ -91,7 +103,6 @@ const CreatorProductPage: React.FC = () => {
                                 } else if (product._id && typeof product._id === 'object' && '$oid' in product._id) {
                                     productId = (product._id as { $oid: string }).$oid;
                                 }
-                                console.log('[CreatorProductPage] product:', product, 'productId:', productId);
                                 return (
                                     <div key={productId} className="flex flex-col h-full">
                                         <ProductCard
