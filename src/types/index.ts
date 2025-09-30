@@ -192,13 +192,14 @@ export interface ManufacturerProfile {
 
 export interface CreatorProfile {
   _id?: string;
-  userId: string; // ID of the user
-  name: string; // Creator's name
-  location: string; // Creator's location
-  phone: string; // Creator's phone number
-  rating: number; // Creator's rating
-  ratingCount: number; // Number of ratings
-  createdAt?: Date; // Date when the creator's profile was created
+  userId: string;
+  name: string;
+  categories: string[] | Category[];
+  location: string;
+  phone: string;
+  rating: number;
+  ratingCount: number;
+  createdAt?: Date;
 }
 
 // type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source

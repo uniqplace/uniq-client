@@ -112,6 +112,7 @@ const Register: React.FC = () => {
         body.creatorProfile = {
           location: creator?.location || '',
           phone: creator?.phone || '',
+          categories: creator?.categories || [],
         };
       }
 
@@ -119,7 +120,7 @@ const Register: React.FC = () => {
       if (res.data.success && res.data.user) {
         const user = res.data.user;
 
-        Cookies.set('token', res.data.token, { expires: 7 });
+        Cookies.set('token', res.data.token, { expires: 7 });        
 
         const safeUser = {
           id: user._id || user.id || null,
@@ -128,7 +129,7 @@ const Register: React.FC = () => {
           role: user.role || null,
           avatar: user.avatar || null,
           manufacturer: user.manufacturer || null,
-          creator: user.creatorProfile || null,
+          creator: user.creatorProfile || user.creator || null,
         };
 
         if (!safeUser.name || !safeUser.email || !safeUser.role) {
@@ -144,7 +145,7 @@ const Register: React.FC = () => {
           avatar: user.avatar || null,
           role: user.role || null,
           manufacturer: user.manufacturer || null,
-          creator: user.creatorProfile || null,
+          creator: user.creatorProfile || user.creator || null,
         }));
 
         // Register user to Socket.IO

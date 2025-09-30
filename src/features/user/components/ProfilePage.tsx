@@ -208,6 +208,7 @@ const ProfilePage: React.FC = () => {
       let creatorObj: CreatorProfile | null = null;
       if(formData.role === 'creator' && user.creator) {
         creatorObj = {
+          categories: categories.length > 0 ? categories : (user.creator.categories || []),
           location: user.creator.location || '',
           phone: user.creator.phone || '',
           rating: user.creator.rating || 0,
