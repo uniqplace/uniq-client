@@ -23,6 +23,7 @@ interface ProductFormData {
   description: string;
   categories: { [key: string]: true }; // TreeSelect value: object of selected subCategory ids
   price: number;
+  stock: number;
   tags: string[];
   status: 'draft' | 'published' | 'hidden';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
@@ -58,6 +59,7 @@ const schema: yup.ObjectSchema<ProductFormData> = yup.object().shape({
     (value) => value && Object.keys(value).length > 0
   ).required(),
   price: yup.number().typeError('Price must be a number').required().min(0),
+  stock: yup.number().typeError('Stock must be a number').required().min(0),
   tags: yup.array().of(yup.string().defined()).required(),
   status: yup.string().oneOf(['draft', 'published', 'hidden']).required(),
   condition: yup.string().oneOf(['new', 'like_new', 'good', 'fair', 'poor']).required(),
@@ -96,6 +98,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
         description: product.description,
         categories: getDefaultCategories(product),
         price: product.price,
+        stock: product.stock || 0,
         tags: product.tags,
         status: product.status,
         condition: product.condition,
@@ -106,6 +109,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
         description: '',
         categories: {},
         price: 0,
+        stock: 0,
         tags: [],
         status: 'draft',
         condition: 'new',
@@ -120,6 +124,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
         description: product.description,
         categories: getDefaultCategories(product),
         price: product.price,
+        stock: product.stock || 0,
         tags: product.tags,
         status: product.status,
         condition: product.condition,
@@ -221,22 +226,46 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
         />
         {renderError('categories')}
 
-        <Controller
-          name="price"
-          control={control}
-          render={({ field }) => (
-            <InputNumber
-              value={field.value}
-              onValueChange={(e) => field.onChange(e.value)}
-              placeholder="Price"
-              mode="currency"
-              currency="USD"
-              locale="en-US"
-              className={errors.price ? 'p-invalid w-full' : 'w-full'}
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label htmlFor="price" className="block text-sm font-medium mb-1">Price</label>
+            <Controller
+              name="price"
+              control={control}
+              render={({ field }) => (
+                <InputNumber
+                  id="price"
+                  value={field.value}
+                  onValueChange={(e) => field.onChange(e.value)}
+                  placeholder="Price"
+                  mode="currency"
+                  currency="USD"
+                  locale="en-US"
+                  className={errors.price ? 'p-invalid w-full' : 'w-full'}
+                />
+              )}
             />
-          )}
-        />
-        {renderError('price')}
+            {renderError('price')}
+          </div>
+
+          <div className="flex-1">
+            <label htmlFor="stock" className="block text-sm font-medium mb-1">Stock</label>
+            <Controller
+              name="stock"
+              control={control}
+              render={({ field }) => (
+                <InputNumber
+                  id="stock"
+                  value={field.value}
+                  onValueChange={(e) => field.onChange(e.value)}
+                  placeholder="Stock"
+                  className={errors.stock ? 'p-invalid w-full' : 'w-full'}
+                />
+              )}
+            />
+            {renderError('stock')}
+          </div>
+        </div>
 
         <Controller
           name="tags"

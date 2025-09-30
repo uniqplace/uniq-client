@@ -28,7 +28,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
                 <InputNumber
                     value={order.quantity}
                     min={1}
-                    max={99}
+                    max={order.product?.stock || 1}
                     onValueChange={e => setOrder({ ...order, quantity: e.value || 1 })}
                     showButtons
                     buttonLayout="horizontal"
@@ -37,6 +37,11 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
                     inputStyle={{ textAlign: 'center', width: '60px' }}
                     style={{ borderRadius: '8px' }}
                 />
+                {order.product?.stock !== undefined && (
+                    <p className="mt-2 text-sm text-gray-500">
+                        Stock available: <span className="font-medium">{order.product.stock} units</span>
+                    </p>
+                )}
             </div>
 
             {/* Shipping Method */}

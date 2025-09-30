@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, ImageGallery, CreatorCard } from '../components/shared';
+import { Button, ImageGallery, RatingComponent } from '../components/shared';
 import { getStatusColor, getConditionColor } from '../utils/product';
 import { formatDate } from '../utils/date';
 import { fetchProduct } from '../features/marketplace/thunks/marketplaceThunks';
 import { clearSelectedProduct } from '../features/marketplace/slices/marketplaceSlice';
 import type { RootState, AppDispatch } from '../store';
 import type { Product } from '../types';
+import UserCard from '../components/shared/UserCard';
 
 
 
@@ -25,18 +26,20 @@ const ProductPage: React.FC = () => {
 
   useEffect(() => {
     if (product) {
-      dispatch(clearSelectedProduct());
       dispatch({ type: 'marketplace/setSelectedProduct', payload: product });
-      return;
-    }
-    if (id) {
+    } else if (id) {
       dispatch(fetchProduct(id));
     }
+
     return () => {
       dispatch(clearSelectedProduct());
     };
   }, [id, dispatch, product]);
-  
+
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to the top of the page on load
+  }, []);
+
   const handleBackToMarketplace = () => {
     navigate(-1);
   };
@@ -83,7 +86,7 @@ const ProductPage: React.FC = () => {
       </div>
     );
   }
-    const handleBuyNow = () => {
+  const handleBuyNow = () => {
     navigate(`/checkout/${currentProduct._id}`, { state: { product: currentProduct } });
   };
 
@@ -93,8 +96,8 @@ const ProductPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
             <button
               onClick={handleBackToMarketplace}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 group"
@@ -103,8 +106,8 @@ const ProductPage: React.FC = () => {
               <span className="font-medium">Back to Marketplace</span>
             </button>
             {currentProduct.creator && (
-              <div className="w-full lg:w-auto">
-                <CreatorCard creator={currentProduct.creator} />
+              <div className="w-full lg:w-auto m-0 p-0 box-border">
+                <UserCard user={currentProduct.creator} />
               </div>
             )}
           </div>
@@ -117,9 +120,9 @@ const ProductPage: React.FC = () => {
           {/* Image Gallery Section */}
           <div className="lg:sticky lg:top-8 lg:self-start">
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-              <ImageGallery 
-                images={currentProduct.images} 
-                productTitle={currentProduct.title} 
+              <ImageGallery
+                images={currentProduct.images}
+                productTitle={currentProduct.title}
               />
             </div>
           </div>
@@ -139,6 +142,23 @@ const ProductPage: React.FC = () => {
                   <span className={`px-4 py-2 rounded-full text-sm font-semibold shadow-lg ${getStatusColor(currentProduct.status)}`}>
                     {currentProduct.status ? currentProduct.status.toUpperCase() : ''}
                   </span>
+                </div>
+                {/* Sales Information */}
+                {typeof currentProduct.sales === 'number' && currentProduct.sales > 0 && (
+                  <div className="flex items-center gap-4 mt-4">
+                    <i className="pi pi-shopping-cart text-orange-500 text-xl"></i>
+                    <span className="text-lg font-medium text-gray-700">
+                      {currentProduct.sales} units sold
+                    </span>
+                  </div>
+                )}
+                {/* RatingComponent */}
+                <div className="mt-4">
+              <RatingComponent 
+                itemId={currentProduct._id} 
+                itemType="product" 
+                ownerId={currentProduct.creator?.id || currentProduct.creator?._id} 
+              />
                 </div>
               </div>
             </div>
@@ -225,17 +245,20 @@ const ProductPage: React.FC = () => {
                     {formattedPrice}
                   </span>
                 </div>
+                {/* Subtle Stock Information */}
+                <div className="text-gray-700 text-center">
+                  {currentProduct.stock ? `${currentProduct.stock} units available` : 'Out of stock'}
+                </div>
                 <button
                   onClick={handleBuyNow}
-                  disabled={currentProduct.status !== 'published'}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg ${
-                    currentProduct.status === 'published'
+                  disabled={currentProduct.status !== 'published' || !currentProduct.stock}
+                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg ${currentProduct.status === 'published' && currentProduct.stock
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <i className="pi pi-shopping-cart mr-3"></i>
-                  {currentProduct.status === 'published' 
+                  {currentProduct.status === 'published' && currentProduct.stock
                     ? `Buy Now - ${formattedPrice}`
                     : 'Not Available'
                   }

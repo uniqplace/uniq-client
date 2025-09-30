@@ -12,6 +12,9 @@ import apiSlice from './api/apiSlice';
 import orderSlice from './features/order/slices/orderSlice';
 import chatReducer from './features/chat/chatSlice'; 
 import chatPopupReducer from './features/chat/popupSlice';
+import aiProductSlice from './features/product Idea & AI/slices/aiProductSlice';
+import creatorProfileReducer from './features/user/slices/creatorSlice';
+
 
 
 export const store = configureStore({
@@ -29,6 +32,8 @@ export const store = configureStore({
     order: orderSlice,
   chat: chatReducer, 
   chatPopup: chatPopupReducer,
+    aiProduct: aiProductSlice,
+    creatorProfile: creatorProfileReducer,
   },
 
 

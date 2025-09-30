@@ -43,6 +43,8 @@ import { initChatSocketBridge } from './features/chat/socketBridge';
 // import { Thread } from 'stream-chat';
 import ThreadsStream from './features/chat/pages/ThreadsStream';
 
+import CreatorProfilePage from './features/user/components/CreatorProfilePage';
+import ManufacturerProfilePage from './features/user/components/ManufacturerProfilePage';
 
 
 
@@ -183,6 +185,10 @@ function App() {
 
             <Route path="/chat/:cid" element={<ChatPage />} />
           
+          <Route path='/creator/:creatorId' element={<CreatorProfilePage />} />
+          <Route path='/manufacturer/:manufacturerId' element={<ManufacturerProfilePage />} />
+          <Route path='/customer/:userId' element={<div><i className="pi pi-user" style={{ marginRight: '8px' }}></i>Customer Profile coming soon...</div>} />
+          <Route path="*" element={<div className="p-8 text-center">404 - Page Not Found</div>} />
         </Routes>
       </MainContent>
     </div>

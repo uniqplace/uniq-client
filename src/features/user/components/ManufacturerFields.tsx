@@ -1,4 +1,3 @@
-
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -29,6 +28,8 @@ interface ManufacturerFieldsProps {
   handleAddItem: (setter: React.Dispatch<React.SetStateAction<string[]>>) => void;
   handleRemoveItem: (index: number, setter: React.Dispatch<React.SetStateAction<string[]>>) => void;
   disabled?: boolean;
+  phone: string;
+  setPhone: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsProps>(
@@ -46,6 +47,8 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
       handleAddItem,
       handleRemoveItem,
       disabled = false,
+      phone,
+      setPhone,
     },
     ref
   ) => {
@@ -54,6 +57,7 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
       categories: '',
       location: '',
       availableFrom: '',
+      phone: '', // Add phone to errors state
     });
     const [showErrors, setShowErrors] = useState(false);
 
@@ -72,13 +76,22 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
     useEffect(() => {
       // Update states with existing values
       setServicesOffered(profile?.servicesOffered || []);
-      setCategories(profile?.categories || ['']);
+      if (Array.isArray(profile?.categories) && profile.categories.length > 0) {
+        if (typeof profile.categories[0] === 'string') {
+          setCategories(profile.categories as string[]);
+        } else {
+          setCategories((profile.categories as { _id: string }[]).map((cat) => cat._id));
+        }
+      } else {
+        setCategories([]);
+      }
       setLocation(profile?.location || '');
       setAvailableFrom(
         profile?.availableFrom && /^\d{4}-\d{2}-\d{2}$/.test(profile.availableFrom.split('T')[0])
           ? profile.availableFrom.split('T')[0]
           : ''
       );
+      setPhone(profile?.phone || '');
     }, [profile]);
 
     const updateCategory = (index: number, value: string) => {
@@ -112,11 +125,18 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
         categories: '',
         location: '',
         availableFrom: '',
+        phone: '', // Validate phone number
       };
       if (!servicesOffered.some((s) => s.trim())) newErrors.services = 'At least one service is required';
       if (!categories.length || !categories[0]) newErrors.categories = 'Category is required';
       if (!location.trim()) newErrors.location = 'Location is required';
       if (!availableFrom) newErrors.availableFrom = 'Available from date is required';
+      if (
+        !phone.trim() ||
+        !/^(\+)?\d{7,15}$/.test(phone)
+      ) {
+        newErrors.phone = 'Please enter a valid phone number (7-15 digits, optional +)';
+      }
 
       setErrors(newErrors);
       const isValid = Object.values(newErrors).every((e) => !e);
@@ -218,13 +238,42 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
             showIcon
             disabled={disabled}
             className="w-full"
-            minDate={new Date()} 
-            dateFormat="yy-mm-dd" 
+            minDate={new Date()}
+            dateFormat="yy-mm-dd"
             placeholder="Select a date"
           />
 
           {showErrors && errors.availableFrom && (
             <div className="text-red-500 text-sm mt-1">{errors.availableFrom}</div>
+          )}
+        </div>
+
+        {/* Phone Number */}
+        <div className="field mb-8 border border-gray-200 rounded-lg p-6">
+          <label className="block text-900 font-semibold mb-3 text-lg">Phone Number</label>
+          <InputText
+            value={phone ?? ''} // Ensure default value is an empty string
+            onChange={(e) => {
+              const newPhone = e.target.value;
+              setPhone(newPhone);
+              if (!/^\d{10}$/.test(newPhone)) {
+                setErrors((prev) => ({
+                  ...prev,
+                  phone: 'Please enter a valid 10-digit phone number.',
+                }));
+              } else {
+                setErrors((prev) => ({
+                  ...prev,
+                  phone: '',
+                }));
+              }
+            }}
+            placeholder="Enter your phone number"
+            disabled={disabled}
+            className="w-full"
+          />
+          {showErrors && errors.phone && (
+            <div className="text-red-500 text-sm mt-1">{errors.phone}</div>
           )}
         </div>
       </div>

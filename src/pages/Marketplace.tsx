@@ -7,14 +7,17 @@ import ProductCard from '../features/marketplace/components/ProductCard';
 import { useGetProductsQuery } from '../features/marketplace/slices/productApiSlice';
 import FiltersBar from '../features/marketplace/components/FiltersBar'; import { Paginator } from 'primereact/paginator';
 import SearchBar from '../features/marketplace/components/SearchBar';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
+import SortOptions from '../features/marketplace/components/SortOptions';
+import { clearFilters } from '../features/marketplace/slices/marketplaceSlice';
 
 // Helper to parse subCategories from URLSearchParams
 
 const Marketplace: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const params = new URLSearchParams(location.search);
   const initialPage = Number(params.get('page')) || 1;
   const [page, setPage] = useState(initialPage);
@@ -26,6 +29,17 @@ const Marketplace: React.FC = () => {
     const pageParam = Number(params.get('page')) || 1;
     setPage(pageParam);
   }, [location.search, params]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to the top of the page
+  }, [page]);
+
+  useEffect(() => {
+    return () => {
+      // Clear filters when unmounting the Marketplace page
+      dispatch(clearFilters());
+    };
+  }, [dispatch]);
 
   // Build filters for RTK Query
   const queryFilters = React.useMemo(() => getMarketplaceQueryFilters(params, page), [params, page]);
@@ -87,7 +101,15 @@ const Marketplace: React.FC = () => {
           </div>
           <div className="flex-1">
             <section className="bg-gray-50 rounded-lg p-4 mb-8">
-              <h2 className="text-xl font-semibold mb-4">Products</h2>
+              <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold mb-4 md:mb-0">Products</h2>
+                <div className="flex flex-col items-end mb-6">
+                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
+                    Sort By
+                  </label>
+                  <SortOptions />
+                </div>
+              </div>
               {isLoading || isFetching || loading ? (
                 <div className="flex flex-col justify-center items-center py-12">
                   <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" fill="var(--surface-ground)" animationDuration="1s" />
@@ -116,7 +138,6 @@ const Marketplace: React.FC = () => {
                   rows={limit}
                   totalRecords={totalPages ? totalPages * limit : 0}
                   onPageChange={onPageChange}
-                  template="PrevPageLink PageLinks NextPageLink"
                   className="!bg-transparent !shadow-none !border-0 !p-0"
                   pt={{
                     pageButton: (options) => {
@@ -131,6 +152,8 @@ const Marketplace: React.FC = () => {
                     },
                     prevPageButton: { className: '!rounded-full !w-9 !h-9 !mx-1 border-2 border-blue-200 dark:border-blue-700' },
                     nextPageButton: { className: '!rounded-full !w-9 !h-9 !mx-1 border-2 border-blue-200 dark:border-blue-700' },
+                    firstPageButton: { className: '!rounded-full !w-9 !h-9 !mx-1 border-2 border-blue-200 dark:border-blue-700' },
+                    lastPageButton: { className: '!rounded-full !w-9 !h-9 !mx-1 border-2 border-blue-200 dark:border-blue-700' },
                     root: { className: '!border-0 !bg-transparent !shadow-none !p-0' },
                   }}
                 />
