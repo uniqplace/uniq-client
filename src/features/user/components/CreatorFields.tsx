@@ -28,25 +28,46 @@ const mainCities = [
   { label: 'General', value: 'general' },
 ];
 
+// Type guard to check if an object is a Category with an _id property
+function isCategory(obj: any): obj is { _id: string } {
+  return obj && typeof obj === 'object' && typeof obj._id === 'string';
+}
+
+// Helper to initialize categories state from initialData
+function initialCategories(initialData?: CreatorProfile | null): string[] {
+  if (Array.isArray(initialData?.categories) && initialData.categories.length > 0) {
+    if (typeof initialData.categories[0] === 'string') {
+      return initialData.categories as string[];
+    } else if (isCategory(initialData.categories[0])) {
+      return (initialData.categories as any[]).filter(isCategory).map((cat) => cat._id);
+    }
+  }
+  return [''];
+}
+
 const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: boolean }> = ({ initialData, disabled = false }) => {
   const dispatch = useDispatch();
 
   const [location, setLocation] = useState(initialData?.location || '');
   const [phone, setPhone] = useState(initialData?.phone || '');
-  // Type guard to check if an object is a Category with an _id property
-  function isCategory(obj: any): obj is { _id: string } {
-    return obj && typeof obj === 'object' && typeof obj._id === 'string';
-  }
-
-  const [categories, setCategories] = useState<string[]>(
-    Array.isArray(initialData?.categories) && initialData.categories.length > 0
-      ? typeof initialData.categories[0] === 'string'
-        ? initialData.categories as string[]
-        : (initialData.categories as any[]).filter(isCategory).map((cat) => cat._id)
-      : ['']
-  );
+  const [categories, setCategories] = useState<string[]>(initialCategories(initialData));
   const [errors, setErrors] = useState({ location: '', phone: '', categories: '' });
   const [touched, setTouched] = useState({ location: false, phone: false, categories: false });
+
+  // Helper to dispatch setCreatorProfile with current state
+  const updateCreatorProfile = (catArr: string[] = categories, loc = location, ph = phone) => {
+    dispatch(
+      setCreatorProfile({
+        userId: '',
+        name: initialData?.name || '',
+        location: loc,
+        phone: ph,
+        rating: initialData?.rating || 0,
+        ratingCount: initialData?.ratingCount || 0,
+        categories: catArr.filter(Boolean),
+      })
+    );
+  };
 
   // Fetch all categories from server
   const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
@@ -64,18 +85,7 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
   const handleBlur = (field: 'location' | 'phone' | 'categories') => {
     setTouched((prev) => ({ ...prev, [field]: true }));
     if (validate()) {
-      const filteredCategories = categories.filter(Boolean);
-      dispatch(
-        setCreatorProfile({
-          userId: '',
-          name: initialData?.name || '',
-          location,
-          phone,
-          rating: initialData?.rating || 0,
-          ratingCount: initialData?.ratingCount || 0,
-          categories: filteredCategories,
-        })
-      );
+      updateCreatorProfile();
     }
   };
 
@@ -84,18 +94,7 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
     if (categories.length > 0 && categories.length < allCategoryOptions.length && categories.every(Boolean)) {
       const newCategories = [...categories, ''];
       setCategories(newCategories);
-      // Update profile immediately
-      dispatch(
-        setCreatorProfile({
-          userId: '',
-          name: initialData?.name || '',
-          location,
-          phone,
-          rating: initialData?.rating || 0,
-          ratingCount: initialData?.ratingCount || 0,
-          categories: newCategories.filter(Boolean),
-        })
-      );
+      updateCreatorProfile(newCategories);
     }
   };
 
@@ -103,36 +102,14 @@ const CreatorFields: React.FC<{ initialData?: CreatorProfile | null; disabled?: 
   const handleRemoveCategory = (idx: number) => {
     const newCategories = categories.filter((_, i) => i !== idx);
     setCategories(newCategories);
-    // Update profile immediately
-    dispatch(
-      setCreatorProfile({
-        userId: '',
-        name: initialData?.name || '',
-        location,
-        phone,
-        rating: initialData?.rating || 0,
-        ratingCount: initialData?.ratingCount || 0,
-        categories: newCategories.filter(Boolean),
-      })
-    );
+    updateCreatorProfile(newCategories);
   };
 
   // Update a specific category
   const handleCategoryChange = (idx: number, value: string) => {
     const newCategories = categories.map((cat, i) => (i === idx ? value : cat));
     setCategories(newCategories);
-    // Update profile immediately
-    dispatch(
-      setCreatorProfile({
-        userId: '',
-        name: initialData?.name || '',
-        location,
-        phone,
-        rating: initialData?.rating || 0,
-        ratingCount: initialData?.ratingCount || 0,
-        categories: newCategories.filter(Boolean),
-      })
-    );
+    updateCreatorProfile(newCategories);
   };
 
   // Filter out already selected categories for each dropdown
