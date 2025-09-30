@@ -1,5 +1,6 @@
 import apiSlice from '../../../api/apiSlice';
 import type { Filters, Product } from '../../../types';
+import type { ProductPayload } from '../../product Idea & AI/slices/aiProductTypes';
 
 // Utility to create product tags for RTK Query
 function getProductTags(result: Product[] | undefined) {
@@ -112,6 +113,13 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
+    createEmbedding: builder.mutation<number[], Partial<ProductPayload>>({
+      query: (product) => ({
+        url: '/products/embedding',
+        method: 'POST',
+        body: { product },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -124,4 +132,5 @@ export const {
   useDeleteProductMutation,
   useGetProductByIdQuery,
   useGetSimilarProductsQuery,
+  useCreateEmbeddingMutation,
 } = marketplaceApiSlice;

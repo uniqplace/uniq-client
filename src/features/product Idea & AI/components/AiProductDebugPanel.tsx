@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bot, User, Lock } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../../hooks/hooks";
 import type { RootState } from "../../../store";
@@ -18,10 +18,9 @@ import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../../marketplace/slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
-import { useGetSimilarProductsQuery } from "../../marketplace/slices/productApiSlice";
+import { useCreateEmbeddingMutation, useGetSimilarProductsQuery } from "../../marketplace/slices/productApiSlice";
 import SimilarProductsCarousel from "./SimilarProductsCarousel";
 import { ProgressSpinner } from "primereact/progressspinner";
-
 export default function AiProductDebugPanel() {
   const dispatch = useAppDispatch();
   const aiProduct = useAppSelector((state: RootState) => state.aiProduct);
@@ -59,6 +58,7 @@ export default function AiProductDebugPanel() {
   const [editProduct, setEditProduct] = useState<any>(null);
   const toast = useRef<Toast>(null);
   const [embedding, setEmbedding] = useState<number[]>([]);
+  const [createEmbedding]=useCreateEmbeddingMutation() 
   const { data: products = [], isLoading } = useGetSimilarProductsQuery(
     embedding, 
     {
@@ -66,6 +66,20 @@ export default function AiProductDebugPanel() {
     }
   );
 
+  useEffect(() => {
+    if (aiProduct) {
+      createEmbedding(aiProduct )
+        .unwrap()
+        .then((res) => {
+          console.log("Embedding created:", res);
+          setEmbedding(res);
+        })
+        .catch((err) => {
+          console.error("Error creating embedding:", err);
+        });
+    }
+  }, [aiProduct, createEmbedding])
+  
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -75,7 +89,8 @@ export default function AiProductDebugPanel() {
       localStorage.setItem("aiProductChat", JSON.stringify(messages));
     } catch (e) { }
   }
-
+  console.log('massages:', messages)
+  console.log('aiProduct:', aiProduct);
   const handleSend = () => {
     if (!userText.trim()) return;
     setMessages((msgs) => {
@@ -85,10 +100,7 @@ export default function AiProductDebugPanel() {
     });
     if (messages.length === 0) {
       dispatch(generateDraft({ userText })).then((res: any) => {
-        if (res?.payload) {
-          if (res.payload.embedding) {
-            setEmbedding(res.payload.embedding);  
-          }    
+        if (res?.payload) {   
           const aiMsg = res.payload.chat || res.payload.aiResponse;
           if (aiMsg) {
             setMessages((msgs) => {
@@ -102,9 +114,6 @@ export default function AiProductDebugPanel() {
     } else {
       dispatch(refineSpec({ userInstruction: userText, params: aiProduct.params })).then((res: any) => {
         if (res?.payload) {
-             if (res.payload.embedding) {
-            setEmbedding(res.payload.embedding);  
-          } 
           const aiMsg = res.payload.chat || res.payload.aiResponse;
           if (aiMsg) {
             setMessages((msgs) => {
