@@ -199,18 +199,7 @@ const NotificationBell = () => {
                   )}
                 </div>
               )}
-              {/* <div className="px-4 pb-4 pt-2 border-t border-gray-200">
-                {(user.role === 'admin' || user.role === 'manufacturer') && (
-                  <Button
-                    label="Show all bid request notifications"
-                    className="w-full p-button-sm p-button-info"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/myBidRequestsNotifications');
-                    }}
-                  />
-                )}
-              </div> */}
+        
             </div>
           </div>
         )}

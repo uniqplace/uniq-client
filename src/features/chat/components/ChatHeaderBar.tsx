@@ -1,15 +1,9 @@
 import { ChannelHeader } from 'stream-chat-react';
 import MenuDropdown from './MenuDropdown';
-import { useNavigate } from 'react-router-dom';
 import type { ThreadContext } from '../chatSlice';
 import type { Channel as StreamChannel } from 'stream-chat';
 import type { RootState } from '../../../store';
-// import { ChannelHeader } from 'stream-chat-react';
-// import MenuDropdown from './MenuDropdown';
-// import { useNavigate } from 'react-router-dom';
-// import type { ThreadContext } from '../chatSlice';
-// import type { Channel as StreamChannel } from 'stream-chat';
-// import type { RootState } from '../../../store';
+import ContextTags from './ContextTags';
 import { useSelector } from 'react-redux';
 
 interface ChatHeaderBarProps {
@@ -18,7 +12,6 @@ interface ChatHeaderBarProps {
 }
 
 export default function ChatHeaderBar({ channel, context }: ChatHeaderBarProps) {
-  const navigate = useNavigate();
   const currentThread = useSelector((state: RootState) => state.chat.currentThread);
   const ctx: Partial<ThreadContext> = context ?? currentThread?.context ?? {};
 
@@ -27,31 +20,7 @@ export default function ChatHeaderBar({ channel, context }: ChatHeaderBarProps) 
       <ChannelHeader />
       <div className="flex-1 min-w-0">
         <div className="flex flex-col">
-          <div className="flex flex-wrap gap-1 text-xs text-gray-500 truncate">
-            {ctx.productTitle && (
-              <span className="bg-blue-100 text-blue-800 rounded px-2 py-0.5 font-medium cursor-pointer hover:bg-blue-200">
-                {ctx.productTitle}
-              </span>
-            )}
-            {ctx.bidRequestId && (
-              <span
-                className="bg-green-100 text-green-800 rounded px-2 py-0.5 font-medium cursor-pointer hover:bg-green-200"
-                onClick={() => navigate(`/myBidRequests/${ctx.bidRequestId}`)}
-                title="מעבר לעמוד בקשה"
-              >
-                בקשה: {String(ctx.bidRequestId).slice(-6)}
-              </span>
-            )}
-            {ctx.bidOfferId && (
-              <span
-                className="bg-purple-100 text-purple-800 rounded px-2 py-0.5 font-medium cursor-pointer hover:bg-purple-200"
-                onClick={() => navigate(`/BidOfferDetails/${ctx.bidOfferId}`)}
-                title="מעבר לעמוד הצעה"
-              >
-                הצעה: {String(ctx.bidOfferId).slice(-6)}
-              </span>
-            )}
-          </div>
+          <ContextTags context={ctx} />
         </div>
       </div>
       <MenuDropdown channel={channel} />
