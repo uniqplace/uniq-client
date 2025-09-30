@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../hooks/hooks';
 import { Button } from 'primereact/button';
@@ -12,11 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import FilesUpload from '../../../components/shared/FilesUpload';
 import { useUpdateUserAvatarMutation, useUpdateUserMutation } from '../slices/userApiSlice';
 import ManufacturerFields, { type ManufacturerFieldsRef } from './ManufacturerFields';
+import CreatorFields from './CreatorFields';
 import { roleOptions } from '../../../constants/roles';
 import { useUploadImagesMutation, useDeleteImagesMutation } from '../../../api/apiSlice';
 import { updateManufacturerProfile } from '../slices/manufacturerSlice';
 import { updateUser } from '../slices/userSlice';
-import type { ManufacturerProfile } from '../../../types';
+import type { CreatorProfile, ManufacturerProfile } from '../../../types';
 
 const ProfilePage: React.FC = () => {
   const user = useAppSelector(state => state.user);
@@ -51,6 +51,7 @@ const ProfilePage: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [location, setLocation] = useState('');
   const [availableFrom, setAvailableFrom] = useState('');
+  const [phone, setPhone] = useState('');
   const manufacturerFieldsRef = useRef<ManufacturerFieldsRef>(null);
 
   // Sync state with user on load
@@ -69,6 +70,7 @@ const ProfilePage: React.FC = () => {
     setCategories([]);
     setLocation('');
     setAvailableFrom('');
+    setPhone('');
   }, [user]);
 
   // Reset manufacturer fields if role changes
@@ -78,6 +80,11 @@ const ProfilePage: React.FC = () => {
       setLocation('');
       setAvailableFrom('');
       setServicesOffered([]);
+      setPhone('');
+    }
+    if (formData.role !== 'creator') {
+      setSkills([]);
+      setPortfolioUrls([]);
     }
   }, [formData.role]);
 
@@ -174,22 +181,42 @@ const ProfilePage: React.FC = () => {
     // Save user profile
     try {
       // Build valid manufacturer object if needed
-      let manufacturerObj = null;
+      let manufacturerObj: ManufacturerProfile | null = null;
       if (formData.role === 'manufacturer') {
         manufacturerObj = {
           userId: {
-            _id: user.id || '',
+            id: user.id || '',
             name: formData.name || user.name || '',
             email: user.email || '',
-            avatarUrl: user.avatarUrl || user.avatar || ''
+            avatarUrl: user.avatarUrl || user.avatar || '',
+            role: formData.role || 'manufacturer',
           },
           name: formData.name || user.name || '',
           categories,
           location,
           availableFrom,
           servicesOffered,
-          rating
+          rating,
+          phone
         };
+      }
+
+      if(formData.role === 'creator' && !user.creator) {
+        toast.current?.show({ severity: 'error', summary: 'Validation Error', detail: 'Creator profile data is missing.', life: 3000 });
+        return;
+      }
+      let creatorObj: CreatorProfile | null = null;
+      if(formData.role === 'creator' && user.creator) {
+        creatorObj = {
+          categories: categories.length > 0 ? categories : (user.creator.categories || []),
+          location: user.creator.location || '',
+          phone: user.creator.phone || '',
+          rating: user.creator.rating || 0,
+          ratingCount: user.creator.ratingCount || 0,
+          name: formData.name || user.name || '',
+          userId: user.id || '',
+        };
+        
       }
 
       const actionResult = await updateUserMutation({
@@ -199,7 +226,8 @@ const ProfilePage: React.FC = () => {
         role: formData.role,
         skills: formData.role === 'creator' ? skills : [],
         portfolio: formData.role === 'creator' ? portfolioUrls : [],
-        manufacturer: manufacturerObj
+        manufacturer: manufacturerObj,
+        creator: creatorObj,
       })
       .unwrap();
 
@@ -215,6 +243,7 @@ const ProfilePage: React.FC = () => {
           availableFrom,
           servicesOffered,
           rating,
+          phone
         };
         dispatch(updateManufacturerProfile(manufacturerPayload as ManufacturerProfile));
       }
@@ -309,11 +338,18 @@ const ProfilePage: React.FC = () => {
                   setLocation={setLocation}
                   availableFrom={availableFrom}
                   setAvailableFrom={setAvailableFrom}
+                  phone={phone}
+                  setPhone={setPhone}
                   handleItemChange={handleItemChange}
                   handleAddItem={handleAddItem}
                   handleRemoveItem={handleRemoveItem}
                   disabled={isLoading}
                 />
+              )}
+
+              {/* Creator fields */}
+              {formData.role === 'creator' && editMode && (
+                <CreatorFields initialData={user.creator} />
               )}
 
               {/* Portfolio */}

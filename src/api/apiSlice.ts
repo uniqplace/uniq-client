@@ -18,7 +18,7 @@ const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Product','Category','SubCategory','Order','User','ManufacturerProfile'],
+  tagTypes: ['Product','Category','SubCategory','Order','User','ManufacturerProfile','CreatorProfile'],
   endpoints: (builder) => ({
   
     uploadImages: builder.mutation<string[], FormData>({

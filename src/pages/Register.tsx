@@ -9,10 +9,12 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { RadioButton } from 'primereact/radiobutton';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../features/user/slices/userSlice';
 import Cookies from 'js-cookie';
 import ManufacturerFields from '../features/user/components/ManufacturerFields';
+import CreatorFields from '../features/user/components/CreatorFields';
+import type { RootState } from '../store';
 
 const schema = yup.object({
   firstName: yup
@@ -56,10 +58,12 @@ const Register: React.FC = () => {
   const toast = useRef<Toast>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const creator = useSelector((state: RootState) => state.user.creator);
   const [servicesOffered, setServicesOffered] = useState<string[]>(['']);
   const [categories, setCategories] = useState<string[]>(['']);
   const [location, setLocation] = useState('');
   const [availableFrom, setAvailableFrom] = useState('');
+  const [phone, setPhone] = useState(''); // Added state for phone
 
   const {
     register,
@@ -100,6 +104,15 @@ const Register: React.FC = () => {
           categories,
           location,
           availableFrom,
+          phone,
+        };
+      }
+
+      if (data.role === 'creator') {
+        body.creatorProfile = {
+          location: creator?.location || '',
+          phone: creator?.phone || '',
+          categories: creator?.categories || [],
         };
       }
 
@@ -107,7 +120,7 @@ const Register: React.FC = () => {
       if (res.data.success && res.data.user) {
         const user = res.data.user;
 
-        Cookies.set('token', res.data.token, { expires: 7 });
+        Cookies.set('token', res.data.token, { expires: 7 });        
 
         const safeUser = {
           id: user._id || user.id || null,
@@ -115,7 +128,8 @@ const Register: React.FC = () => {
           email: user.email || '',
           role: user.role || null,
           avatar: user.avatar || null,
-          manufacturer: user.manufacturer || null
+          manufacturer: user.manufacturer || null,
+          creator: user.creatorProfile || user.creator || null,
         };
 
         if (!safeUser.name || !safeUser.email || !safeUser.role) {
@@ -130,7 +144,8 @@ const Register: React.FC = () => {
           email: user.email,
           avatar: user.avatar || null,
           role: user.role || null,
-          manufacturer: user.manufacturer || null
+          manufacturer: user.manufacturer || null,
+          creator: user.creatorProfile || user.creator || null,
         }));
 
         // Register user to Socket.IO
@@ -316,6 +331,8 @@ const Register: React.FC = () => {
               setLocation={setLocation}
               availableFrom={availableFrom}
               setAvailableFrom={setAvailableFrom}
+              phone={phone}
+              setPhone={setPhone}
               handleItemChange={(idx, value, setter) =>
                 setter(prev => prev.map((item, i) => (i === idx ? value : item)))
               }
@@ -324,6 +341,11 @@ const Register: React.FC = () => {
                 setter(prev => prev.filter((_, i) => i !== idx))
               }
             />
+          )}
+
+          {/* Creator-specific fields are only shown if the selected role is 'creator' */}
+          {watchedRole === 'creator' && (
+            <CreatorFields />
           )}
 
           {/* Sign Up Button */}

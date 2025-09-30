@@ -11,6 +11,7 @@ import manufacturerReducer from './features/user/slices/manufacturerSlice';
 import apiSlice from './api/apiSlice';
 import orderSlice from './features/order/slices/orderSlice';
 import aiProductSlice from './features/product Idea & AI/slices/aiProductSlice';
+import creatorProfileReducer from './features/user/slices/creatorSlice';
 
 
 
@@ -28,6 +29,7 @@ export const store = configureStore({
     manufacturer: manufacturerReducer,
     order: orderSlice,
     aiProduct: aiProductSlice,
+    creatorProfile: creatorProfileReducer,
   },
 
 

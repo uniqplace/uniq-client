@@ -33,7 +33,8 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
-import ParentComponent from './features/marketplace/components/ParentComponent';
+import CreatorProfilePage from './features/user/components/CreatorProfilePage';
+import ManufacturerProfilePage from './features/user/components/ManufacturerProfilePage';
 
 
 
@@ -118,6 +119,10 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path='/creator/:creatorId' element={<CreatorProfilePage />} />
+          <Route path='/manufacturer/:manufacturerId' element={<ManufacturerProfilePage />} />
+          <Route path='/customer/:userId' element={<div><i className="pi pi-user" style={{ marginRight: '8px' }}></i>Customer Profile coming soon...</div>} />
+          <Route path="*" element={<div className="p-8 text-center">404 - Page Not Found</div>} />
         </Routes>
       </MainContent>
     </div>
