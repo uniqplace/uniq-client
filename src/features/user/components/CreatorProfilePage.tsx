@@ -127,6 +127,17 @@ const CreatorProfilePage: React.FC = () => {
               <span className="font-semibold text-gray-900 mr-2">Phone:</span>
               <span className="text-gray-700 font-medium">{creatorProfile.phone}</span>
             </div>
+            <div className="flex items-center">
+              <i className="pi pi-list mr-2 text-purple-500"></i>
+              <span className="font-semibold text-gray-900 mr-2">Categories:</span>
+              <span className="text-gray-700 font-medium">
+                {Array.isArray(creatorProfile.categories) && creatorProfile.categories.length > 0
+                  ? creatorProfile.categories
+                    .map(cat => typeof cat === 'string' ? cat : cat.name)
+                    .join(', ')
+                  : 'N/A'}
+              </span>
+            </div>
           </div>
           {/* Rating */}
           <div className="flex flex-col items-center justify-center">
