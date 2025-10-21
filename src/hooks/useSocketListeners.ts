@@ -64,7 +64,7 @@ const useSocketListeners = () => {
       };
 
       socket.on(socket_events.new_bid, handleNewBid);
-       socket.on(socket_events.new_bid_offer, handleNewBidOffer);
+      socket.on(socket_events.new_bid_offer, handleNewBidOffer);
       socket.on(socket_events.general_notification, handleGeneralNotification);
       socket.on(socket_events.bid_sent_confirmation, handleBidSentConfirmation);
       socket.on(socket_events.new_order, handleNewOrder);
@@ -72,7 +72,7 @@ const useSocketListeners = () => {
 
       return () => {
         socket.off(socket_events.new_bid, handleNewBid);
-          socket.on(socket_events.new_bid_offer, handleNewBidOffer);
+        socket.off(socket_events.new_bid_offer, handleNewBidOffer);
         socket.off(socket_events.general_notification, handleGeneralNotification);
         socket.off(socket_events.bid_sent_confirmation, handleBidSentConfirmation);
         socket.off(socket_events.new_order, handleNewOrder);

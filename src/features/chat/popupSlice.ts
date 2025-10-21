@@ -1,9 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-
-interface PopupState {
-  cid: string | null;
-}
+import type { PopupState } from './chatTypes';
 
 const initialState: PopupState = {
   cid: null,

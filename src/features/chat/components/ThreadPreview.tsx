@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useStreamClient } from '../components/ChatProvider';
 import ContextTags from './ContextTags';
+import type { Thread } from '../chatTypes';
 
 export interface ThreadPreviewProps {
-  thread: any;
+  thread: Thread;
   isActive: boolean;
   onSelect: () => void;
   onOpenPopup?: () => void;
@@ -15,6 +16,7 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
   const myId = chatClient?.user?.id ?? chatClient?.userID;
   const [channel, setChannel] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); 
   const [unreadCount, setUnreadCount] = useState(0);
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [isArchived, setIsArchived] = useState(false);
@@ -25,14 +27,22 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
       if (chatClient && thread.streamCid) {
         const [type, id] = thread.streamCid.split(":");
         const ch = chatClient.channel(type, id);
-        await ch.watch();
-        if (isMounted) {
-          setChannel(ch);
-          setLoading(false);
-          // initial values
-          setUnreadCount(typeof ch.countUnread === 'function' ? ch.countUnread() : 0);
-          setLastMessage(ch.state.messages?.slice(-1)[0]);
-          setIsArchived(!!(ch.data && (ch.data as any).isArchived));
+        try {
+          await ch.watch();
+          if (isMounted) {
+            setChannel(ch);
+            setLoading(false);
+            setError(null);
+            // initial values
+            setUnreadCount(typeof ch.countUnread === 'function' ? ch.countUnread() : 0);
+            setLastMessage(ch.state.messages?.slice(-1)[0]);
+            setIsArchived(!!(ch.data && (ch.data as any).isArchived));
+          }
+        } catch (err) {
+          if (isMounted) {
+            setError('שגיאה בטעינת ערוץ הצ׳אט');
+            setLoading(false);
+          }
         }
       }
     }
@@ -83,7 +93,10 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
       onClick={onSelect}
       style={{ cursor: 'pointer' }}
     >
-      {loading ? (
+      {/* מציג הודעת שגיאה אם יש */}
+      {error ? (
+        <div className="text-xs text-red-500">{error}</div>
+      ) : loading ? (
         <div className="text-xs text-gray-400">טוען נתוני …</div>
       ) : (
         <>
@@ -135,7 +148,7 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
           </div>
           {/* מידע נוסף מה-context */}
           <div className="flex flex-col min-w-0 mt-1">
-            <ContextTags context={thread.context} />
+            <ContextTags context={thread.context ?? null} />
             <button
               type="button"
               title="פתח חלון  קטן"

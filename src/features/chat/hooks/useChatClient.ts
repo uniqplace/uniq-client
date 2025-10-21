@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { StreamChat } from 'stream-chat';
 import { issueStreamToken } from '../api/chatApi';
+import { logError } from '../../../utils/logger';
 
 export function useChatClient() {
   const [client, setClient] = useState<StreamChat | null>(null);
@@ -20,7 +21,7 @@ export function useChatClient() {
         await c.connectUser({ id: userId }, token);
         if (!cancelled) setClient(c);
       } catch (e) {
-        console.error('[useChatClient] connect failed:', e);
+        logError('[useChatClient] connect failed:', e);
       } finally {
         connecting.current = false;
       }
@@ -30,7 +31,7 @@ export function useChatClient() {
 
     return () => {
       cancelled = true;
-      if (client) {
+      if (client && client.user) {
         client.disconnectUser().catch(() => {});
       }
     };

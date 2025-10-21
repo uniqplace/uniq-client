@@ -1,9 +1,5 @@
-import { Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Card } from 'primereact/card';
-import { Avatar } from 'primereact/avatar';
-import { Badge } from 'primereact/badge';
-import { Rating } from 'primereact/rating';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -49,59 +45,8 @@ import ManufacturerProfilePage from './features/user/components/ManufacturerProf
 
 
 
-function UserProfile() {
-  const { id } = useParams<{ id: string }>();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    // דוגמה: שליפת פרופיל מהשרת (להחליף ב-API שלך)
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/users/${id}`)
-      .then((res) => res.json())
-      .then((data) => setProfile(data))
-      .catch(() => setProfile(null))
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  if (loading) return <div className="p-8 text-center">טוען פרופיל...</div>;
-  if (!profile) return <div className="p-8 text-center text-red-500">לא נמצא פרופיל למשתמש {id}</div>;
-
-  return (
-    <div className="p-4 flex justify-center">
-      <Card title="פרופיל משתמש" className="w-full max-w-xl">
-        <div className="flex flex-col items-center gap-3">
-          <Avatar
-            image={profile.avatarUrl}
-            label={(!profile.avatarUrl && (profile.name?.[0] || profile.email?.[0] || '?').toUpperCase()) || undefined}
-            size="xlarge"
-            shape="circle"
-            className="mb-3"
-          />
-          <div className="font-semibold text-lg">{profile.name || profile.email || profile.id}</div>
-          <div className="text-gray-500">{profile.email}</div>
-          {profile.role && (
-            <Badge value={profile.role} className="bg-blue-100 text-blue-800" style={{ direction: 'rtl' }}></Badge>
-          )}
-          {typeof profile.rating === 'number' && (
-            <div className="flex items-center gap-2">
-              <span>דירוג:</span>
-              <Rating value={profile.rating} readOnly cancel={false} stars={5} />
-              <span className="text-yellow-600">({profile.rating})</span>
-            </div>
-          )}
-          {Array.isArray(profile.followers) && (
-            <div className="flex items-center gap-2">
-              <span>עוקבים:</span>
-              <Badge value={profile.followers.length} severity="info" />
-            </div>
-          )}
-        </div>
-      </Card>
-    </div>
-  );
-}
+// UserProfile extracted to its own component
+import UserProfile from './components/shared/UserProfile';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();

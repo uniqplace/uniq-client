@@ -7,7 +7,9 @@ import ChatPopup from '../components/ChatPopup';
 import { useSelector, useDispatch } from 'react-redux';
 import { openPopup, closePopup } from '../popupSlice';
 import { useEffect} from 'react';
-import { fetchThreads, selectThreads, threadByCid } from '../chatSlice';
+import { fetchThreads, threadByCid } from '../chatThunks';
+import { selectThreads } from '../chatSelectors';
+import type { Thread } from '../chatTypes';
 import type { AppDispatch } from '../../../store';
 import ThreadPreview from '../components/ThreadPreview';
 
@@ -30,12 +32,11 @@ export default function ThreadsPage() {
 
   return (
     <Chat client={chatClient}>
-      {/* רשימת ת'רדים בלבד */}
       <div className="h-[80vh] border rounded overflow-y-auto bg-white">
         {threads.length === 0 && (
           <div className="p-4 text-gray-400">אין שיחות</div>
         )}
-        {threads.map((thread: any) => (
+  {threads.map((thread: Thread) => (
           <ThreadPreview
             key={thread._id}
             thread={thread}
@@ -59,4 +60,3 @@ export default function ThreadsPage() {
 }
 
 
-// ThreadPreview was moved to components/ThreadPreview.tsx

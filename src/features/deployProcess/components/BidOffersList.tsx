@@ -11,7 +11,8 @@ import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
 import NormalizedRating from '../../../components/shared/NormalizedRating';
-import { openDirectChat, selectEnsuring } from '../../chat/chatSlice';
+import { openDirectChat } from '../../chat/chatThunks';
+import { selectEnsuring } from '../../chat/chatSelectors';
 import { openPopup } from '../../chat/popupSlice';
 
 
@@ -80,7 +81,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
       navigate(`/chat/${encodeURIComponent(cid)}`);
     } catch (err) {
       console.error('[BidOffersList] openDirectChat failed:', err);
-      // Toast במידת הצורך
     }
   };
 

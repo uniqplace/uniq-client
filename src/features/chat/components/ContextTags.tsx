@@ -1,9 +1,17 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface ContextTagsProps {
-  context: any;
+export interface Context {
+  productTitle?: string | null;
+  bidRequestId?: string | number | null;
+  bidOfferId?: string | number | null;
 }
+
+interface ContextTagsProps {
+  context: Context | null;
+}
+
 
 const ContextTags: React.FC<ContextTagsProps> = ({ context }) => {
   const navigate = useNavigate();

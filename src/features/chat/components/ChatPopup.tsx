@@ -6,15 +6,17 @@ interface ChatPopupProps {
   size?: { width: number; height: number };
 }
 
-const defaultSize = { width: 700, height: 480 };
-const minWidth = 500;
-const minHeight = 320;
-const maxWidth = 1100;
-const maxHeight = 700;
+import {
+  CHAT_POPUP_DEFAULT_SIZE,
+  CHAT_POPUP_MIN_WIDTH,
+  CHAT_POPUP_MIN_HEIGHT,
+  CHAT_POPUP_MAX_WIDTH,
+  CHAT_POPUP_MAX_HEIGHT,
+} from '../hooks/chatPopup.constants';
 
 export default function ChatPopup({ cid, onClose, size }: ChatPopupProps) {
   if (!cid) return null;
-  const popupSize = size || defaultSize;
+  const popupSize = size || CHAT_POPUP_DEFAULT_SIZE;
   return (
     <>
       {/* Overlay with blur */}
@@ -31,10 +33,10 @@ export default function ChatPopup({ cid, onClose, size }: ChatPopupProps) {
           width: popupSize.width,
           height: popupSize.height,
           transform: 'translate(-50%, -50%)',
-          minWidth: minWidth,
-          minHeight: minHeight,
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
+          minWidth: CHAT_POPUP_MIN_WIDTH,
+          minHeight: CHAT_POPUP_MIN_HEIGHT,
+          maxWidth: CHAT_POPUP_MAX_WIDTH,
+          maxHeight: CHAT_POPUP_MAX_HEIGHT,
           borderRadius: '1.25rem',
         }}
       >
@@ -43,7 +45,7 @@ export default function ChatPopup({ cid, onClose, size }: ChatPopupProps) {
           <button
             className="text-gray-400 hover:text-gray-700 text-2xl"
             onClick={onClose}
-            title="סגור חלון"
+            title="Close window"
           >✕</button>
         </div>
         <div className="flex-1 min-h-0">

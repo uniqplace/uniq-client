@@ -188,7 +188,6 @@ const NotificationBell = () => {
                       <div className="p-2 border-b text-sm cursor-pointer flex items-center gap-2">
                         <Tag
                           value={eventIcons[notification.type?.toLowerCase()] || ''}
-
                           style={{ marginRight: '8px', fontSize: '1.2em', background: '#E0E7FF', color: '#3730A3', borderRadius: '50%', padding: '0.5em' }}
                         />
                         <span className={notification.isRead ? '' : 'font-bold'}>{notification.title}</span>

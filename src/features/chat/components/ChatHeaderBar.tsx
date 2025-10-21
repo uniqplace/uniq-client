@@ -1,10 +1,9 @@
 import { ChannelHeader } from 'stream-chat-react';
 import MenuDropdown from './MenuDropdown';
-import type { ThreadContext } from '../chatSlice';
+import type { ThreadContext } from '../chatTypes';
 import type { Channel as StreamChannel } from 'stream-chat';
-import type { RootState } from '../../../store';
 import ContextTags from './ContextTags';
-import { useSelector } from 'react-redux';
+import { useChatHeaderContext } from '../hooks/useChatHeaderContext';
 
 interface ChatHeaderBarProps {
   channel: StreamChannel;
@@ -12,8 +11,7 @@ interface ChatHeaderBarProps {
 }
 
 export default function ChatHeaderBar({ channel, context }: ChatHeaderBarProps) {
-  const currentThread = useSelector((state: RootState) => state.chat.currentThread);
-  const ctx: Partial<ThreadContext> = context ?? currentThread?.context ?? {};
+  const ctx = useChatHeaderContext(context);
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 border-b bg-white min-h-[56px]">

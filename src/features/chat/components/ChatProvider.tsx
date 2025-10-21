@@ -17,7 +17,7 @@ type Status = 'idle' | 'connecting' | 'ready' | 'error';
 const StreamClientCtx = createContext<StreamChat | null>(null);
 export const useStreamClient = (): StreamChat | null => useContext(StreamClientCtx);
 
-/** Banner סטיקי למצב חיבור */
+// Sticky banner for connection status
 function ConnectionBanner({ online }: { online: boolean | null }) {
   if (online === null || online === true) return null;
   return (
@@ -27,7 +27,7 @@ function ConnectionBanner({ online }: { online: boolean | null }) {
   );
 }
 
-/** Overlay פשוט ל-Loading/Error */
+// Simple overlay for loading/error
 function StatusOverlay({
   mode,
   message,
@@ -69,7 +69,7 @@ export default function ChatProvider({ children }: PropsWithChildren) {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
-  const [epoch, setEpoch] = useState(0); // לשחזור התחברות בלחיצת Retry
+  const [epoch, setEpoch] = useState(0); // for reconnect on Retry
   const connecting = useRef(false);
   const mounted = useRef(true);
 
@@ -88,7 +88,7 @@ export default function ChatProvider({ children }: PropsWithChildren) {
         const { apiKey, userId, token } = await issueStreamToken();
         const c = StreamChat.getInstance(apiKey);
 
-        // מאזינים לשינויי חיבור
+      // Listen to connection changes
         c.on('connection.changed', (e) => {
           if (!mounted.current) return;
           setOnline(!!e.online);
@@ -122,17 +122,17 @@ export default function ChatProvider({ children }: PropsWithChildren) {
         return null;
       });
     };
-    // epoch מאפשר Retry נקי
+  // epoch enables clean Retry
   }, [epoch]);
 
 //  const ready = useMemo(() => status === 'ready' && !!client, [status, client]);
 
-  // מצב טעינה
+  // Loading state
   if (status === 'idle' || status === 'connecting') {
     return <StatusOverlay mode="loading" />;
   }
 
-  // מצב שגיאה + Retry
+  // Error state + Retry
   if (status === 'error' || !client) {
     return <StatusOverlay mode="error" message={error ?? undefined} onRetry={retry} />;
   }
