@@ -68,6 +68,7 @@ export interface Address {
   state: string;
   zipCode: string;
   country: string;
+  [key: string]: string | undefined; // Ensure all keys are strings and values are strings or undefined
 }
 
 // 6. Payment

@@ -75,7 +75,6 @@ export default function AiProductDebugPanel() {
       return newMsgs;
     });
     if (messages.length === 0) {
-      console.log("first message, generating draft🤷‍♂️🤷‍♂️🤷‍♂️🤷‍♂️");
       
       dispatch(generateDraft({ userPrompt: userText, files })).then((res: any) => {
         if (res?.payload) {

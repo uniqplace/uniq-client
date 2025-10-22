@@ -47,10 +47,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const toast = useRef<Toast>(null);
   const currentOrder = location.state?.order as Order;
   const product: Product = props.product || productFromState || currentOrder?.product;
-  const productPrice = props.price || product?.price || 0;
+  const productPrice = props.price !== undefined ? props.price : product?.price || 0;
 
-  // Initialize order state, using props.order if provided
   const initialQuantity = 1;
+
   const [order, setOrder] = useState<Order>(() => {
     const fallbackProduct: Product = product || {
       _id: '',
@@ -66,6 +66,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       createdAt: '',
       updatedAt: '',
     };
+
     if (currentOrder) {
       return {
         ...currentOrder,
@@ -75,15 +76,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
         product: currentOrder.product || fallbackProduct,
       };
     }
+
     return {
       _id: '',
-      productId: product?._id||fallbackProduct._id,
+      productId: product?._id || fallbackProduct._id,
       buyerId: user.id,
       creator: props.creator
         ? { name: props.creator.name, _id: props.creator._id }
         : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
       status: 'pending',
-      totalAmount: productPrice*initialQuantity,
+      totalAmount: productPrice * initialQuantity,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',
@@ -94,39 +96,83 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     };
   });
 
-  // Sync order state with props.order if it changes
-  useEffect(() => {
-    if (currentOrder) {
-      setOrder(prev => ({
-        ...prev,
-        ...currentOrder,
-        productId: currentOrder.productId || product?._id || '',
-        buyerId: currentOrder.buyerId || user.id,
-        creator: currentOrder.creator || { name: product?.creator.name || '', _id: product?.creator._id || '' },
-        product: currentOrder.product || {
-          _id: product?._id || '',
-          title: product?.title || '',
-          images: product?.images || [],
-          creatorName: product?.creator.name || '',
-        },
-      }));
-    }
-  }, [currentOrder, product, user.id]);
-
   const [shipping, setShipping] = useState<string>('standard');
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
   const [createOrder] = useCreateOrderMutation();
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
-  //Update total amount
+  // 💰 מחשב totalAmount בכל שינוי רלוונטי (לא יתאפס לעולם)
   useEffect(() => {
-    if (product) {
-      const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
-      const totalAmount = productPrice * order.quantity + shippingPrice;
+    if (!product || !productPrice || !order?.quantity) return;
+
+    const shippingPrice =
+      SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
+    const totalAmount = productPrice * order.quantity + shippingPrice;
+
+    if (order.totalAmount !== totalAmount) {
       setOrder(prev => ({ ...prev, totalAmount }));
     }
-  }, [product, order.quantity, shipping]);
+  }, [product, productPrice, order.quantity, shipping]);
+
+  // 🚫 מונע דריסה של הזמנה קיימת מה־localStorage
+  useEffect(() => {
+    const savedOrder = JSON.parse(localStorage.getItem('currentOrder') || 'null');
+    if (savedOrder && !order._id) {
+      setOrder(savedOrder);
+    }
+  }, []);
+
+  // 💾 שמירת order ל-localStorage רק אם קיים מוצר
+  useEffect(() => {
+    if (order && order.productId) {
+      localStorage.setItem('currentOrder', JSON.stringify(order));
+    }
+  }, [order]);
+
+  // 🧭 מצב readOnly רק אחרי הזמנה שהושלמה
+  useEffect(() => {
+    const savedOrder = JSON.parse(localStorage.getItem('completedOrder') || 'null');
+    if (savedOrder) {
+      setIsReadOnly(true);
+    }
+  }, []);
+
+  // טעינת פרטי ההזמנה הקודמת אם המשתמש חוזר לאחר סיום
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      const savedOrder = JSON.parse(localStorage.getItem('completedOrder') || 'null');
+      if (savedOrder) {
+        setOrder(savedOrder);
+        return;
+      }
+
+      try {
+        const orderId = localStorage.getItem('currentOrderId') || '';
+        const token = localStorage.getItem('token') || '';
+        if (!orderId || !token) return;
+
+        const response = await fetch(`http://localhost:5002/api/orders/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          if (contentType?.includes('application/json')) {
+            const fetchedOrder = await response.json();
+            setOrder(fetchedOrder);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch order details:', error);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [user.id]);
 
   const handlePay = async () => {
     setSubmitted(true);
@@ -146,6 +192,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     try {
       await createOrder(order).unwrap();
       dispatch(addOrder(order));
+      localStorage.setItem('completedOrder', JSON.stringify(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
       if (props.onOrderSuccess) props.onOrderSuccess();
     } catch {
@@ -169,8 +216,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
             submitted={submitted}
             formErrors={formErrors}
             product={product}
+            readOnly={isReadOnly}
           />
         </div>
+
         <div className='right-side'>
           <OrderSummary
             order={order}
@@ -180,6 +229,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
           <Button label="Pay Now" onClick={handlePay} className="mt-4 w-full" />
         </div>
       </div>
+
       <Payment
         isVisible={paymentDialog}
         onSave={addNewOrder}
@@ -190,5 +240,3 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     </div>
   );
 };
-
-

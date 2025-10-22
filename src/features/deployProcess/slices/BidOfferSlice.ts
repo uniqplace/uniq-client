@@ -29,12 +29,16 @@ export const fetchBidOffersByRequest = createAsyncThunk(
       const { bidRequestId, sort } = params;
       const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
+      console.log('[fetchBidOffersByRequest] Sending request to:', url);
       const response = await axios.get(url, {
         withCredentials: true,
       });
+      console.log('[fetchBidOffersByRequest] Full response:', response);
+      console.log('[fetchBidOffersByRequest] Response data:', response.data);
       // The response is { success, data: [...] }
       return response.data.data || [];
     } catch (error: any) {
+      console.error('[fetchBidOffersByRequest] Error occurred:', error);
       return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');
     }
   }
@@ -95,7 +99,17 @@ const bidOfferSlice = createSlice({
     },
     setCurrentBidOffer:(state,action)=>{
       state.currentBidOffer=action.payload;
-    }
+    },
+    persistSelectedBidOffer: (state, action) => {
+      state.currentBidOffer = action.payload;
+      localStorage.setItem('selectedBidOffer', JSON.stringify(action.payload));
+    },
+    loadPersistedBidOffer: (state) => {
+      const persistedOffer = localStorage.getItem('selectedBidOffer');
+      if (persistedOffer) {
+        state.currentBidOffer = JSON.parse(persistedOffer);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -113,14 +127,17 @@ const bidOfferSlice = createSlice({
       })
       // Fetch offers by bidRequestId
       .addCase(fetchBidOffersByRequest.pending, (state) => {
+        console.log('Fetching bid offers: pending...');
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchBidOffersByRequest.fulfilled, (state, action) => {
+        console.log('Fetching bid offers: fulfilled!', action.payload);
         state.loading = false;
         state.offers = action.payload;
       })
       .addCase(fetchBidOffersByRequest.rejected, (state, action) => {
+        console.log('Fetching bid offers: rejected!', action.payload);
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -154,6 +171,6 @@ const bidOfferSlice = createSlice({
   },
 });
 
-export const { resetBidOffer, setCurrentBidOffer } = bidOfferSlice.actions;
+export const { resetBidOffer, setCurrentBidOffer, persistSelectedBidOffer, loadPersistedBidOffer } = bidOfferSlice.actions;
 
 export default bidOfferSlice.reducer;

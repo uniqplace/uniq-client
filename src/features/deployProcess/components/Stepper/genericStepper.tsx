@@ -28,8 +28,6 @@ interface GenericStepperProps {
 }
 
 const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = stepsConfig, createNewProduct }) => {
-  // כל ה-hooks תמיד בראש הקומפוננטה
-  // הסרתי את useInitProduct - productId מגיע מההורה
   const stepperState = useAppSelector(state => {
     const products = state.stepper.productsInProgress;
     return productId ? products[productId] : undefined;
@@ -51,7 +49,6 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
  
 
 
-  // כל ה-useEffect-ים ממוקמים אחרי כל ההגדרות
   useEffect(() => {
     if (!productId || !product || !product.CreationStatus || loading) return;
     const idx = steps.findIndex(s => s.title === product.CreationStatus);
@@ -59,7 +56,6 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
       const completedArr = steps.map((_, i) => i < idx);
       dispatch({ type: 'stepper/setCompletedSteps', payload: { productId, completed: completedArr } });
       dispatch(setCurrentStepIndex({ productId, stepIndex: idx }));
-      // ניווט רק אם ה-stepKey ב-URL שונה מהשלב הנוכחי
       if (stepKey !== steps[idx].key) {
         navigate(`/create-your-own-product/${productId}/${steps[idx].key}`, { replace: true });
       }
@@ -101,7 +97,6 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
     return <ProgressSpinner />;
   }
 
-  // הגדרת navigateToNextStep
   const navigateToNextStep = () => {
     if (safeStepIndex === undefined) return;
     if (safeStepIndex === steps.length - 1) {
@@ -151,14 +146,14 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
 
   const currentStepKey = safeStepIndex !== undefined ? steps[safeStepIndex]?.key : undefined;
 
-  // baseStepProps במקום אחד בלבד
+
   const baseStepProps = {
     product,
     productId,
     onComplete: () => setCanGoNext(true),
     setCanGoNext,
-    currentStepIndex: safeStepIndex, // הוספה כאן
-    onNextStep: handleCompleteStep, // העברת handleCompleteStep כ-prop
+    currentStepIndex: safeStepIndex, 
+    onNextStep: handleCompleteStep, 
   };
 
   let renderedStep = null;

@@ -1,5 +1,5 @@
 export const defaultProductTemplate = {
-  title: 'יStyleMe',
+  title: 'checking 8',
   description: 'This is a hardcoded product',
   price: 100,
   images: [],

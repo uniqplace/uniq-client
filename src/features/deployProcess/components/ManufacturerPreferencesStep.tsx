@@ -17,7 +17,6 @@ import type { Category } from '../../../types';
 import { useAppSelector } from '../../../hooks/hooks';
 import type { StepProps } from "./Stepper/steps";
 import NormalizedRating from '../../../components/shared/NormalizedRating';
-import { useBidRequestId } from '../../../hooks/useBidRequestId';
 
 const priceRangeMin = 0;
 const priceRangeMax = 1000;
@@ -64,9 +63,9 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
   return categoryId ?? null;
 }
 
-const ManufacturerPreferencesStep: React.FC<StepProps & { onNextStep?: () => void }> = ({ onComplete, setCanGoNext, productId, currentStepIndex, onNextStep }) => {
+const ManufacturerPreferencesStep: React.FC<StepProps & { currentStepIndex?: number;onNextStep?: () => void }> = ({ onComplete, setCanGoNext, productId, currentStepIndex, onNextStep }) => {
   const isInitializing = useRef(false);
-  const [isBidOpened, setIsBidOpened] = useState(false);
+ // const [isBidOpened, setIsBidOpened] = useState(false);
 
   // קבלת bidRequest מה-Redux לפי productId מה-props
   const bidRequest = useAppSelector(state => productId ? state.stepper.productsInProgress[productId]?.bidRequest : undefined);
@@ -248,7 +247,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps & { onNextStep?: () => voi
         showSuccessToast(toast, 'Bid request opened successfully.');
         setCanGoNext && setCanGoNext(true);
         onComplete && onComplete();
-        setIsBidOpened(true);
+        //setIsBidOpened(true);
         if (onNextStep) {
           console.log('onNextStep called from ManufacturerPreferencesStep');
           onNextStep(); // מעבר אוטומטי לשלב הבא

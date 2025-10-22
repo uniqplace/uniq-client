@@ -9,8 +9,9 @@ import AuctionLoadingError from './AuctionLoadingError';
 import { useAppSelector, useAppDispatch } from '../../../../hooks/hooks';
 import type { RootState } from '../../../../store';
 import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
-import type { Product } from '../../../../types';
+import type { BidOffer, Product } from '../../../../types';
 import { fetchBidRequestByProductId } from '../../slices/stepperSlice';
+import { loadPersistedBidOffer } from '../../slices/BidOfferSlice';
 
 export interface StepProps {
   onComplete: (data?: any) => void;
@@ -30,18 +31,33 @@ export interface StepDefinition {
 
 
 export const PaymentAndOrderStep: React.FC<StepProps> = ({ setCanGoNext }) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(loadPersistedBidOffer());
+  }, [dispatch]);
+
   const stepper = useAppSelector((state: RootState) => state.stepper);
-  const bidOffers = useAppSelector((state: RootState) => state.bidOffer.offers);
+  const bidOffers = useAppSelector((state: RootState) => state.bidOffer.offers || []);
   const productId = stepper.currentProductId;
   const productStepper = productId ? stepper.productsInProgress[productId] : undefined;
   const bidRequest = productStepper?.bidRequest;
   const selectedManufacturer = bidRequest?.selectedManufacturer;
   const product: Product | undefined = productStepper?.product ?? undefined;
-  const selectedBidOffer = bidOffers.find(offer => selectedManufacturer && offer.manufacturerId?._id === selectedManufacturer._id);
+  const selectedBidOffer = bidOffers.find((offer: BidOffer) => selectedManufacturer && offer.manufacturerId?._id === selectedManufacturer._id) ||
+    useAppSelector((state: RootState) => state.bidOffer.currentBidOffer) ||
+    JSON.parse(localStorage.getItem('selectedBidOffer') || 'null');
   const [, setOrderSuccess] = useState(false);
+  useEffect(() => {
+    if (selectedBidOffer) {
+      dispatch({ type: 'bidOffer/setCurrentBidOffer', payload: selectedBidOffer });
+    }
+  }, [selectedBidOffer, dispatch]);
   return (
     <div className="p-4">
       <CheckoutPage product={product} creator={{ _id: selectedManufacturer?._id || '', name: selectedManufacturer?.name || '' }} price={selectedBidOffer?.price} onOrderSuccess={() => {
+        console.log("price:", selectedBidOffer?.price);
+        
         setOrderSuccess(true);
         setCanGoNext && setCanGoNext(true);
       }} />
@@ -49,7 +65,7 @@ export const PaymentAndOrderStep: React.FC<StepProps> = ({ setCanGoNext }) => {
   );
 };
 
-export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
+export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="tracking">📦</span>
@@ -63,7 +79,7 @@ export const TrackingAndDeliveryStep: React.FC<StepProps> = ({ onComplete, setCa
   </div>
 );
 
-export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext, productId }) => (
+export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
   <div className="p-4 text-center">
     <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
       <span role="img" aria-label="done">✅</span>

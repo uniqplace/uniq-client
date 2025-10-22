@@ -18,10 +18,20 @@ interface BidOffersListProps {
   setCanGoNext?: (canGo: boolean) => void;
 }
 const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidRequestId, setCanGoNext }) => {
-  // Always allow next step (for now)
+
+  // Manufacturer selection state
+  const [isSelectingManufacturer, setIsSelectingManufacturer] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (setCanGoNext) setCanGoNext(true);
-  }, [setCanGoNext]);
+    if (setCanGoNext) {
+      if (isSelectingManufacturer) {
+        setCanGoNext(!!selectedOfferId);
+      } else {
+        setCanGoNext(false);
+      }
+    }
+  }, [isSelectingManufacturer, selectedOfferId, setCanGoNext]);
   const [bidRequestId, setBidRequestId] = useState<string>(initialBidRequestId);
   const productId = initialBidRequestId; // assume initialBidRequestId is productId if bidRequestId is missing
   const dispatch = useDispatch<AppDispatch>();
@@ -30,10 +40,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
-  const stepper = useSelector((state: RootState) => state.stepper);
-  // Manufacturer selection state
-  const [isSelectingManufacturer, setIsSelectingManufacturer] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+
   const sortOptions = [
     { label: 'By Price', value: 'price' },
     { label: 'By Rating', value: 'rating' },
@@ -70,9 +77,16 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
   // Row click behavior changes depending on selection mode
   const handleRowClick = (offer: BidOffer) => {
     if (isSelectingManufacturer) {
-      // Always pass string or null, never undefined
       if (offer._id) {
-        setSelectedOfferId(offer._id === selectedOfferId ? null : offer._id);
+        const newSelectedOfferId = offer._id === selectedOfferId ? null : offer._id;
+        setSelectedOfferId(newSelectedOfferId);
+
+        // Persist the selected offer in LocalStorage
+        if (newSelectedOfferId) {
+          localStorage.setItem('selectedBidOffer', JSON.stringify(offer));
+        } else {
+          localStorage.removeItem('selectedBidOffer');
+        }
       } else {
         setSelectedOfferId(null);
       }
@@ -207,7 +221,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
                   <div className="md:col-span-4 flex flex-col items-center text-gray-500 truncate text-xs md:text-base text-center mb-1 md:mb-0">
                     <span className="block md:hidden text-xs font-bold text-gray-500 text-center mb-0.5">Response</span>
                     <span>{offer.note || 'No note provided'}</span>
-                  </div> 
+                  </div>
                   {/* Rating */}
                   <div className="md:col-span-2 text-center">
                     <NormalizedRating
@@ -260,9 +274,11 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
             onClick={() => {
               if (isSelectingManufacturer) {
                 setIsSelectingManufacturer(false);
-                setSelectedOfferId(null);
+                setSelectedOfferId(null); 
+                if (setCanGoNext) setCanGoNext(false); 
               } else {
                 setIsSelectingManufacturer(true);
+                if (setCanGoNext) setCanGoNext(false); 
               }
             }}
           />

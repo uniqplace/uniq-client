@@ -44,7 +44,7 @@ const CreatorProductPage: React.FC = () => {
                             localStorage.removeItem('currentProductId');
                             localStorage.removeItem('stepperProductsInProgress');
                             dispatch(setCurrentProductId(null));
-                            navigate('/create-your-own-product/product-definition'); // אין יצירה ידנית, רק ניווט
+                            navigate('/create-your-own-product/product-definition'); 
                         }}
                     />
                 </div>
