@@ -10,7 +10,7 @@ import { useAppSelector, useAppDispatch } from '../../../../hooks/hooks';
 import type { RootState } from '../../../../store';
 import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
 import type { BidOffer, Product } from '../../../../types';
-import { fetchBidRequestByProductId, setCurrentProductId } from '../../slices/stepperSlice';
+import { fetchBidRequestByProductId } from '../../slices/stepperSlice';
 import { loadPersistedBidOffer } from '../../slices/BidOfferSlice';
 
 
