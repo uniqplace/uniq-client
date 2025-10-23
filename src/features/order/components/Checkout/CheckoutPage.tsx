@@ -44,7 +44,22 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const toast = useRef<Toast>(null);
-  const product: Product = props.product || {};
+const product: Product = props.product || {
+  _id: '',
+  title: '',
+  description: '',
+  price: 0,
+  images: [],
+  creator: { _id: '', name: '', followers: 0 },
+  category: { _id: '', name: '' },
+  subCategories: [],
+  status: 'draft',
+  condition: 'new',
+  location: '',
+  tags: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
   const productPrice = props.price !== undefined ? props.price : product?.price || 0;
 
   const initialQuantity = 1;
@@ -117,7 +132,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     try {
       await createOrder(order).unwrap();
       dispatch(addOrder(order));
-      localStorage.setItem('completedOrder', JSON.stringify(order));
+      localStorage.setItem(`completedOrder_${order._id}`, JSON.stringify(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
       if (props.onOrderSuccess) props.onOrderSuccess();
     } catch {
