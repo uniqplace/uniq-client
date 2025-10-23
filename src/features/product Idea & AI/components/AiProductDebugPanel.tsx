@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bot, User, Lock } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../../../hooks/hooks";
 import type { RootState } from "../../../store";
@@ -76,6 +76,17 @@ export default function AiProductDebugPanel() {
     });
     if (messages.length === 0) {
       
+      if (!userText.trim()) {
+        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'User prompt cannot be empty.', life: 3000 });
+        return;
+      }
+
+      const sessionId = aiProduct.sessionId;
+      if (!sessionId) {
+        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Session ID is missing. Please try again.', life: 3000 });
+        return;
+      }
+
       dispatch(generateDraft({ userPrompt: userText, files })).then((res: any) => {
         if (res?.payload) {
           const aiMsg = res.payload.chat || res.payload.aiResponse;
@@ -112,12 +123,12 @@ export default function AiProductDebugPanel() {
   const conditionOptions = ["new", "like_new", "good", "fair", "poor"];
 
   // Fetch categories from API
-  const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetAllCategoriesQuery();
+  const { data: categoriesResponse} = useGetAllCategoriesQuery();
   const categories: Category[] = categoriesResponse?.data || [];
 
   // Fetch subCategories from API based on selected category
   const selectedCategoryId = editProduct?.category || '';
-  const { data: subCategoriesResponse, isLoading: loadingSubCategories, error: subCategoriesError } = useGetSubCategoriesByCategoryQuery(selectedCategoryId, { skip: !selectedCategoryId });
+  const { data: subCategoriesResponse,} = useGetSubCategoriesByCategoryQuery(selectedCategoryId, { skip: !selectedCategoryId });
   const subCategories: SubCategory[] = subCategoriesResponse || [];
 
   // Validation for required fields
@@ -396,6 +407,7 @@ export default function AiProductDebugPanel() {
             onClick={() => {
               if (aiProduct.params.length === 0) return;
               setEditProduct({
+                ...aiProduct,
                 title: aiProduct.title || "AI Generated Product",
                 description: aiProduct.description || "This product was created using AI assistance.",
                 price: aiProduct.price,
@@ -410,6 +422,13 @@ export default function AiProductDebugPanel() {
                 params: aiProduct.params,
                 createdByAI: aiProduct.createdByAI || true,
                 aiVersion: aiProduct.aiVersion,
+                productPayload: {
+                  title: aiProduct.title,
+                  description: aiProduct.description,
+                  price: aiProduct.price,
+                  images: aiProduct.images,
+                  params: aiProduct.params,
+                },
               });
               setShowConfirmDialog(true);
             }}
@@ -437,7 +456,11 @@ export default function AiProductDebugPanel() {
                   setShowConfirmDialog(false);
                   try {
                     const lockRes = await dispatch(
-                      lockSpec({ productData: editProduct })
+                      lockSpec({ 
+                        category: editProduct.category, // Replace with the actual category
+                        productPayload: editProduct.productPayload, // Replace with the actual product payload
+                        productData: editProduct 
+                      })
                     );
                     if (lockRes?.payload?.success) {
                       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Your product has been saved and locked successfully!', life: 4000 });

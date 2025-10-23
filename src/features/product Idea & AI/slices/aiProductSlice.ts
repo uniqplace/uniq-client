@@ -117,27 +117,28 @@ const aiProductSlice = createSlice({
       })
       .addCase(generateDraft.fulfilled, (state, action) => {
         state.status = "idle";
-        state.params = action.payload.params;
-        state.summary = action.payload.summary;
-        state.category = action.payload.category;
-        state.aiVersion = action.payload.aiVersion;
-        state.title = action.payload.title || "";
-        state.description = action.payload.description || "";
-        state.price = action.payload.price || 0;
-        state.images = action.payload.images || [];
-        state.subCategories = action.payload.subCategories || [];
-        state.condition = action.payload.condition || "new";
-        state.location = action.payload.location || "";
-        state.tags = action.payload.tags || [];
-        state.locale = action.payload.locale || undefined;
+        const payload = action.payload || {};
+        state.params = payload.params || [];
+        state.summary = payload.summary || "";
+        state.category = payload.category || "";
+        state.aiVersion = payload.aiVersion || "";
+        state.title = payload.title || "";
+        state.description = payload.description || "";
+        state.price = payload.price || 0;
+        state.images = payload.images || [];
+        state.subCategories = payload.subCategories || [];
+        state.condition = payload.condition || "new";
+        state.location = payload.location || "";
+        state.tags = payload.tags || [];
+        state.locale = payload.locale || undefined;
         saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
       })
       .addCase(refineSpec.fulfilled, (state, action) => {
-        state.status = action.payload.status || "idle";
-        state.params = action.payload.params || action.payload.updatedParams;
+        state.status = action.payload?.status || "idle";
+        state.params = action.payload?.params || action.payload?.updatedParams || [];
         state.summary = action.payload.summary;
         state.category = action.payload.category || state.category;
         state.aiVersion = action.payload.aiVersion || state.aiVersion;

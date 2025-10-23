@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import type { Order, Product, User } from '../../../../types';
@@ -40,7 +40,7 @@ interface CheckoutPageProps {
 }
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
-  const location = useLocation();
+  // const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const toast = useRef<Toast>(null);
@@ -104,7 +104,7 @@ const product: Product = props.product || {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
   const [createOrder] = useCreateOrderMutation();
-  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [isReadOnly,] = useState(false);
 
   useEffect(() => {
     if (product && productPrice > 0 && order.quantity > 0) {

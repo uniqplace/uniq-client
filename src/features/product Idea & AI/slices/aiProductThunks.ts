@@ -12,11 +12,16 @@ export const generateDraft = createAsyncThunk(
       if (payload.userPrompt) formData.append("userPrompt", payload.userPrompt);
       payload.files.forEach((file) => formData.append("files", file));
       formData.append("sessionId", sessionId);
+      const requestBody = {
+        userPrompt: payload.userPrompt,
+        sessionId,
+      };
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/ai/spec/draft`,
-        formData,
+        requestBody,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "application/json" },
         }
       );
       return res.data;
@@ -31,7 +36,9 @@ export const refineSpec = createAsyncThunk(
     payload: {
       userPrompt: string;
       productPayload: ProductPayload;
-      files?: File[];  
+      files?: File[];
+      forcedSkips?: string[];
+      forcedKeeps?: string[];
     },
     thunkAPI
   ) => {
@@ -48,11 +55,20 @@ export const refineSpec = createAsyncThunk(
           formData.append("files", file); 
         });
       }
+      const requestBody = {
+        sessionId,
+        userInstruction: payload.userPrompt,
+        params: payload.productPayload.params,
+        forcedSkips: payload.forcedSkips || [],
+        forcedKeeps: payload.forcedKeeps || [],
+        locale: payload.productPayload.locale,
+      };
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/ai/spec/refine`,
-        formData,
+        requestBody,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "application/json" },
         }
       );
       return res.data;
@@ -62,7 +78,10 @@ export const refineSpec = createAsyncThunk(
   });
 export const lockSpec = createAsyncThunk(
   "aiProduct/lockSpec",
-  async (payload: { category: any; productPayload: ProductPayload }, thunkAPI) => {
+  async (
+    payload: { category: any; productPayload: ProductPayload; productData?: any },
+    thunkAPI
+  ) => {
     const state: any = thunkAPI.getState();
     const sessionId = state.aiProduct?.sessionId;
     const userId = state.auth?.userId;
