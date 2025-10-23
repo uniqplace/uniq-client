@@ -13,6 +13,7 @@ import type { BidOffer, Product } from '../../../../types';
 import { fetchBidRequestByProductId } from '../../slices/stepperSlice';
 import { loadPersistedBidOffer } from '../../slices/BidOfferSlice';
 
+
 export interface StepProps {
   onComplete: (data?: any) => void;
   setCanGoNext?: (val: boolean) => void;
