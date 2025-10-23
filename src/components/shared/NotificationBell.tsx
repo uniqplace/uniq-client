@@ -118,7 +118,6 @@ const NotificationBell = () => {
       }
     };
   }, [loaderRef, hasMore, loadMore]);
-   // טעינה אוטומטית כשהרשימה ריקה ויש עוד עמודים
   useEffect(() => {
     if (isOpen && notifications.length === 0 && hasMore && !loading) {
       loadMore();
