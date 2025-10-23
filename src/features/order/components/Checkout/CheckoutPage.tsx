@@ -43,10 +43,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
-  const productFromState = location.state?.product;
   const toast = useRef<Toast>(null);
-  const currentOrder = location.state?.order as Order;
-  const product: Product = props.product || productFromState || currentOrder?.product;
+  const product: Product = props.product || {};
   const productPrice = props.price !== undefined ? props.price : product?.price || 0;
 
   const initialQuantity = 1;
@@ -66,16 +64,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       createdAt: '',
       updatedAt: '',
     };
-
-    if (currentOrder) {
-      return {
-        ...currentOrder,
-        productId: currentOrder.productId || fallbackProduct._id,
-        buyerId: currentOrder.buyerId || user.id,
-        creator: currentOrder.creator || { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
-        product: currentOrder.product || fallbackProduct,
-      };
-    }
 
     return {
       _id: '',
@@ -103,76 +91,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const [createOrder] = useCreateOrderMutation();
   const [isReadOnly, setIsReadOnly] = useState(false);
 
-  // 💰 מחשב totalAmount בכל שינוי רלוונטי (לא יתאפס לעולם)
   useEffect(() => {
-    if (!product || !productPrice || !order?.quantity) return;
-
-    const shippingPrice =
-      SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
-    const totalAmount = productPrice * order.quantity + shippingPrice;
-
-    if (order.totalAmount !== totalAmount) {
+    if (product && productPrice > 0 && order.quantity > 0) {
+      const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
+      const totalAmount = productPrice * order.quantity + shippingPrice;
       setOrder(prev => ({ ...prev, totalAmount }));
     }
   }, [product, productPrice, order.quantity, shipping]);
-
-  // 🚫 מונע דריסה של הזמנה קיימת מה־localStorage
-  useEffect(() => {
-    const savedOrder = JSON.parse(localStorage.getItem('currentOrder') || 'null');
-    if (savedOrder && !order._id) {
-      setOrder(savedOrder);
-    }
-  }, []);
-
-  // 💾 שמירת order ל-localStorage רק אם קיים מוצר
-  useEffect(() => {
-    if (order && order.productId) {
-      localStorage.setItem('currentOrder', JSON.stringify(order));
-    }
-  }, [order]);
-
-  // 🧭 מצב readOnly רק אחרי הזמנה שהושלמה
-  useEffect(() => {
-    const savedOrder = JSON.parse(localStorage.getItem('completedOrder') || 'null');
-    if (savedOrder) {
-      setIsReadOnly(true);
-    }
-  }, []);
-
-  // טעינת פרטי ההזמנה הקודמת אם המשתמש חוזר לאחר סיום
-  useEffect(() => {
-    const fetchOrderDetails = async () => {
-      const savedOrder = JSON.parse(localStorage.getItem('completedOrder') || 'null');
-      if (savedOrder) {
-        setOrder(savedOrder);
-        return;
-      }
-
-      try {
-        const orderId = localStorage.getItem('currentOrderId') || '';
-        const token = localStorage.getItem('token') || '';
-        if (!orderId || !token) return;
-
-        const response = await fetch(`http://localhost:5002/api/orders/${orderId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          if (contentType?.includes('application/json')) {
-            const fetchedOrder = await response.json();
-            setOrder(fetchedOrder);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch order details:', error);
-      }
-    };
-
-    fetchOrderDetails();
-  }, [user.id]);
 
   const handlePay = async () => {
     setSubmitted(true);
