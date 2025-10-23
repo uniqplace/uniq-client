@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-// import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import type { Order, Product, User } from '../../../../types';
@@ -40,28 +40,19 @@ interface CheckoutPageProps {
 }
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
-  // const location = useLocation();
+  const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const buyerId = user.id;
   const toast = useRef<Toast>(null);
-  const product: Product = props.product || {
+  const product: Product = props.product || (location.state as { product?: Product })?.product || {
     _id: '',
     title: '',
     description: '',
     price: 0,
     images: [],
-    creator: {
-      id: '',
-      _id: '',
-      name: '',
-      email: '',
-      role: 'creator',
-    },
-    category: {
-      _id: '',
-      name: '',
-    },
+    creator: { id: '', _id: '', name: '', email: '', role: 'creator' },
+    category: { _id: '', name: '' },
     subCategories: [],
     tags: [],
     stock: 0,
@@ -72,7 +63,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  const productPrice = props.price !== undefined ? props.price : product?.price || 0;
+
+  const productPrice = props.price !== undefined && props.price !== null
+    ? props.price
+    : product?.price || 0;
+
 
   const initialQuantity = 1;
 
@@ -100,7 +95,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
         ? { name: props.creator.name, _id: props.creator._id || '' }
         : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id || '' },
       status: 'pending',
-      totalAmount: productPrice * initialQuantity,
+      totalAmount: (props.price !== undefined ? props.price : product?.price || 0) * initialQuantity,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',
