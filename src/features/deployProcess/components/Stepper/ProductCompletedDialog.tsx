@@ -5,11 +5,9 @@ import { Dialog } from 'primereact/dialog';
 interface ProductCompletedDialogProps {
   visible: boolean;
   onHide: () => void;
-  onCreateNewProduct: () => Promise<void>;
-  loading?: boolean;
 }
 
-const ProductCompletedDialog: React.FC<ProductCompletedDialogProps> = ({ visible, onHide, onCreateNewProduct, loading }) => (
+const ProductCompletedDialog: React.FC<ProductCompletedDialogProps> = ({ visible, onHide,}) => (
   <Dialog
     header={<span className="text-xl font-bold text-primary">Product Completed!</span>}
     visible={visible}

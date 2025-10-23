@@ -16,8 +16,11 @@ export interface User {
 
 // 2. Creator/Seller
 export interface Creator {
-  _id: string;
+  id: string;
+  _id?: string;
   name: string;
+  email: string;
+  role: RoleType;
   avatarUrl?: string;
   followers: number | User[];
 }
@@ -30,7 +33,7 @@ export interface Product {
   price: number;
   images: string[];
   CreationStatus?: 'Define Your Product' | 'Manufacturer Preferences' | 'View Live Bids'  | 'Order & Payment' | 'Track Delivery' | 'Complete Delivery';
-  creator: Creator;
+  creator: User;
   category: Category;
   subCategories: SubCategory[];
   status: 'draft' | 'published' | 'hidden';

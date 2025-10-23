@@ -10,7 +10,7 @@ import { useAppSelector, useAppDispatch } from '../../../../hooks/hooks';
 import type { RootState } from '../../../../store';
 import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
 import type { BidOffer, Product } from '../../../../types';
-import { fetchBidRequestByProductId } from '../../slices/stepperSlice';
+import { fetchBidRequestByProductId, setCurrentProductId } from '../../slices/stepperSlice';
 import { loadPersistedBidOffer } from '../../slices/BidOfferSlice';
 
 
@@ -56,7 +56,7 @@ export const PaymentAndOrderStep: React.FC<StepProps> = ({ setCanGoNext }) => {
   }, [selectedBidOffer, dispatch]);
   return (
     <div className="p-4">
-      <CheckoutPage product={product} creator={{ _id: selectedManufacturer?._id || '', name: selectedManufacturer?.name || '' }} price={selectedBidOffer?.price} onOrderSuccess={() => {
+      <CheckoutPage product={product} creator={{ _id: product?.creator?._id || '', name: product?.creator?.name || '' }} price={selectedBidOffer?.price} onOrderSuccess={() => {
         setOrderSuccess(true);
         setCanGoNext && setCanGoNext(true);
       }} />

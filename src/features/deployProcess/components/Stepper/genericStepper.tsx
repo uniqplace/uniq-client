@@ -24,10 +24,9 @@ interface GenericStepperProps {
     component: React.ComponentType<any>;
     validateStep?: () => Promise<boolean> | boolean;
   }>;
-  createNewProduct?: () => Promise<string | undefined>;
 }
 
-const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = stepsConfig, createNewProduct }) => {
+const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = stepsConfig }) => {
   const stepperState = useAppSelector(state => {
     const products = state.stepper.productsInProgress;
     return productId ? products[productId] : undefined;
@@ -206,13 +205,6 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
       <ProductCompletedDialog
         visible={showFinalPopup}
         onHide={() => setShowFinalPopup(false)}
-        onCreateNewProduct={async () => {
-          setShowFinalPopup(false);
-          if (createNewProduct) {
-            await createNewProduct();
-          }
-        }}
-        loading={false}
       />
     </div>
   );

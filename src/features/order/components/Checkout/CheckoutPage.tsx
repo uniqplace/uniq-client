@@ -43,23 +43,36 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   // const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
+  const buyerId = user.id;
+  console.log("user:", user.id);
   const toast = useRef<Toast>(null);
-const product: Product = props.product || {
-  _id: '',
-  title: '',
-  description: '',
-  price: 0,
-  images: [],
-  creator: { _id: '', name: '', followers: 0 },
-  category: { _id: '', name: '' },
-  subCategories: [],
-  status: 'draft',
-  condition: 'new',
-  location: '',
-  tags: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+  const product: Product = props.product || {
+    _id: '',
+    title: '',
+    description: '',
+    price: 0,
+    images: [],
+    creator: {
+      id: '',
+      _id: '',
+      name: '',
+      email: '',
+      role: 'creator',
+    },
+    category: {
+      _id: '',
+      name: '',
+    },
+    subCategories: [],
+    tags: [],
+    stock: 0,
+    sales: 0,
+    status: 'draft',
+    condition: 'new',
+    location: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
   const productPrice = props.price !== undefined ? props.price : product?.price || 0;
 
   const initialQuantity = 1;
@@ -71,23 +84,22 @@ const product: Product = props.product || {
       description: '',
       price: 0,
       images: [],
-      creator: { id: '', name: '', email: '', role: 'creator' },
-      category: { _id: '', name: '' },
-      subCategories: [],
-      status: 'draft',
-      condition: 'new',
-      location: '',
+      creator: { _id: '', name: '' },
+      creatorName: '',
+      category: '',
+      stock: 0,
       tags: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: '',
+      updatedAt: '',
     };
+
     return {
       _id: '',
       productId: product?._id || fallbackProduct._id,
-      buyerId: user.id,
+      buyerId: buyerId || '',
       creator: props.creator
-        ? { name: props.creator.name, _id: props.creator._id }
-        : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id },
+        ? { name: props.creator.name, _id: props.creator._id || '' }
+        : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id || '' },
       status: 'pending',
       totalAmount: productPrice * initialQuantity,
       paymentMethod: 'credit_card',
@@ -99,6 +111,9 @@ const product: Product = props.product || {
       product: fallbackProduct,
     };
   });
+  useEffect(() => {
+    setOrder(prev => ({ ...prev, buyerId: buyerId || '' }));
+  }, [buyerId]);
 
   const [shipping, setShipping] = useState<string>('standard');
   const [paymentDialog, setPaymentDialog] = useState(false);
