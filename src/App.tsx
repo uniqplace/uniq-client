@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser } from './features/marketplace/thunks/userThunk';
-import type { AppDispatch, RootState } from './store';
+import { store, type AppDispatch, type RootState } from './store';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -33,20 +33,20 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
+// import ThreadsPage from './features/chat/pages/ThreadsPage';
+import ChatPage from './features/chat/pages/ChatPage';
+import { initChatSocketBridge } from './features/chat/socketBridge';
+// import { Thread } from 'stream-chat';
+import ThreadsStream from './features/chat/pages/ThreadsStream';
+
 import CreatorProfilePage from './features/user/components/CreatorProfilePage';
 import ManufacturerProfilePage from './features/user/components/ManufacturerProfilePage';
 
 
 
 
-function UserProfile() {
-  return (
-    <div className="p-8 text-center">
-      <h2 className="text-2xl font-bold mb-4">User Profile</h2>
-      <p className="text-gray-600">User profile page coming soon...</p>
-    </div>
-  );
-}
+// UserProfile extracted to its own component
+import UserProfile from './components/shared/UserProfile';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -76,7 +76,14 @@ function App() {
       navigate('/login');
     }
   }, [user?.id, user?.email, loading, wasLoading, navigate, location.pathname]);
+  
+  useEffect(() => {
+    const unsubscribe = initChatSocketBridge();
 
+    return unsubscribe;
+
+  }, [store]);
+  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NewHeader />
@@ -118,6 +125,11 @@ function App() {
               </PrivateRoute>
             }
           />
+
+            <Route path="/chat" element={<ThreadsStream />} />
+
+            <Route path="/chat/:cid" element={<ChatPage />} />
+          
           <Route path='/creator/:creatorId' element={<CreatorProfilePage />} />
           <Route path='/manufacturer/:manufacturerId' element={<ManufacturerProfilePage />} />
           <Route path='/customer/:userId' element={<div><i className="pi pi-user" style={{ marginRight: '8px' }}></i>Customer Profile coming soon...</div>} />

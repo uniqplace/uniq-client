@@ -130,7 +130,7 @@ export interface BidManufacturer {
 export interface BidRequest {
   _id: string;
   creatorId: string | User; // Creator ID or User object
-  productId: Product | string; // Product ID or Product object
+  productId: Product; // Product ID or Product object
   categoryId: string | Category; // Category ID or Category object
   locationPreference: string;
   priceRange: { min: number; max: number };

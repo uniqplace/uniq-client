@@ -133,7 +133,9 @@ const bidOfferSlice = createSlice({
       .addCase(fetchBidOfferById.fulfilled, (state: any, action: any) => {
         state.currentBidOfferLoading = false;
         let offer = action.payload;
-        offer.manufacturerId.userId.id = offer.manufacturerId.userId._id;
+        if (offer?.manufacturerId?.userId?._id) {
+          offer.manufacturerId.userId.id = offer.manufacturerId.userId._id;
+        }
         state.currentBidOffer = offer;
       })
       .addCase(fetchBidOfferById.rejected, (state: any, action: any) => {

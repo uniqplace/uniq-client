@@ -31,6 +31,8 @@
     "react-router-dom": "^7.6.3",
     "react-toastify": "^11.0.5",
     "socket.io-client": "^4.8.1",
+    "stream-chat": "^9.19.1",
+    "stream-chat-react": "^13.6.6",
     "uuid": "^13.0.0",
     "yup": "^1.6.1"
   },
