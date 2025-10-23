@@ -8,7 +8,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
     }),
     getOrderById: builder.query<Order, string>({
       query: (id) => `/orders/${id}`,
-      transformResponse: (response: { success: boolean; data: Order }) => response.data, // ✅ תיקון כאן
+      transformResponse: (response: { success: boolean; data: Order }) => response.data, 
       providesTags: (_result, _error, id) => [{ type: 'Order', id }],
     }),
     getOrdersByRole: builder.query<Order[], 'buyer' | 'creator'>({

@@ -67,7 +67,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps & { currentStepIndex?: num
   const isInitializing = useRef(false);
  // const [isBidOpened, setIsBidOpened] = useState(false);
 
-  // קבלת bidRequest מה-Redux לפי productId מה-props
   const bidRequest = useAppSelector(state => productId ? state.stepper.productsInProgress[productId]?.bidRequest : undefined);
 
   // Redux stepper state (per productId)
@@ -189,7 +188,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps & { currentStepIndex?: num
       return;
     }
 
-    // אין bidRequest? ניצור חדש מהערכים המקומיים
     const baseBidRequest = bidRequest || {
       categoryId: getCategoryIdValue(categoryId),
       locationPreference,
@@ -249,10 +247,8 @@ const ManufacturerPreferencesStep: React.FC<StepProps & { currentStepIndex?: num
         onComplete && onComplete();
         //setIsBidOpened(true);
         if (onNextStep) {
-          console.log('onNextStep called from ManufacturerPreferencesStep');
-          onNextStep(); // מעבר אוטומטי לשלב הבא
+          onNextStep();
         } else {
-          console.log('onNextStep not defined, fallback to navigateToNextStep');
           navigateToNextStep();
         }
       } else {
@@ -394,7 +390,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps & { currentStepIndex?: num
   };
 
   React.useEffect(() => {
-    // אם השלב הושלם או שיש מכרז פתוח, נאפשר מעבר לשלב הבא
     if (setCanGoNext && (isStepCompleted || (bidRequest && bidRequest.productId))) {
       setCanGoNext(true);
     }

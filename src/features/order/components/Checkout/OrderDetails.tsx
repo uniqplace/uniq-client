@@ -20,7 +20,7 @@ interface OrderDetailsProps {
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({
-    order, setOrder, shipping, setShipping, submitted, formErrors, readOnly = false, product
+    order, setOrder, shipping, setShipping, submitted, formErrors, readOnly = false, 
 }) => {
     return (
         <div>

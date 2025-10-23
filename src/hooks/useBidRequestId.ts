@@ -7,7 +7,6 @@ export function useBidRequestId() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.user);
 
-  // קבלת productId מה-localStorage או מה-Redux
   const [productId, setProductId] = useState<string>(() => {
     const keys = Object.keys(localStorage);
     const productKey = keys.find(k => k.startsWith('productId_'));
@@ -17,13 +16,11 @@ export function useBidRequestId() {
     return '';
   });
 
-  // קבלת bidRequest ו-product מה-Redux לפי productId
   const bidRequest = useAppSelector((state: RootState) => productId ? state.stepper.productsInProgress[productId]?.bidRequest : undefined);
   const reduxProduct = useAppSelector((state: RootState) => productId ? state.stepper.productsInProgress[productId]?.product : undefined);
   const bidRequestId = bidRequest?._id || '';
 
   useEffect(() => {
-    // עדכון productId אם יש שינוי ב-localStorage
     const keys = Object.keys(localStorage);
     const productKey = keys.find(k => k.startsWith('productId_'));
     if (productKey) {

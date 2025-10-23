@@ -10,7 +10,6 @@ const apiSlice = createApi({
      const state = getState() as Partial<RootState>;
       const token = state?.auth?.token;
       if (!state?.auth) {
-        console.warn('Warning: auth slice is missing from the root state!');
       }
       if (token) {
         headers.set('authorization', `Bearer ${token}`);

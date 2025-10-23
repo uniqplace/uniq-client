@@ -31,14 +31,11 @@ export const refineSpec = createAsyncThunk(
     payload: {
       userPrompt: string;
       productPayload: ProductPayload;
-      files?: File[];   // :point_left: עדכון – מערך קבצים
+      files?: File[];  
     },
     thunkAPI
   ) => {
     try {
-      console.log("in refineSpec");
-      console.log("payload.productPayload:");
-      console.log(payload.productPayload);
       const state: any = thunkAPI.getState();
       const sessionId = state.aiProduct?.sessionId;
       const formData = new FormData();
@@ -47,12 +44,10 @@ export const refineSpec = createAsyncThunk(
       formData.append("productPayload", JSON.stringify(payload.productPayload));
       if (payload.files && payload.files.length > 0) {
         payload.files.forEach((file) => {
-          console.log(" payload.files.f");
           console.log(file);
-          formData.append("files", file); // :point_left: שולחים כ־"files"
+          formData.append("files", file); 
         });
       }
-      console.log(formData);
       const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/ai/spec/refine`,
         formData,
@@ -68,7 +63,6 @@ export const refineSpec = createAsyncThunk(
 export const lockSpec = createAsyncThunk(
   "aiProduct/lockSpec",
   async (payload: { category: any; productPayload: ProductPayload }, thunkAPI) => {
-    console.log("in lockSpec thunk");
     const state: any = thunkAPI.getState();
     const sessionId = state.aiProduct?.sessionId;
     const userId = state.auth?.userId;

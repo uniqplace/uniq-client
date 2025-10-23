@@ -210,7 +210,7 @@ export default function AiProductDebugPanel() {
               multiple
               onChange={(e) => {
                 if (e.target.files) {
-                  setFiles(Array.from(e.target.files)); // שמירה במערך
+                  setFiles(Array.from(e.target.files)); 
                 }
               }}
               style={{ display: "none" }}

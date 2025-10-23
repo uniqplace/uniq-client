@@ -331,7 +331,6 @@ const Register: React.FC = () => {
             type="submit"
             label="Sign Up"
             loading={isSubmitting}
-            onClick={() => console.log("Button clicked!")}
             className="w-full bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
           />
         </form>

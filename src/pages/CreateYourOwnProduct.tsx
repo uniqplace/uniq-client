@@ -12,35 +12,27 @@ function CreateYourOwnProduct() {
   const params = useParams();
   const productIdFromUrl = params.productId;
 
-  // תמיד לקרוא את כל ה-hooks
-  const { loading, initializedProductId, createNewProduct } = useInitProduct(productIdFromUrl || undefined);
+  const { loading, initializedProductId } = useInitProduct(productIdFromUrl || undefined);
 
-  // אם יש productId ב-URL, לעדכן סטייט בלבד
   useEffect(() => {
     if (productIdFromUrl) {
-      console.log('[CreateYourOwnProduct] רנדר עם productId מה-URL:', productIdFromUrl);
       dispatch(setCurrentProductId(productIdFromUrl));
     }
   }, [productIdFromUrl, dispatch]);
 
   useEffect(() => {
     if (userId && (loading || !initializedProductId)) {
-      console.log('[CreateYourOwnProduct] טעינה/יצירת מוצר חדש ב-useInitProduct', { loading, initializedProductId });
     }
   }, [userId, loading, initializedProductId]);
 
   if (loading || !initializedProductId) {
-    console.log('[CreateYourOwnProduct] מציג ספינר, loading:', loading, 'initializedProductId:', initializedProductId);
     return <div style={{ minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ProgressSpinner /></div>;
   }
 
-  // ניווט אוטומטי לסטפר של מוצר חדש אם אין productId ב-URL
   if (!productIdFromUrl && initializedProductId) {
-    console.log('[CreateYourOwnProduct] ניווט אוטומטי לסטפר עם productId חדש:', initializedProductId);
     return <Navigate to={`/create-your-own-product/${initializedProductId}/product-definition`} replace />;
   }
 
-  // אם יש productId ב-URL, מרנדרים את הסטפר
   if (productIdFromUrl && initializedProductId) {
     return (
       <Routes>

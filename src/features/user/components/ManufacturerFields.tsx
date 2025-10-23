@@ -213,8 +213,8 @@ const ManufacturerFields = forwardRef<ManufacturerFieldsRef, ManufacturerFieldsP
           <label className="block text-900 font-semibold mb-3 text-lg">Available From</label>
 
           <Calendar
-            value={availableFrom ? new Date(availableFrom) : null} // מוודא שיש תאריך
-            onChange={(e) => setAvailableFrom(e.value ? (e.value as Date).toISOString().split('T')[0] : '')} // שמירה בפורמט YYYY-MM-DD
+            value={availableFrom ? new Date(availableFrom) : null} 
+            onChange={(e) => setAvailableFrom(e.value ? (e.value as Date).toISOString().split('T')[0] : '')} 
             showIcon
             disabled={disabled}
             className="w-full"

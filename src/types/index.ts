@@ -205,27 +205,27 @@ export interface ManufacturerProfile {
   servicesOffered?: string[];
 }
 
-type ParamStatus = "confirmed" | "missing" | "skipped"; // 4 המצבים מיוצגים ע״י status+source
-type ParamSource = "ai" | "user";                       // "נוסף ע״י משתמש" = source:"user"
+type ParamStatus = "confirmed" | "missing" | "skipped"; 
+type ParamSource = "ai" | "user";                      
 type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
 
 interface ProductParam {
-  id: string;                 // מזהה פנימי יציב (snake_case)
-  label: string;              // תווית לתצוגה
+  id: string;                 
+  label: string;            
   type: ParamType;
-  requiredByAI: boolean;      // האם ה-AI סימן כחובה
-  status: ParamStatus;        // confirmed / missing / skipped
-  value?: any;                // ערך תקני לאחר נורמליזציה (אם יש)
-  unit?: string;              // לדוג׳ "mm", "kg"
-  enumOptions?: string[];     // אם type="enum"
-  source: ParamSource;        // ai | user (להציג "➕ נוסף ע״י משתמש")
-  skipConfirmation?: {        // קיים רק אם דולג במפורש
+  requiredByAI: boolean;     
+  status: ParamStatus;        
+  value?: any;               
+  unit?: string;              
+  enumOptions?: string[];    
+  source: ParamSource;       
+  skipConfirmation?: {    
     confirmed: true;
-    confirmedAt: string;      // ISO datetime
+    confirmedAt: string;    
     reason?: string;
   };
-  notes?: string;             // הערת משתמש/מערכת
-  validation?: { valid: boolean; issues?: string[] }; // תוצאות ולידציה
+  notes?: string;            
+  validation?: { valid: boolean; issues?: string[] }; 
 }
 
 export interface ProductPayload {
@@ -247,7 +247,7 @@ export interface ProductPayload {
   aiVersion?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  createdByAI?: boolean; // האם נוצר ע״י AI
+  createdByAI?: boolean; 
 }
 
 

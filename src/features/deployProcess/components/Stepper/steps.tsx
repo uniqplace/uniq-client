@@ -56,8 +56,6 @@ export const PaymentAndOrderStep: React.FC<StepProps> = ({ setCanGoNext }) => {
   return (
     <div className="p-4">
       <CheckoutPage product={product} creator={{ _id: selectedManufacturer?._id || '', name: selectedManufacturer?.name || '' }} price={selectedBidOffer?.price} onOrderSuccess={() => {
-        console.log("price:", selectedBidOffer?.price);
-        
         setOrderSuccess(true);
         setCanGoNext && setCanGoNext(true);
       }} />

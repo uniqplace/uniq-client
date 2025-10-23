@@ -29,12 +29,9 @@ export const fetchBidOffersByRequest = createAsyncThunk(
       const { bidRequestId, sort } = params;
       const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
-      console.log('[fetchBidOffersByRequest] Sending request to:', url);
       const response = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('[fetchBidOffersByRequest] Full response:', response);
-      console.log('[fetchBidOffersByRequest] Response data:', response.data);
       // The response is { success, data: [...] }
       return response.data.data || [];
     } catch (error: any) {
@@ -127,17 +124,14 @@ const bidOfferSlice = createSlice({
       })
       // Fetch offers by bidRequestId
       .addCase(fetchBidOffersByRequest.pending, (state) => {
-        console.log('Fetching bid offers: pending...');
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchBidOffersByRequest.fulfilled, (state, action) => {
-        console.log('Fetching bid offers: fulfilled!', action.payload);
         state.loading = false;
         state.offers = action.payload;
       })
       .addCase(fetchBidOffersByRequest.rejected, (state, action) => {
-        console.log('Fetching bid offers: rejected!', action.payload);
         state.loading = false;
         state.error = action.payload as string;
       })

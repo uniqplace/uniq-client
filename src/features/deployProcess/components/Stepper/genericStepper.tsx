@@ -84,7 +84,6 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
     setCanGoNext(false);
   }, [currentStepIndex]);
 
-  // טעינה ראשונית/שגיאת ולידציה - רק אחרי שכל ה-hooks נקראו
   if (!isValid) {
     console.error(stepperError, { steps });
     return (
@@ -126,10 +125,8 @@ const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = step
     }
   };
 
-  // handleCompleteStep - פונקציה ללחיצה על Next/Finish
   const handleCompleteStep = async () => {
     if (safeStepIndex === undefined) return;
-    // כאן אפשר להוסיף לוגיקת ולידציה אם צריך
     if (!productId) {
       console.warn('[Stepper] No productId, cannot complete step');
       return;

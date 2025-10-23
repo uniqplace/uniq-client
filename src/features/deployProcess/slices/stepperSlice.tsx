@@ -92,9 +92,8 @@ export const fetchBidRequestByProductId = createAsyncThunk(
         `${apiBaseUrl}/bidRequests/product/${productId}`,
         { withCredentials: true }
       );
-      // סינון לפי היוזר המחובר והתאריך הכי חדש
-      const state = thunkAPI.getState() as any;
-      const userId = state.user?.id;
+      const State = thunkAPI.getState() as any;
+      const userId= State.user?.id;
       const bidRequests = response.data.bidRequests || [];
       const filtered = bidRequests.filter((br: any) => br.creatorId?._id === userId);
       const sorted = filtered.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -231,7 +230,6 @@ const stepperSlice = createSlice({
       if (state.currentProductId === productId) state.currentProductId = null;
       saveProductsInProgressToStorage(state.productsInProgress);
     },
-    // ...שאר reducers קיימים, יש לעדכן אותם לפעול לפי productId במידת הצורך...
   },
 
   extraReducers: (builder) => {
@@ -307,7 +305,6 @@ const stepperSlice = createSlice({
       })
       .addCase(fetchOpenBidRequestsByProductId.fulfilled, (state, action) => {
         const productId = extractProductId(action.meta.arg) || state.currentProductId;
-        console.log('[stepperSlice][fetchOpenBidRequestsByProductId.fulfilled]', { productId, payload: action.payload });
         if (!productId) return;
         const prod = state.productsInProgress[productId];
         if (prod) { prod.bidRequest = action.payload; }

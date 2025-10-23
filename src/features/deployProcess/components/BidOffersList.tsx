@@ -59,9 +59,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
   }, [bidRequestId, productId, dispatch]);
 
   useEffect(() => {
-    console.log('[BidOffersList] bidRequestId:', bidRequestId);
     if (!bidRequestId || bidRequestId.length < 10) {
-      console.warn('[BidOffersList] bidRequestId is missing or looks invalid:', bidRequestId);
       return;
     }
     const sortParam = sortOption !== 'date' ? sortOption : undefined;
@@ -69,9 +67,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
   }, [dispatch, bidRequestId, sortOption]);
 
   useEffect(() => {
-    console.log('[BidOffersList] offers:', offers, 'loading:', loading, 'error:', error);
     if (offers && offers.length === 0 && bidRequestId) {
-      console.warn('[BidOffersList] No offers found for bidRequestId:', bidRequestId);
     }
   }, [offers, loading, error, bidRequestId]);
   // Row click behavior changes depending on selection mode

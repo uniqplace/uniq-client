@@ -5,7 +5,6 @@ interface AuctionLoadingErrorProps {
 }
 
 const AuctionLoadingError: React.FC<AuctionLoadingErrorProps> = ({ productId }) => {
-  console.log('[AuctionLoadingError] productId:', productId);
   return (
     <div className="text-center py-8 text-lg text-gray-500">
       Loading auction data...<br />

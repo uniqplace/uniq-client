@@ -115,7 +115,6 @@ const CreatorProductPage: React.FC = () => {
                                                 icon="pi pi-arrow-right"
                                                 className="p-button-sm bg-blue-500 text-white"
                                                 onClick={() => {
-                                                    console.log('[CreatorProductPage] Button clicked! productId:', productId, 'product:', product);
                                                     navigate(`/create-your-own-product/${productId}/product-definition`);
                                                 }}
                                             />
