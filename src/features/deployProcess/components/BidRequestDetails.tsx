@@ -1,6 +1,5 @@
 import { getDayDifference } from '../../../utils/dateDiff';
-import { Avatar } from 'primereact/avatar';
-import { Tooltip } from 'primereact/tooltip';
+import UserCard from '../../../components/shared/UserCard';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -87,9 +86,16 @@ const BidRequestDetails = () => {
         return value !== null && typeof value === 'object';
     };
 
-    // Correcting creatorId usage
-    const creatorName = isObject(bidRequest.creatorId) ? (bidRequest.creatorId as any).name : 'Unknown Creator';
-    const creatorAvatar = isObject(bidRequest.creatorId) ? (bidRequest.creatorId as any).avatarUrl : '';
+    // Prepare creator user object for UserCard (safe spread)
+    let creatorUser = null;
+    if (isObject(bidRequest.creatorId)) {
+        const c = bidRequest.creatorId as any;
+        creatorUser = {
+            ...(typeof c === 'object' ? c : {}),
+            id: c.id || c._id,
+            role: c.role || 'creator',
+        };
+    }
 
     // Helper function to get the class string for the status badge
     const getStatusBadgeClass = (status: string | undefined): string => {
@@ -125,44 +131,36 @@ const BidRequestDetails = () => {
                         icon={<ArrowLeft size={16} />}
                         className="p-button-text p-button-sm text-green-600"
                         onClick={() => {
-                                navigate('/MyBidRequest');
-                            }
+                            navigate('/MyBidRequest');
+                        }
                         }
                     />
                 </div>
                 <div className="flex items-center gap-4 mb-6">
-                    <div>
-                        <span id="creator-avatar">
-                            <Avatar
-                                image={creatorAvatar}
-                                icon={!creatorAvatar ? "pi pi-user" : undefined}
-                                size="large"
-                                shape="circle"
-                                className="border border-gray-300 shadow-sm [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
-                            />
-                        </span>
-                        <Tooltip target="#creator-avatar" content={creatorName} />
-                    </div>
-                    <div>
-                        <div className="text-lg font-semibold text-gray-800">{creatorName}</div>
-                        <div className="text-sm text-gray-500">Request Creator</div>
-                    </div>
-                </div>
-                    {hasSubmittedOffer && submittedAt && (
-                        <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
-                            Offer submitted at: {submittedAt}
-                            <button
-                                className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
-                                style={{ width: 28, height: 28 }}
-                                onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`, {
-                                    state: { offer: userOffer },
-                                })}
-                                title="View full offer details"
-                            >
-                                <span className="pi pi-arrow-right" />
-                            </button>
+
+                    {creatorUser && (
+                        <div className="flex flex-col items-center">
+                            <UserCard user={creatorUser} />
+                            <div className="text-xs text-gray-500">Request Creator</div>
                         </div>
                     )}
+
+                </div>
+                {hasSubmittedOffer && submittedAt && (
+                    <div className="text-green-600 text-sm ml-4 flex items-center gap-2">
+                        Offer submitted at: {submittedAt}
+                        <button
+                            className="p-button p-button-sm p-button-outlined p-0 flex items-center justify-center"
+                            style={{ width: 28, height: 28 }}
+                            onClick={() => navigate(`/BidOfferDetails/${userOffer?._id}`, {
+                                state: { offer: userOffer },
+                            })}
+                            title="View full offer details"
+                        >
+                            <span className="pi pi-arrow-right" />
+                        </button>
+                    </div>
+                )}
 
                 <Divider />
                 <div className="mb-4">

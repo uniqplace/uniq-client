@@ -8,6 +8,10 @@ export interface User {
   role: RoleType;
   bio?: string; // Optional field for user bio
   createdAt?: Date;
+  manufacturerId?: string;
+  manufacturer?: ManufacturerProfile;
+  creatorId?: string;
+  creator?: CreatorProfile;
 }
 
 // 2. Creator/Seller
@@ -155,26 +159,6 @@ export interface Filters {
 // 11. Category Filters
 export type CategoryFiltersType = string[];
 
-
-
-
-interface UserToBidOffer {
-  _id: string;
-  name: string;
-  avatarUrl?: string;
-  email: string;
-}
-
-export interface Manufacturer {
-  _id?: string;
-  userId: UserToBidOffer;
-  name: string;
-  rating?: number;
-  location?: string;
-  availableFrom?: string;
-  categories?: string[];
-  servicesOffered?: string[];
-}
 export interface BidRequestId {
   _id?: string;
   productId: ({ title: string }) & { _id?: string } & { description?: string } & { images?: string[] };
@@ -195,14 +179,29 @@ export interface BidOffer {
 }
 
 export interface ManufacturerProfile {
-  _id: string;
+  _id?: string;
   userId: User;
   name: string;
-  categories: string[];
+  phone: string;
+  categories: string[] | Category[];
   location: string;
   availableFrom: string;
   rating?: number;
   servicesOffered?: string[];
+  ratingCount?: number;
+  createdAt?: Date;
+}
+
+export interface CreatorProfile {
+  _id?: string;
+  userId: string;
+  name: string;
+  categories: string[] | Category[];
+  location: string;
+  phone: string;
+  rating: number;
+  ratingCount: number;
+  createdAt?: Date;
 }
 
 type ParamStatus = "confirmed" | "missing" | "skipped"; 

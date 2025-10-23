@@ -71,15 +71,16 @@ const product: Product = props.product || {
       description: '',
       price: 0,
       images: [],
-      creator: { _id: '', name: '' },
-      creatorName: '',
-      category: '',
-      stock: 0,
+      creator: { id: '', name: '', email: '', role: 'creator' },
+      category: { _id: '', name: '' },
+      subCategories: [],
+      status: 'draft',
+      condition: 'new',
+      location: '',
       tags: [],
-      createdAt: '',
-      updatedAt: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
-
     return {
       _id: '',
       productId: product?._id || fallbackProduct._id,
