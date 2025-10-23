@@ -8,7 +8,6 @@ export const generateDraft = createAsyncThunk(
       const state: any = thunkAPI.getState();
       const sessionId = state.aiProduct?.sessionId;
       const formData = new FormData();
-      payload.files.forEach(f => console.log(f));
       if (payload.userPrompt) formData.append("userPrompt", payload.userPrompt);
       payload.files.forEach((file) => formData.append("files", file));
       formData.append("sessionId", sessionId);
@@ -26,7 +25,8 @@ export const generateDraft = createAsyncThunk(
       );
       return res.data;
     } catch (e) {
-      console.log("error in generateDraft", e);
+      console.error("error in generateDraft", e);
+      return thunkAPI.rejectWithValue(e);
     }
   }
 );
@@ -51,8 +51,7 @@ export const refineSpec = createAsyncThunk(
       formData.append("productPayload", JSON.stringify(payload.productPayload));
       if (payload.files && payload.files.length > 0) {
         payload.files.forEach((file) => {
-          console.log(file);
-          formData.append("files", file); 
+          formData.append("files", file);
         });
       }
       const requestBody = {
@@ -73,7 +72,8 @@ export const refineSpec = createAsyncThunk(
       );
       return res.data;
     } catch (e) {
-      console.log("error in refineSpec", e);
+      console.error("error in refineSpec", e);
+      return thunkAPI.rejectWithValue(e);
     }
   });
 export const lockSpec = createAsyncThunk(

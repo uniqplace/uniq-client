@@ -15,21 +15,22 @@ import { saveToLocalStorage, loadFromLocalStorage } from '../../../utils/localSt
 // ==== Local Storage Helpers ====
 const LOCAL_STORAGE_KEY = 'aiProductState';
 
-function validateProductPayload(obj: any): obj is ProductPayload {
+function validateProductPayload(obj: unknown): obj is ProductPayload {
   if (!obj || typeof obj !== 'object') return false;
-  if (typeof obj.sessionId !== 'string') return false;
-  if (typeof obj.title !== 'string') return false;
-  if (typeof obj.description !== 'string') return false;
-  if (typeof obj.price !== 'number') return false;
-  if (!Array.isArray(obj.images)) return false;
-  if (!Array.isArray(obj.subCategories)) return false;
-  if (!Array.isArray(obj.tags)) return false;
-  if (!Array.isArray(obj.params)) return false;
-  if (!Array.isArray(obj.audit)) return false;
-  if (typeof obj.status !== 'string') return false;
-  if (typeof obj.condition !== 'string') return false;
-  if (typeof obj.location !== 'string') return false;
-  if (typeof obj.createdByAI !== 'boolean') return false;
+  const payload = obj as ProductPayload;
+  if (typeof payload.sessionId !== 'string') return false;
+  if (typeof payload.title !== 'string') return false;
+  if (typeof payload.description !== 'string') return false;
+  if (typeof payload.price !== 'number') return false;
+  if (!Array.isArray(payload.images)) return false;
+  if (!Array.isArray(payload.subCategories)) return false;
+  if (!Array.isArray(payload.tags)) return false;
+  if (!Array.isArray(payload.params)) return false;
+  if (!Array.isArray(payload.audit)) return false;
+  if (typeof payload.status !== 'string') return false;
+  if (typeof payload.condition !== 'string') return false;
+  if (typeof payload.location !== 'string') return false;
+  if (typeof payload.createdByAI !== 'boolean') return false;
   // Optionally check other fields
   return true;
 }

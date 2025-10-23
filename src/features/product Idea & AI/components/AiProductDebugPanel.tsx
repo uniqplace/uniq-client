@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, User, Lock } from "lucide-react";
+import { AiOutlinePaperClip } from 'react-icons/ai';
 import { useAppSelector, useAppDispatch } from "../../../hooks/hooks";
 import type { RootState } from "../../../store";
 import type { ProductParam } from "../slices/aiProductTypes";
@@ -215,7 +216,7 @@ export default function AiProductDebugPanel() {
               whiteSpace: "nowrap",
             }}
           >
-            :paperclip: Upload
+            <AiOutlinePaperClip size={20} />
             <input
               type="file"
               multiple
@@ -227,10 +228,6 @@ export default function AiProductDebugPanel() {
               style={{ display: "none" }}
             />
           </label>
-
-
-
-
           <button
             onClick={handleSend}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center justify-center"

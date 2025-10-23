@@ -66,10 +66,7 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
     dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
   }, [dispatch, bidRequestId, sortOption]);
 
-  useEffect(() => {
-    if (offers && offers.length === 0 && bidRequestId) {
-    }
-  }, [offers, loading, error, bidRequestId]);
+
   // Row click behavior changes depending on selection mode
   const handleRowClick = (offer: BidOffer) => {
     if (isSelectingManufacturer) {

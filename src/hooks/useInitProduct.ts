@@ -8,6 +8,7 @@ import {
 import { stepsConfig } from '../features/deployProcess/components/Stepper/steps';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import { defaultProductTemplate } from '../utils/defaultProductTemplate';
+import { toast } from 'react-toastify';
 
 let globalCreationLock: Promise<any> | null = null; 
 
@@ -71,7 +72,7 @@ const useInitProduct = (productIdFromProps?: string) => {
           await globalCreationLock;
         }
       } catch (err) {
-        console.error('[useInitProduct] ❌ Init error:', err);
+        toast.error('An error occurred while initializing the product. Please try again later.');
       }
     };
 

@@ -4,8 +4,8 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Tag } from 'primereact/tag';
 import { Divider } from 'primereact/divider';
 import { SHIPPING_OPTIONS } from './CheckoutPage';
-import type { Order, Address } from '../../../../types/index'; // Corrected import path for Address type
-import type { Product } from '../../../../types'; // Added import for Product
+import type { Order, Address } from '../../../../types/index'; 
+import type { Product } from '../../../../types';
 import './CheckoutPage.css';
 
 interface OrderDetailsProps {
@@ -15,8 +15,8 @@ interface OrderDetailsProps {
     setShipping: (value: string) => void;
     submitted: boolean;
     formErrors: { [key: string]: string };
-    readOnly?: boolean; // Added readOnly prop
-    product: Product; // Added product prop
+    readOnly?: boolean; 
+    product: Product; 
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({

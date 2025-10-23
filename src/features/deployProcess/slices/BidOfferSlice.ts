@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidOffer } from "../../../types";
 import type { RootState } from "../../../store";
+import { toast } from 'react-toastify';
 
 export const fetchBidOfferById = createAsyncThunk(
   "BidOffer/fetchById",
@@ -35,7 +36,7 @@ export const fetchBidOffersByRequest = createAsyncThunk(
       // The response is { success, data: [...] }
       return response.data.data || [];
     } catch (error: any) {
-      console.error('[fetchBidOffersByRequest] Error occurred:', error);
+      toast.error('[fetchBidOffersByRequest] Error occurred: ' + (error.response?.data?.message || error.message));
       return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');
     }
   }

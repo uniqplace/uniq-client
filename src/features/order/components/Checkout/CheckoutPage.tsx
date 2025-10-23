@@ -44,7 +44,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
   const buyerId = user.id;
-  console.log("user:", user.id);
   const toast = useRef<Toast>(null);
   const product: Product = props.product || {
     _id: '',
