@@ -1,3 +1,4 @@
+ 
 import { useEffect, useState, useRef } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
@@ -47,6 +48,7 @@ const NotificationBell = () => {
   // Ref למיכל התראות (scroll container)
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  
   useEffect(() => {
     if (!user?.id) return;
     const fetchCount = async () => {
@@ -81,9 +83,8 @@ const NotificationBell = () => {
   }, [user, setCount, setNotifications, toastRef]);
   useEffect(() => {
     const onScroll = () => {
-      if (!listRef.current || !loading || !hasMore) return; // Stop if no more notifications
+      if (!listRef.current || loading || !hasMore) return; // loading במקום !loading
       const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-      // Check if scrolled to the bottom (90% of scroll height)
       if (scrollTop + clientHeight >= scrollHeight * 0.9) {
         loadMore();
       }
@@ -117,6 +118,12 @@ const NotificationBell = () => {
       }
     };
   }, [loaderRef, hasMore, loadMore]);
+   // טעינה אוטומטית כשהרשימה ריקה ויש עוד עמודים
+  useEffect(() => {
+    if (isOpen && notifications.length === 0 && hasMore && !loading) {
+      loadMore();
+    }
+  }, [isOpen, notifications, hasMore, loading, loadMore]);
   const handleBellClick = async () => {
     if (!isOpen && !notificationsLoaded) {
       await loadNotifications(1); // Load notifications only if not already loaded
@@ -194,8 +201,8 @@ const NotificationBell = () => {
                       </div>
                     )}
                   />
-                  {!hasMore && (
-                    <div ref={loaderRef} style={{ textAlign: 'center', padding: '1rem', display: 'none' }}></div>
+                  {hasMore && (
+                    <div ref={loaderRef} style={{ textAlign: 'center', padding: '1rem' }}></div>
                   )}
                 </div>
               )}
