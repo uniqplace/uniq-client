@@ -8,6 +8,7 @@ import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { useNavigate } from 'react-router-dom';
 import {  setCurrentProductId } from '../features/deployProcess/slices/stepperSlice';
+import { getAiProducts, getManualProducts } from '../utils/productFilters';
 
 
 const CreatorProductPage: React.FC = () => {
@@ -24,8 +25,8 @@ const CreatorProductPage: React.FC = () => {
         searchTerm: '',
     });
 
-    const aiProducts = products?.filter(p => p.createdByAI === true || String(p.createdByAI) === 'true') || [];
-    const manualProducts = products?.filter(p => p.createdByAI === false || String(p.createdByAI) === 'false' || !p.createdByAI) || [];
+    const aiProducts = getAiProducts(products);
+    const manualProducts = getManualProducts(products);
 
     return (
         <div className="container mx-auto px-4 py-8">

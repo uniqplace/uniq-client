@@ -5,6 +5,7 @@ import axios from 'axios';
 
 import { stepsConfig } from '../components/Stepper/steps';
 import type { BidRequest, Product } from '../../../types';
+import { saveProductsInProgressToStorage, loadProductsInProgressFromStorage } from '../../../utils/stepperStorage';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -26,23 +27,6 @@ interface ProductStepperState {
 interface StepperState {
   productsInProgress: Record<string, ProductStepperState>;
   currentProductId: string | null;
-}
-
-// --- Local Storage Helpers ---
-const LOCAL_STORAGE_KEY = 'stepperProductsInProgress';
-
-function saveProductsInProgressToStorage(productsInProgress: Record<string, ProductStepperState>) {
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(productsInProgress));
-  } catch (e) { /* ignore */ }
-}
-
-function loadProductsInProgressFromStorage(): Record<string, ProductStepperState> {
-  try {
-    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (data) return JSON.parse(data);
-  } catch (e) { /* ignore */ }
-  return {};
 }
 
 // --- initialState with localStorage ---

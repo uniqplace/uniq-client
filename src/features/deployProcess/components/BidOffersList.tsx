@@ -12,12 +12,15 @@ import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
 import NormalizedRating from '../../../components/shared/NormalizedRating';
+import { persistSelectedOffer } from '../../../utils/persistSelectedOffer';
 
 interface BidOffersListProps {
   bidRequestId: string;
   setCanGoNext?: (canGo: boolean) => void;
 }
 const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidRequestId, setCanGoNext }) => {
+  const [bidRequestId, setBidRequestId] = useState<string>(initialBidRequestId);
+  const productId = initialBidRequestId; // assume initialBidRequestId is productId if bidRequestId is missing
 
   // Manufacturer selection state
   const [isSelectingManufacturer, setIsSelectingManufacturer] = useState(false);
@@ -32,8 +35,6 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
       }
     }
   }, [isSelectingManufacturer, selectedOfferId, setCanGoNext]);
-  const [bidRequestId, setBidRequestId] = useState<string>(initialBidRequestId);
-  const productId = initialBidRequestId; // assume initialBidRequestId is productId if bidRequestId is missing
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<'date' | 'price' | 'rating'>('date');
@@ -74,12 +75,8 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
         const newSelectedOfferId = offer._id === selectedOfferId ? null : offer._id;
         setSelectedOfferId(newSelectedOfferId);
 
-        // Persist the selected offer in LocalStorage
-        if (newSelectedOfferId) {
-          localStorage.setItem('selectedBidOffer', JSON.stringify(offer));
-        } else {
-          localStorage.removeItem('selectedBidOffer');
-        }
+        // Use the utility function to persist the selected offer
+        persistSelectedOffer(newSelectedOfferId ? offer : null);
       } else {
         setSelectedOfferId(null);
       }

@@ -6,9 +6,9 @@ import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clearUser } from '../../features/user/slices/userSlice';
-import { clearStepper } from '../../features/deployProcess/slices/stepperSlice';
 import { api } from '../../services/api';
 import { clearManufacturerProfile } from '../../features/user/slices/manufacturerSlice';
+import { clearProductsInProgress } from '../../utils/productUtils';
 
 const UserGreeting = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -24,10 +24,10 @@ const UserGreeting = () => {
     dispatch(clearManufacturerProfile());
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    // clear all productsInProgress from Redux
-    const state = (window as any).store?.getState?.();
-    const allProductIds = state?.stepper?.productsInProgress ? Object.keys(state.stepper.productsInProgress) : [];
-    allProductIds.forEach((pid: string) => dispatch(clearStepper({ productId: pid })));
+
+    // Use the modularized utility function to clear products in progress
+    clearProductsInProgress(dispatch);
+
     localStorage.clear(); 
     navigate('/login');
   };

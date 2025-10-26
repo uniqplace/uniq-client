@@ -11,53 +11,39 @@ import {
   lockSpec,
 } from "./aiProductThunks";
 import { saveToLocalStorage, loadFromLocalStorage } from '../../../utils/localStorageUtils';
+import { validateProductPayload } from '../../../utils/validation';
+import type { Middleware } from '@reduxjs/toolkit';
 
 // ==== Local Storage Helpers ====
 const LOCAL_STORAGE_KEY = 'aiProductState';
 
-function validateProductPayload(obj: unknown): obj is ProductPayload {
-  if (!obj || typeof obj !== 'object') return false;
-  const payload = obj as ProductPayload;
-  if (typeof payload.sessionId !== 'string') return false;
-  if (typeof payload.title !== 'string') return false;
-  if (typeof payload.description !== 'string') return false;
-  if (typeof payload.price !== 'number') return false;
-  if (!Array.isArray(payload.images)) return false;
-  if (!Array.isArray(payload.subCategories)) return false;
-  if (!Array.isArray(payload.tags)) return false;
-  if (!Array.isArray(payload.params)) return false;
-  if (!Array.isArray(payload.audit)) return false;
-  if (typeof payload.status !== 'string') return false;
-  if (typeof payload.condition !== 'string') return false;
-  if (typeof payload.location !== 'string') return false;
-  if (typeof payload.createdByAI !== 'boolean') return false;
-  // Optionally check other fields
-  return true;
+function getInitialProductState(): ProductPayload {
+  const loadedState = loadFromLocalStorage<ProductPayload>(LOCAL_STORAGE_KEY);
+  return validateProductPayload(loadedState)
+    ? loadedState
+    : {
+        sessionId: uuidv4(),
+        title: "",
+        description: "",
+        price: 0,
+        images: [],
+        creator: undefined,
+        category: undefined,
+        subCategories: [],
+        status: "draft",
+        condition: "new",
+        location: "",
+        tags: [],
+        params: [],
+        audit: [],
+        summary: undefined,
+        aiVersion: undefined,
+        createdByAI: true
+      };
 }
 
 // ==== Initial State ====
-const loadedState = loadFromLocalStorage<ProductPayload>(LOCAL_STORAGE_KEY);
-const initialState: ProductPayload = validateProductPayload(loadedState)
-  ? loadedState
-  : {
-      sessionId: uuidv4(),
-      title: "",
-      description: "",
-      price: 0,
-      images: [],
-      creator: undefined,
-      category: undefined,
-      subCategories: [],
-      status: "draft",
-      condition: "new",
-      location: "",
-      tags: [],
-      params: [],
-      audit: [],
-      summary: undefined,
-      aiVersion: undefined,
-      createdByAI: true
-    };
+const initialState: ProductPayload = getInitialProductState();
 
 // ==== Slice ====
 const aiProductSlice = createSlice({
@@ -72,7 +58,6 @@ const aiProductSlice = createSlice({
         action: "add_param",
         details: { id: action.payload.id },
       });
-      saveToLocalStorage(LOCAL_STORAGE_KEY, state);
     },
     updateParam(state, action: PayloadAction<{ id: string; value: any }>) {
       const param = state.params.find((p) => p.id === action.payload.id);
@@ -85,7 +70,6 @@ const aiProductSlice = createSlice({
           action: "update_param",
           details: { id: param.id, value: action.payload.value },
         });
-        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     skipParam(state, action: PayloadAction<{ id: string; reason?: string }>) {
@@ -103,7 +87,6 @@ const aiProductSlice = createSlice({
           action: "skip_param",
           details: { id: param.id },
         });
-        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     resetProductState(state) {
@@ -132,7 +115,6 @@ const aiProductSlice = createSlice({
         state.location = payload.location || "";
         state.tags = payload.tags || [];
         state.locale = payload.locale || undefined;
-        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
@@ -152,11 +134,9 @@ const aiProductSlice = createSlice({
         if (action.payload.location) state.location = action.payload.location;
         if (action.payload.tags) state.tags = action.payload.tags;
         if (action.payload.locale) state.locale = action.payload.locale;
-        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(lockSpec.fulfilled, (state) => {
         state.status = "locked";
-        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       });
   },
 });
@@ -172,4 +152,20 @@ export default aiProductSlice.reducer;
 // useEffect(() => {
 //   setMessages([]); // or set to initial value
 // }, [user]);
+
+// Custom middleware to persist state changes automatically
+export const persistAiProductStateMiddleware: Middleware = (store) => (next) => (action: any) => {
+  const result = next(action);
+
+  // Check if the action is related to aiProduct and persist the state
+  if (action.type.startsWith('aiProduct/')) {
+    const state = store.getState().aiProduct;
+    saveToLocalStorage(LOCAL_STORAGE_KEY, state);
+  }
+
+  return result;
+};
+
+// Ensure to add this middleware to the store configuration
+// Example: applyMiddleware(persistAiProductStateMiddleware)
 
