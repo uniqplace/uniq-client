@@ -5,9 +5,9 @@ import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { clearUser } from '../../features/user/slices/userSlice';
-import { clearStepper } from '../../features/deployProcess/slices/stepperSlice';
 import { api } from '../../services/api';
 import { resetProductState } from '../../features/product Idea & AI/slices/aiProductSlice';
+import { clearProductsInProgress } from '../../utils/productUtils';
 import type { RootState } from '../../store';
 import type { User } from '../../types';
 
@@ -46,14 +46,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const handleLogout = async () => {
     await api.logoutApi();
     dispatch(clearUser());
-    // Clear all productsInProgress from Redux
-    const state = (window as any).store?.getState?.();
-    const allProductIds = state?.stepper?.productsInProgress ? Object.keys(state.stepper.productsInProgress) : [];
-    allProductIds.forEach((pid: string) => dispatch(clearStepper({ productId: pid })));
+    handleClearProducts();
     dispatch(resetProductState());
     localStorage.removeItem('aiProductState');
     localStorage.clear(); 
     navigate('/login');
+  };
+
+  const handleClearProducts = () => {
+    clearProductsInProgress(dispatch);
   };
 
   const avatarMenuItems = [
