@@ -54,7 +54,7 @@ export const api = {
 
   // Fetch creators and manufacturers
   getCreatorsAndManufacturers: async (): Promise<ApiResponse<{ _id: string; name: string; avatar?: string }>> => {
-    return await get<{ _id: string; name: string; avatar?: string }>(`/users/creators-and-manufacturers`);
+    return await get<{ _id: string; name: string; avatar?: string }>(`/users/creatorsAndManufacturers`);
   },
 
 
