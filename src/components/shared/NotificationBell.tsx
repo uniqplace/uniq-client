@@ -1,3 +1,4 @@
+ 
 import { useEffect, useState, useRef } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
@@ -20,6 +21,7 @@ const isObject = (value: any): boolean => {
 const eventIcons: Record<string, string> = {
   new_bid: '📨',
   new_order: '🛒',
+  new_bid_offer: '💼',
   bid_sent_confirmation: '✅',
   general_notification: '🔔',
   register_user: '👤',
@@ -45,6 +47,7 @@ const NotificationBell = () => {
   const user = useAppSelector((state: RootState) => state.user);
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  
   useEffect(() => {
     if (!user?.id) return;
     const fetchCount = async () => {
@@ -79,9 +82,8 @@ const NotificationBell = () => {
   }, [user, setCount, setNotifications, toastRef]);
   useEffect(() => {
     const onScroll = () => {
-      if (!listRef.current || !loading || !hasMore) return; // Stop if no more notifications
+      if (!listRef.current || loading || !hasMore) return; // loading במקום !loading
       const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-      // Check if scrolled to the bottom (90% of scroll height)
       if (scrollTop + clientHeight >= scrollHeight * 0.9) {
         loadMore();
       }
@@ -115,6 +117,11 @@ const NotificationBell = () => {
       }
     };
   }, [loaderRef, hasMore, loadMore]);
+  useEffect(() => {
+    if (isOpen && notifications.length === 0 && hasMore && !loading) {
+      loadMore();
+    }
+  }, [isOpen, notifications, hasMore, loading, loadMore]);
   const handleBellClick = async () => {
     if (!isOpen && !notificationsLoaded) {
       await loadNotifications(1); // Load notifications only if not already loaded
@@ -185,30 +192,19 @@ const NotificationBell = () => {
                     itemTemplate={(notification) => (
                       <div className="p-2 border-b text-sm cursor-pointer flex items-center gap-2">
                         <Tag
-                          value={eventIcons[notification.type?.toLowerCase()] || '🔔'}
+                          value={eventIcons[notification.type?.toLowerCase()] || ''}
                           style={{ marginRight: '8px', fontSize: '1.2em', background: '#E0E7FF', color: '#3730A3', borderRadius: '50%', padding: '0.5em' }}
                         />
                         <span className={notification.isRead ? '' : 'font-bold'}>{notification.title}</span>
                       </div>
                     )}
                   />
-                  {!hasMore && (
-                    <div ref={loaderRef} style={{ textAlign: 'center', padding: '1rem', display: 'none' }}></div>
+                  {hasMore && (
+                    <div ref={loaderRef} style={{ textAlign: 'center', padding: '1rem' }}></div>
                   )}
                 </div>
               )}
-              {/* <div className="px-4 pb-4 pt-2 border-t border-gray-200">
-                {(user.role === 'admin' || user.role === 'manufacturer') && (
-                  <Button
-                    label="Show all bid request notifications"
-                    className="w-full p-button-sm p-button-info"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/myBidRequestsNotifications');
-                    }}
-                  />
-                )}
-              </div> */}
+        
             </div>
           </div>
         )}

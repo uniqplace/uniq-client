@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const menuRef = useRef<Menu>(null);
 
   const menuItems = [
-    { icon: 'pi pi-home', label: 'Home', href: '/' },
+    // { icon: 'pi pi-home', label: 'Home', href: '/' },
     { icon: 'pi pi-star', label: 'Marketplace', href: '/marketplace' },
     { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/account/orders' },
     // { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
@@ -39,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const authItems = !user?.id ? [
     { icon: 'pi pi-user-plus', label: 'Register', href: '/register' },
     { icon: 'pi pi-sign-in', label: 'Login', href: '/login' },
+    { icon: 'pi pi-comments', label: 'Chats', href: '/chat' },
   ] : [];
 
   const allMenuItems = [...menuItems, ...authItems];
@@ -49,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     handleClearProducts();
     dispatch(resetProductState());
     localStorage.removeItem('aiProductState');
-    localStorage.clear(); 
+    localStorage.clear();
     navigate('/login');
   };
 

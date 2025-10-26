@@ -12,7 +12,11 @@ import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
 import { useNavigate } from 'react-router-dom';
 import NormalizedRating from '../../../components/shared/NormalizedRating';
+import { openDirectChat } from '../../chat/chatThunks';
+import { selectEnsuring } from '../../chat/chatSelectors';
+import { openPopup } from '../../chat/popupSlice';
 import { persistSelectedOffer } from '../../../utils/persistSelectedOffer';
+
 
 interface BidOffersListProps {
   bidRequestId: string;
@@ -41,6 +45,8 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
   const offers = useSelector((state: RootState) => state.bidOffer.offers);
   const loading = useSelector((state: RootState) => state.bidOffer.loading);
   const error = useSelector((state: RootState) => state.bidOffer.error);
+  const ensuring = useSelector(selectEnsuring);
+
 
   const sortOptions = [
     { label: 'By Price', value: 'price' },
@@ -84,6 +90,31 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
       navigate(`/BidOfferDetails/${offer._id}`, { state: { offer: offer } });
     }
   };
+  const openChat = async (offer: BidOffer, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!offer?._id) return;
+
+    const bidOfferId = offer._id;
+    const bidRequestId =
+      (offer as BidOffer).bidRequestId?._id ||
+      (typeof (offer as BidOffer).bidRequestId._id === 'string' ? (offer as BidOffer).bidRequestId._id : null);
+
+    if (!bidRequestId) {
+      console.error('Missing bidRequestId on offer');
+      return;
+    }
+
+    try {
+      console.log('[BidOffersList] Opening chat for bidRequestId:', bidRequestId, 'bidOfferId:', bidOfferId);
+      const { cid } = await dispatch(openDirectChat({ bidRequestId, bidOfferId })).unwrap();
+      (() => dispatch(openPopup(cid)))();
+      navigate(`/chat/${encodeURIComponent(cid)}`);
+    } catch (err) {
+      console.error('[BidOffersList] openDirectChat failed:', err);
+    }
+  };
+
+
   // Client-side sorting logic
   function sortOffers(offers: BidOffer[], sortOption: 'date' | 'price' | 'rating') {
     if (!offers) return [];
@@ -229,15 +260,21 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
                   <div className="md:col-span-1 flex justify-center mt-1 md:mt-0">
                     <Button
                       className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
-                      icon="pi pi-comments"
+                      icon={ensuring ? 'pi pi-spin pi-spinner' : 'pi pi-comments'}
                       aria-label="Chat"
-                    ></Button>
+                      disabled={ensuring}
+                      onClick={(e) => openChat(offer, e)}
+                    />
                     <Button
                       className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-150 text-xl"
-                      icon="pi pi-comments"
+                      icon={ensuring ? 'pi pi-spin pi-spinner' : 'pi pi-comments'}
                       aria-label="Chat"
+                      disabled={ensuring}
+                      onClick={(e) => openChat(offer, e)}
                     />
+
                   </div>
+
                   {/* WhatsApp-style Send button only for selected offer in selection mode */}
                   {isSelectingManufacturer && selectedOfferId === offer._id && (
                     <div
@@ -249,6 +286,35 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidR
                         style={{ minWidth: '44px', height: '44px' }}
                       >
                         <div className="flex justify-center">
+                          <Button
+                            label="Select this offer"
+                            icon="pi pi-send"
+                            className="p-button-rounded p-button-sm shadow-lg transition-all duration-200 group-hover:scale-110"
+                            style={{
+                              backgroundColor: '#25D366',
+                              borderColor: '#25D366',
+                              color: '#fff',
+                              fontSize: '1rem',
+                              padding: '0.5rem 1rem',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 'auto',
+                              whiteSpace: 'nowrap',
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/checkout/${offer.bidRequestId.productId._id ?? ''}`, {
+                                state: {
+                                  product: {
+                                    ...offer.bidRequestId.productId,
+                                    creator: offer.manufacturerId,
+                                    price: offer.price,
+                                  },
+                                },
+                              });
+                            }}
+                          />
                         </div>
                       </span>
                     </div>
