@@ -41,6 +41,7 @@ import ThreadsStream from './features/chat/pages/ThreadsStream';
 
 import CreatorProfilePage from './features/user/components/CreatorProfilePage';
 import ManufacturerProfilePage from './features/user/components/ManufacturerProfilePage';
+import AiProductDebugPanel from './features/product Idea & AI/components/AiProductDebugPanel';
 
 
 
@@ -103,7 +104,6 @@ function App() {
           <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
           <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
           <Route path="/checkout/:productId" element={<CheckoutPage />} />
-          <Route path='/similar-products' element={<ParentComponent productId={'68caaf06402f7d6e81e36d18'}/> } />
           <Route
             path="/myBidRequests/:bidRequestId"
             element={
