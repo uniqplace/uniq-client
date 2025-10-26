@@ -66,20 +66,23 @@ export default function AiProductDebugPanel() {
     }
   );
 
-  useEffect(() => {
-    if (aiProduct) {
-      createEmbedding(aiProduct )
-        .unwrap()
-        .then((res) => {
-          console.log("Embedding created:", res);
-          setEmbedding(res);
-        })
-        .catch((err) => {
-          console.error("Error creating embedding:", err);
-        });
-    }
-  }, [aiProduct, createEmbedding])
-  
+useEffect(() => {
+  const lastMsg = messages[messages.length - 1];
+  if (
+    aiProduct &&
+    Array.isArray(aiProduct.params) &&
+    aiProduct.params.length > 0 &&
+    lastMsg &&
+    lastMsg.sender === "ai"
+  ) {
+    createEmbedding(aiProduct)
+      .unwrap()
+      .then((res) => setEmbedding(res))
+      .catch((err) => console.error("Error creating embedding:", err));
+  }
+  // eslint-disable-next-line
+}, [JSON.stringify(aiProduct.params), messages]);
+
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -128,7 +131,9 @@ export default function AiProductDebugPanel() {
     setUserText("");
     setTimeout(scrollToBottom, 100);
   };
-
+  console.log('aiProduct in AiProductDebugPanel:', aiProduct);
+  console.log('messages in AiProductDebugPanel:', messages);
+  
   // enums for selects
   const statusOptions = ["draft", "published", "hidden"];
   const conditionOptions = ["new", "like_new", "good", "fair", "poor"];

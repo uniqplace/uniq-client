@@ -11,14 +11,54 @@ import {
   validateSpec,
   lockSpec,
 } from "./aiProductThunks";
+import { saveToLocalStorage, loadFromLocalStorage } from '../../../utils/localStorageUtils';
+
+// ==== Local Storage Helpers ====
+const LOCAL_STORAGE_KEY = 'aiProductState';
+
+function validateProductPayload(obj: any): obj is ProductPayload {
+  if (!obj || typeof obj !== 'object') return false;
+  if (typeof obj.sessionId !== 'string') return false;
+  if (typeof obj.title !== 'string') return false;
+  if (typeof obj.description !== 'string') return false;
+  if (typeof obj.price !== 'number') return false;
+  if (!Array.isArray(obj.images)) return false;
+  if (!Array.isArray(obj.subCategories)) return false;
+  if (!Array.isArray(obj.tags)) return false;
+  if (!Array.isArray(obj.params)) return false;
+  if (!Array.isArray(obj.audit)) return false;
+  if (typeof obj.status !== 'string') return false;
+  if (typeof obj.condition !== 'string') return false;
+  if (typeof obj.location !== 'string') return false;
+  if (typeof obj.createdByAI !== 'boolean') return false;
+  // Optionally check other fields
+  return true;
+}
 
 // ==== Initial State ====
-const initialState: ProductPayload = {
-  sessionId: uuidv4(),
-  params: [],
-  audit: [],
-  status: "idle",
-};
+const loadedState = loadFromLocalStorage<ProductPayload>(LOCAL_STORAGE_KEY);
+const initialState: ProductPayload = validateProductPayload(loadedState)
+  ? loadedState
+  : {
+      sessionId: uuidv4(),
+      title: "",
+      description: "",
+      price: 0,
+      images: [],
+      creator: undefined,
+      category: undefined,
+      subCategories: [],
+      status: "draft",
+      condition: "new",
+      location: "",
+      tags: [],
+      params: [],
+      audit: [],
+      embedding: undefined,
+      summary: undefined,
+      aiVersion: undefined,
+      createdByAI: true
+    };
 
 // ==== Slice ====
 const aiProductSlice = createSlice({
@@ -33,6 +73,7 @@ const aiProductSlice = createSlice({
         action: "add_param",
         details: { id: action.payload.id },
       });
+      saveToLocalStorage(LOCAL_STORAGE_KEY, state);
     },
     updateParam(state, action: PayloadAction<{ id: string; value: any }>) {
       const param = state.params.find((p) => p.id === action.payload.id);
@@ -45,6 +86,7 @@ const aiProductSlice = createSlice({
           action: "update_param",
           details: { id: param.id, value: action.payload.value },
         });
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     skipParam(state, action: PayloadAction<{ id: string; reason?: string }>) {
@@ -62,7 +104,12 @@ const aiProductSlice = createSlice({
           action: "skip_param",
           details: { id: param.id },
         });
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
+    },
+    resetProductState(state) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      Object.assign(state, initialState);
     },
   },
   extraReducers: (builder) => {
@@ -76,26 +123,59 @@ const aiProductSlice = createSlice({
         state.summary = action.payload.summary;
         state.category = action.payload.category;
         state.aiVersion = action.payload.aiVersion;
+        state.title = action.payload.title || "";
+        state.description = action.payload.description || "";
+        state.price = action.payload.price || 0;
+        state.images = action.payload.images || [];
+        state.subCategories = action.payload.subCategories || [];
+        state.condition = action.payload.condition || "new";
+        state.location = action.payload.location || "";
+        state.tags = action.payload.tags || [];
+        state.locale = action.payload.locale || undefined;
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
       })
       .addCase(refineSpec.fulfilled, (state, action) => {
-        state.status = "idle";
-        state.params = action.payload.updatedParams;
+        state.status = action.payload.status || "idle";
+        state.params = action.payload.params || action.payload.updatedParams;
         state.summary = action.payload.summary;
+        state.category = action.payload.category || state.category;
+        state.aiVersion = action.payload.aiVersion || state.aiVersion;
+        if (action.payload.title) state.title = action.payload.title;
+        if (action.payload.description) state.description = action.payload.description;
+        if (action.payload.price) state.price = action.payload.price;
+        if (action.payload.images) state.images = action.payload.images;
+        if (action.payload.subCategories) state.subCategories = action.payload.subCategories;
+        if (action.payload.condition) state.condition = action.payload.condition;
+        if (action.payload.location) state.location = action.payload.location;
+        if (action.payload.tags) state.tags = action.payload.tags;
+        if (action.payload.locale) state.locale = action.payload.locale;
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(validateSpec.pending, (state) => {
         state.status = "validating";
       })
       .addCase(validateSpec.fulfilled, (state, action) => {
         state.status = action.payload.blocking ? "error" : "idle";
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       })
       .addCase(lockSpec.fulfilled, (state) => {
         state.status = "locked";
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       });
   },
 });
 
-export const { addParam, updateParam, skipParam } = aiProductSlice.actions;
+export const { addParam, updateParam, skipParam, resetProductState } = aiProductSlice.actions;
 export default aiProductSlice.reducer;
+
+// NOTE: If you use local state (useState) for params/messages in any component, make sure to reset them as well on logout/login!
+// For example, in AiProductDebugPanel, reset messages state when user changes or on logout.
+//
+// Example for AiProductDebugPanel:
+// const user = useAppSelector(state => state.user);
+// useEffect(() => {
+//   setMessages([]); // or set to initial value
+// }, [user]);
