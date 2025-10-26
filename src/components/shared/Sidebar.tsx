@@ -33,13 +33,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     { icon: 'pi pi-briefcase', label: 'My Bid Requests', href: '/MyBidRequest' },
     { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
     { icon: 'pi pi-cog', label: 'AI Product Debug', href: '/ai-product-debug' },
+    { icon: 'pi pi-comments', label: 'Chats', href: '/chat' },
   ];
 
   // Add auth items if user is not logged in
   const authItems = !user?.id ? [
     { icon: 'pi pi-user-plus', label: 'Register', href: '/register' },
     { icon: 'pi pi-sign-in', label: 'Login', href: '/login' },
-    { icon: 'pi pi-comments', label: 'Chats', href: '/chat' },
+    
   ] : [];
 
   const allMenuItems = [...menuItems, ...authItems];
