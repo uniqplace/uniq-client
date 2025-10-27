@@ -22,12 +22,22 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [isArchived, setIsArchived] = useState(false);
 
+  const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
     let isMounted = true;
     async function loadChannel() {
       if (chatClient && thread.streamCid) {
         const [type, id] = thread.streamCid.split(":");
         const ch = chatClient.channel(type, id);
+        // Permission check: is current user a member?
+        const members = ch.state?.members ? Object.keys(ch.state.members) : [];
+        if (myId && !members.includes(myId)) {
+          if (isMounted) {
+            setError('You do not have permission to view this chat');
+            setLoading(false);
+          }
+          return;
+        }
         try {
           await ch.watch();
           if (isMounted) {
@@ -49,7 +59,7 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
     }
     loadChannel();
     return () => { isMounted = false; };
-  }, [chatClient, thread.streamCid]);
+  }, [chatClient, thread.streamCid, reloadKey]);
 
   // Listen for real-time events
   useEffect(() => {
@@ -95,9 +105,20 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
       style={{ cursor: 'pointer' }}
     >
       {error ? (
-        <div className="text-xs text-red-500">{error}</div>
+        <div className="flex flex-col items-start gap-2">
+          <div className="text-xs text-red-500">{error}</div>
+          <button
+            className="px-2 py-1 bg-blue-500 text-white text-xs rounded"
+            onClick={e => {
+              e.stopPropagation();
+              setLoading(true);
+              setError(null);
+              setReloadKey(k => k + 1);
+            }}
+          >נסה שוב</button>
+        </div>
       ) : loading ? (
-  <div className="text-xs text-gray-400">Loading data…</div>
+        <div className="text-xs text-gray-400">Loading data…</div>
       ) : (
         <>
           <div className="flex gap-3 items-center">

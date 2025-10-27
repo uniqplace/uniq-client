@@ -1,7 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import {
   useEffect,
-  //useMemo,
   useRef,
   useState,
   createContext,
@@ -70,13 +69,17 @@ export default function ChatProvider({ children }: PropsWithChildren) {
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
   const [epoch, setEpoch] = useState(0); // for reconnect on Retry
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const connecting = useRef(false);
   const mounted = useRef(true);
+  const lastUserId = useRef<string | null>(null);
 
   const retry = () => setEpoch((x) => x + 1);
 
   useEffect(() => {
     mounted.current = true;
+
+    let activeClient: StreamChat | null = null;
 
     async function connect() {
       if (connecting.current) return;
@@ -86,9 +89,18 @@ export default function ChatProvider({ children }: PropsWithChildren) {
         setError(null);
 
         const { apiKey, userId, token } = await issueStreamToken();
-        const c = StreamChat.getInstance(apiKey);
+        setCurrentUserId(userId);
 
-      // Listen to connection changes
+        // If userId changed, disconnect previous client and create new instance
+        if (lastUserId.current && lastUserId.current !== userId && client) {
+          await client.disconnectUser().catch(() => {});
+          setClient(null);
+        }
+
+        lastUserId.current = userId;
+        // Always create a new StreamChat instance for each user
+        const c = new StreamChat(apiKey);
+
         c.on('connection.changed', (e) => {
           if (!mounted.current) return;
           setOnline(!!e.online);
@@ -121,6 +133,7 @@ export default function ChatProvider({ children }: PropsWithChildren) {
         if (prev) prev.disconnectUser().catch(() => {});
         return null;
       });
+      lastUserId.current = null;
     };
   // epoch enables clean Retry
   }, [epoch]);
