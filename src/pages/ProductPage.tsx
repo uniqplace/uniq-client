@@ -9,6 +9,10 @@ import { clearSelectedProduct } from '../features/marketplace/slices/marketplace
 import type { RootState, AppDispatch } from '../store';
 import type { Product } from '../types';
 import UserCard from '../components/shared/UserCard';
+import { ensureDirectProduct } from '../features/chat/api/chatApi';
+import { toast } from 'react-toastify';
+import { useAppSelector } from '../hooks/hooks';
+import ChatPopup from '../features/chat/components/ChatPopup';
 
 
 
@@ -19,9 +23,8 @@ const ProductPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { selectedProduct, productLoading, productError } = useSelector(
-    (state: RootState) => state.marketplace
-  );
+  const { selectedProduct, productLoading, productError } = useSelector((state: RootState) => state.marketplace);
+  const currentUser = useAppSelector((state) => state.user);
 
 
   useEffect(() => {
@@ -90,10 +93,55 @@ const ProductPage: React.FC = () => {
     navigate(`/checkout/${currentProduct._id}`, { state: { product: currentProduct } });
   };
 
+  // צ'אט עם המוכר
+  const [chatLoading, setChatLoading] = React.useState(false);
+  const [chatPopupCid, setChatPopupCid] = React.useState<string | null>(null);
+  const handleChatWithSeller = async () => {
+    if (chatLoading) return;
+    setChatLoading(true);
+    const sellerUserId = currentProduct.creator?.id || currentProduct.creator?._id;
+    if (!sellerUserId) {
+      toast.error('Seller ID not found');
+      setChatLoading(false);
+      return;
+    }
+    try {
+      const { cid } = await ensureDirectProduct({ productId: currentProduct._id, sellerUserId, title: currentProduct.title });
+      toast.success('Chat with seller opened!');
+      setChatPopupCid(cid);
+    } catch (e) {
+      // Error handling for common cases
+      let msg = 'Failed to open chat with seller';
+      const status = (e && typeof e === 'object' && 'response' in e && e.response && typeof e.response === 'object' && 'status' in e.response) ? e.response.status : undefined;
+      if (status === 401) {
+        msg = 'Please login again';
+        toast.error(msg);
+        setTimeout(() => navigate('/login', { state: { from: `/product/${currentProduct._id}` } }), 1200);
+      } else if (status === 403) {
+        msg = 'You do not have permission to open chat with seller';
+        toast.error(msg);
+      } else if (status === 404) {
+        msg = 'Chat not found (try refreshing the page)';
+        toast.error(msg);
+      } else if (status === 500) {
+        msg = 'Server error - check IDs';
+        toast.error(msg);
+      } else {
+        toast.error(msg);
+      }
+      setChatLoading(false);
+      return;
+    }
+    setChatLoading(false);
+  };
+
   const formattedPrice = `$${currentProduct.price.toFixed(2)}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
+      {chatPopupCid && (
+        <ChatPopup cid={chatPopupCid} onClose={() => setChatPopupCid(null)} />
+      )}
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-2">
@@ -263,6 +311,31 @@ const ProductPage: React.FC = () => {
                     : 'Not Available'
                   }
                 </button>
+                {/* כפתור צ׳אט עם המוכר */}
+                {currentUser && (currentUser.id === (currentProduct.creator?.id || currentProduct.creator?._id)) ? (
+                  <button
+                    disabled
+                    className="w-full py-4 px-6 rounded-xl font-bold text-lg flex items-center justify-center gap-2 border-2 bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
+                    style={{ marginTop: '0.5rem', letterSpacing: '0.5px' }}
+                  >
+                    <i className="pi pi-comments text-xl text-gray-400"></i>
+                    <span>Cannot open chat with yourself</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleChatWithSeller}
+                    disabled={chatLoading}
+                    className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform flex items-center justify-center gap-2 border-2 ${chatLoading
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'
+                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-blue-400 hover:border-purple-500 shadow-lg hover:scale-[1.03]'
+                    }`}
+                    style={{ marginTop: '0.5rem', letterSpacing: '0.5px' }}
+                  >
+                    <i className={`pi pi-comments text-xl ${chatLoading ? 'text-gray-400' : ''}`}></i>
+                    <span>Chat with Seller</span>
+                    {chatLoading && <i className="pi pi-spin pi-spinner ml-2 text-lg"></i>}
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -7,4 +7,6 @@ export const socket_events = {
   general_notification: 'general_notification',
   bid_sent_confirmation: 'bid_sent_confirmation',
   connect: 'connect',
+  chat_new_thread: 'chat:new-thread',
+  chat_new_message: 'chat:new-message',
 };

@@ -1,4 +1,9 @@
 // Shared API request helper
+// HTTP API calls for chat (ensure, threads, etc.)
+import type { EnsureDirectBidReq, EnsureDirectBidRes, ListThreadsQuery , EnsureDirectProductReq,     // 👈 חדש
+  EnsureDirectProductRes,  } from './chatApi.types';
+
+
 async function apiRequest<T>(input: RequestInfo, init?: RequestInit, errorMessage?: string): Promise<T> {
   const res = await fetch(input, init);
   let data;
@@ -26,8 +31,7 @@ export async function deleteThreadById(threadId: string): Promise<{ success: boo
   );
 }
 
-// HTTP API calls for chat (ensure, threads, etc.)
-import type { EnsureDirectBidReq, EnsureDirectBidRes, ListThreadsQuery } from './chatApi.types';
+
 
 export async function issueStreamToken(): Promise<{ apiKey: string; userId: string; token: string }> {
   return apiRequest(
@@ -68,6 +72,11 @@ export async function listThreads(query: ListThreadsQuery = {}) {
   if (query.page) p.set('page', String(query.page));
   if (query.limit) p.set('limit', String(query.limit));
   if (query.q) p.set('q', query.q);
+  if (query.productId) p.set('productId', query.productId);   
+  if (query.orderId) p.set('orderId', query.orderId);         
+  if (query.bidRequestId) p.set('bidRequestId', query.bidRequestId); 
+  if (query.bidOfferId) p.set('bidOfferId', query.bidOfferId);       
+
   return apiRequest(
     `${import.meta.env.VITE_API_BASE_URL}/chat/threads?${p.toString()}`,
     { credentials: 'include' },
@@ -75,10 +84,26 @@ export async function listThreads(query: ListThreadsQuery = {}) {
   );
 }
 
+
+
+export async function ensureDirectProduct(body: EnsureDirectProductReq): Promise<EnsureDirectProductRes> {
+  return apiRequest(
+    `${import.meta.env.VITE_API_BASE_URL}/chat/ensure-direct-product`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    'Failed to ensure product chat'
+  );
+}
+
 const chatApi = {
   deleteThreadById,
   issueStreamToken,
   ensureDirectBid,
+  ensureDirectProduct,
   selectThreadByCid,
   listThreads,
 };

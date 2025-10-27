@@ -1,113 +1,38 @@
-// import { io, Socket } from 'socket.io-client';
-
-// let socket: Socket | null = null;
-// const socketUrl = import.meta.env.VITE_SOCKET_URL;
-// // const socket = io(socketUrl, {
-// //   withCredentials: true,
-// //   transports: ['websocket'],
-// //   path: import.meta.env.VITE_SOCKET_PATH || '/socket.io'
-// // });
-
-
-// export const initializeSocket = (): Socket => {
-//   if (!socket) {
-//     socket = io(socketUrl, {
-//       withCredentials: true,
-//       transports: ['websocket'],
-//        path: import.meta.env.VITE_SOCKET_PATH || '/socket.io'
-//     });
-//   }
-//   return socket;
-// };
-
-// export const getSocket = (): Socket | null => {
-//   return socket;
-// };
-
-// export const disconnectSocket = (): void => {
-//   if (socket) {
-//     socket.disconnect();
-//     socket = null;
-//   }
-// };
-
-// // For backward compatibility
-// const defaultSocket = {
-//   on: (event: string, callback: any) => {
-//     if (socket) {
-//       socket.on(event, callback);
-//     }
-//   },
-//   off: (event: string, callback?: any) => {
-//     if (socket) {
-//       socket.off(event, callback);
-//     }
-//   },
-//   emit: (event: string, data?: any) => {
-//     if (socket) {
-//       socket.emit(event, data);
-//     }
-//   },
-//   disconnect: () => {
-//     disconnectSocket();
-//   }
-// };
-
-// export default defaultSocket;
-
+// services/socket.ts
 import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
 const socketUrl = import.meta.env.VITE_SOCKET_URL;
-// const socket = io(socketUrl, {
-//  withCredentials: true,
-//  transports: ['websocket'],
-//  path: import.meta.env.VITE_SOCKET_PATH || '/api/socket.io'
-// });
-
 
 export const initializeSocket = (): Socket => {
   if (!socket) {
     socket = io(socketUrl, {
       withCredentials: true,
       transports: ['websocket'],
-      path: import.meta.env.VITE_SOCKET_PATH || '/socket.io'
+      path: import.meta.env.VITE_SOCKET_PATH || '/socket.io',
+    });
+
+    // DEBUG חיבור ושגיאות
+    socket.on('connect', () => {
+      console.log('[socket] connected', socket?.id);
+    });
+    socket.on('connect_error', (err) => {
+      console.error('[socket] connect_error', err.message, err);
+    });
+    socket.on('error', (err) => {
+      console.error('[socket] error', err);
+    });
+    socket.on('disconnect', (reason) => {
+      console.warn('[socket] disconnect', reason);
+    });
+    socket.on('reconnect', (attempt) => {
+      console.log('[socket] reconnect', attempt);
     });
   }
   return socket;
 };
 
-export const getSocket = (): Socket | null => {
-  return socket;
-};
+export const getSocket = () => socket;
+export const disconnectSocket = () => { socket?.disconnect(); socket = null; };
 
-export const disconnectSocket = (): void => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-};
-
-// For backward compatibility
-const defaultSocket = {
-  on: (event: string, callback: any) => {
-    if (socket) {
-      socket.on(event, callback);
-    }
-  },
-  off: (event: string, callback?: any) => {
-    if (socket) {
-      socket.off(event, callback);
-    }
-  },
-  emit: (event: string, data?: any) => {
-    if (socket) {
-      socket.emit(event, data);
-    }
-  },
-  disconnect: () => {
-    disconnectSocket();
-  }
-};
-
-export default defaultSocket;
+export default { on:(e: string, cb:any)=>socket?.on(e, cb), off:(e:string, cb?:any)=>socket?.off(e, cb), emit:(e:string,d?:any)=>socket?.emit(e,d), disconnect:disconnectSocket };
