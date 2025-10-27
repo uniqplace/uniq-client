@@ -69,7 +69,7 @@ export default function ChatProvider({ children }: PropsWithChildren) {
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
   const [epoch, setEpoch] = useState(0); // for reconnect on Retry
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Removed unused currentUserId
   const connecting = useRef(false);
   const mounted = useRef(true);
   const lastUserId = useRef<string | null>(null);
@@ -79,7 +79,7 @@ export default function ChatProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     mounted.current = true;
 
-    let activeClient: StreamChat | null = null;
+  // Removed unused activeClient
 
     async function connect() {
       if (connecting.current) return;
@@ -89,7 +89,7 @@ export default function ChatProvider({ children }: PropsWithChildren) {
         setError(null);
 
         const { apiKey, userId, token } = await issueStreamToken();
-        setCurrentUserId(userId);
+  // Removed setCurrentUserId (unused)
 
         // If userId changed, disconnect previous client and create new instance
         if (lastUserId.current && lastUserId.current !== userId && client) {
