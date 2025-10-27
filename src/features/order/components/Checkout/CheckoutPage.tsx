@@ -171,67 +171,70 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     }
   };
 
+  const stepperState = useSelector((state: RootState) => state.stepper); // Assuming stepper state is in Redux
+
   useEffect(() => {
-    const fetchOrderDetails = async () => {
-      let storedOrder = null;
-
-      // Iterate through localStorage keys to find the order by productId
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('completedOrder_')) {
-          const orderData = localStorage.getItem(key);
-          if (orderData) {
-            const parsedOrder = JSON.parse(orderData);
-            if (parsedOrder.product === order.productId) {
-              storedOrder = parsedOrder;
-              break;
-            }
-          }
-        }
-      }
-
-      if (storedOrder) {
-        console.log('Order found in localStorage:', storedOrder);
-        setOrder(storedOrder);
-        setIsReadOnly(true);
-      } else {
-        // Fetch order details from the server if not in localStorage
-        try {
-          console.log('Fetching order details for productId:', order.productId);
-          console.log('Full URL:', `/api/orders/byProduct/${order.productId}`);
-
-          const token = auth?.token || localStorage.getItem('token'); // Retrieve token from Redux or localStorage
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders/byProduct/${order.productId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (response.ok) {
-            const fetchedOrder = await response.json();
-            console.log('Fetched order details:', fetchedOrder); // Log the fetched order details
-
-            if (fetchedOrder?.success && fetchedOrder.data) {
-              setOrder(fetchedOrder.data); // Update state with the correct data structure
-              setIsReadOnly(true);
-            } else {
-              console.warn('Fetched order is missing required fields:', fetchedOrder);
-            }
-          } else {
-            console.error('Server returned an error:', response.status, response.statusText);
-          }
-        } catch (error) {
-          console.error('Failed to fetch order details:', error);
-        }
-      }
-    };
-
-    if (order.productId) {
+    const productStepper = stepperState.productsInProgress[order.productId];
+    if (productStepper && productStepper.completedSteps[3]) {
       fetchOrderDetails();
     }
-  }, [order.productId]);
+  }, [stepperState.productsInProgress, order.productId]);
+
+  const fetchOrderDetails = async () => {
+    let storedOrder = null;
+
+    // Iterate through localStorage keys to find the order by productId
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('completedOrder_')) {
+        const orderData = localStorage.getItem(key);
+        if (orderData) {
+          const parsedOrder = JSON.parse(orderData);
+          if (parsedOrder.product === order.productId) {
+            storedOrder = parsedOrder;
+            break;
+          }
+        }
+      }
+    }
+
+    if (storedOrder) {
+      console.log('Order found in localStorage:', storedOrder);
+      setOrder(storedOrder);
+      setIsReadOnly(true);
+    } else {
+      // Fetch order details from the server if not in localStorage
+      try {
+        console.log('Fetching order details for productId:', order.productId);
+        console.log('Full URL:', `/api/orders/byProduct/${order.productId}`);
+
+        const token = auth?.token || localStorage.getItem('token'); // Retrieve token from Redux or localStorage
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders/byProduct/${order.productId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const fetchedOrder = await response.json();
+          console.log('Fetched order details:', fetchedOrder); // Log the fetched order details
+
+          if (fetchedOrder?.success && fetchedOrder.data) {
+            setOrder(fetchedOrder.data); // Update state with the correct data structure
+            setIsReadOnly(true);
+          } else {
+            console.warn('Fetched order is missing required fields:', fetchedOrder);
+          }
+        } else {
+          console.error('Server returned an error:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('Failed to fetch order details:', error);
+      }
+    }
+  };
 
   return (
     <div className="checkout-root">
