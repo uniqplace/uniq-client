@@ -1,15 +1,13 @@
 import React from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
+
 
 interface ProductCompletedDialogProps {
   visible: boolean;
   onHide: () => void;
-  onCreateNewProduct: () => Promise<void>;
-  loading?: boolean;
 }
 
-const ProductCompletedDialog: React.FC<ProductCompletedDialogProps> = ({ visible, onHide, onCreateNewProduct, loading }) => (
+const ProductCompletedDialog: React.FC<ProductCompletedDialogProps> = ({ visible, onHide,}) => (
   <Dialog
     header={<span className="text-xl font-bold text-primary">Product Completed!</span>}
     visible={visible}
@@ -25,12 +23,6 @@ const ProductCompletedDialog: React.FC<ProductCompletedDialogProps> = ({ visible
         <span className="text-gray-600">We hope you enjoy your unique creation.</span><br />
         <span className="text-gray-400 text-sm">Thank you for choosing us!</span>
       </p>
-      <Button
-        label={loading ? "create new product..." : "Create New Product"}
-        onClick={onCreateNewProduct}
-        className="p-button-success mt-3 px-6 py-2 rounded-lg text-base font-semibold shadow-md"
-        disabled={loading}
-      />
     </div>
   </Dialog>
 );

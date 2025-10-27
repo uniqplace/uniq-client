@@ -1,7 +1,6 @@
 import type { BidOffer } from "../types";
 
 export function getMaxRating(offers: BidOffer | BidOffer[] | null | undefined): number {
-    console.log('offers in getMaxRating:', offers);
     
     if (!offers) return 5;
 

@@ -33,6 +33,7 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
+import AiProductDebugPanel from './features/product Idea & AI/components/AiProductDebugPanel';
 // import ThreadsPage from './features/chat/pages/ThreadsPage';
 import ChatPage from './features/chat/pages/ChatPage';
 import { initChatSocketBridge } from './features/chat/socketBridge';
@@ -102,6 +103,7 @@ function App() {
           <Route path="/uploadProduct" element={<ProductUploadForm />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+          <Route path="/create-your-own-product/:productId/:stepKey/*" element={<CreateYourOwnProduct />} />
           <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
           <Route path="/checkout/:productId" element={<CheckoutPage />} />
           <Route
@@ -126,6 +128,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/ai-product-debug" element={<AiProductDebugPanel />} />
 
             <Route path="/chat" element={<ThreadsStream />} />
 
