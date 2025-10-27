@@ -1,11 +1,17 @@
 export const defaultProductTemplate = {
   title: 'Test Product',
   description: 'This is a hardcoded product',
-  price: 123,
+  price: 100,
   images: [],
-  category: 'hardcoded-category',
+  category: {
+    _id: "68da45f3dc51c4a168a3c871",
+    name: "home systems",
+  },
   subCategories: [],
-  condition: 'new',
+  condition: 'new' as 'new' | 'like_new' | 'good' | 'fair' | 'poor',
   location: 'Hardcoded Location',
   tags: ['hardcoded'],
+  status: "draft" as "published" | "draft" | "hidden",
+  stock: 10,
+  createdByAI: true,
 };

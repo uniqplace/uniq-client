@@ -4,7 +4,8 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Tag } from 'primereact/tag';
 import { Divider } from 'primereact/divider';
 import { SHIPPING_OPTIONS } from './CheckoutPage';
-import type { Order, Product } from '../../../../types';
+import type { Order, Address } from '../../../../types/index'; 
+import type { Product } from '../../../../types';
 import './CheckoutPage.css';
 
 interface OrderDetailsProps {
@@ -14,11 +15,12 @@ interface OrderDetailsProps {
     setShipping: (value: string) => void;
     submitted: boolean;
     formErrors: { [key: string]: string };
-    product: Product;
+    readOnly?: boolean; 
+    product: Product; 
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({
-    order, setOrder, shipping, setShipping, submitted, formErrors
+    order, setOrder, shipping, setShipping, submitted, formErrors, readOnly = false, 
 }) => {
     return (
         <div>
@@ -26,16 +28,17 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
             <div className="mb-4">
                 <label className="font-bold block mb-2">Quantity</label>
                 <InputNumber
-                    value={order.quantity}
+                    value={order.quantity ?? 1} // Ensure default value is 1
                     min={1}
                     max={order.product?.stock || 1}
-                    onValueChange={e => setOrder({ ...order, quantity: e.value || 1 })}
-                    showButtons
+                    onValueChange={e => !readOnly && setOrder({ ...order, quantity: e.value || 1 })}
+                    showButtons={!readOnly}
                     buttonLayout="horizontal"
                     decrementButtonClassName="p-button-sm p-button-outlined p-button-danger"
                     incrementButtonClassName="p-button-sm p-button-outlined p-button-success"
                     inputStyle={{ textAlign: 'center', width: '60px' }}
                     style={{ borderRadius: '8px' }}
+                    disabled={readOnly} // Disable input in read-only mode
                 />
                 {order.product?.stock !== undefined && (
                     <p className="mt-2 text-sm text-gray-500">
@@ -51,7 +54,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
                     {SHIPPING_OPTIONS.map(opt => (
                         <div
                             key={opt.value}
-                            onClick={() => setShipping(opt.value)}
+                            onClick={() => !readOnly && setShipping(opt.value)}
                             className={`shipping-card ${shipping === opt.value ? 'selected' : ''}`}
                         >
                             <div className="shipping-header">
@@ -74,22 +77,26 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
                 </div>
             </Divider>
             <div className="shipping-form">
-                {['street', 'city', 'state', 'zipCode', 'country'].map(field => (
-                    <div key={field} className="shipping-field">
-                        <label htmlFor={field} className="font-bold block mb-1">
-                            {field.charAt(0).toUpperCase() + field.slice(1)}
+                {(['street', 'city', 'state', 'zipCode', 'country'] as (keyof Address)[]).map((field: keyof Address) => (
+                    <div key={String(field)} className="shipping-field">
+                        <label htmlFor={String(field)} className="font-bold block mb-1">
+                            {String(field).charAt(0).toUpperCase() + String(field).slice(1)}
                         </label>
                         <InputText
-                            id={field}
-                            className={`w-full ${submitted && formErrors[`shippingAddress.${field}`] ? 'p-invalid' : ''}`}
-                            value={(order.shippingAddress as any)[field]}
-                            onChange={e => setOrder({
+                            id={String(field)}
+                            className={`w-full ${submitted && formErrors[`shippingAddress.${String(field)}`] ? 'p-invalid' : ''}`}
+                            value={(order.shippingAddress?.[field] ?? '')} // Ensure default value is an empty string
+                            onChange={e => !readOnly && setOrder({
                                 ...order,
-                                shippingAddress: { ...order.shippingAddress, [field]: e.target.value }
+                                shippingAddress: {
+                                    ...order.shippingAddress,
+                                    [field]: e.target.value
+                                }
                             })}
+                            disabled={readOnly} // Disable input in read-only mode
                         />
-                        {submitted && formErrors[`shippingAddress.${field}`] && (
-                            <small className="p-error">{formErrors[`shippingAddress.${field}`]}</small>
+                        {submitted && formErrors[`shippingAddress.${String(field)}`] && (
+                            <small className="p-error">{formErrors[`shippingAddress.${String(field)}`]}</small>
                         )}
                     </div>
                 ))}
@@ -100,10 +107,11 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
                 <label htmlFor="notes" className="font-bold">Order Notes</label>
                 <InputText
                     id="notes"
-                    value={order.notes}
-                    onChange={e => setOrder({ ...order, notes: e.target.value })}
+                    value={order.notes ?? ''} // Ensure default value is an empty string
+                    onChange={e => !readOnly && setOrder({ ...order, notes: e.target.value })}
                     maxLength={500}
                     className="w-full"
+                    disabled={readOnly} // Disable input in read-only mode
                 />
             </div>
         </div>

@@ -85,7 +85,6 @@ export const OpenBidPage = () => {
     } else if (typeof value === 'number') {
       dateValue = new Date(value);
     } else {
-      // כל ערך אחר לא נתמך
       return '-';
     }
     return formatDeliveryTimeframe(dateValue, 'he-IL');

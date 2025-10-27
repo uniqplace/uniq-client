@@ -63,13 +63,17 @@ function getCategoryIdValue(categoryId: string | { _id: string } | null): string
   return categoryId ?? null;
 }
 
-const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => {
+const ManufacturerPreferencesStep: React.FC<StepProps & { currentStepIndex?: number;onNextStep?: () => void }> = ({ onComplete, setCanGoNext, productId, currentStepIndex, onNextStep }) => {
   const isInitializing = useRef(false);
-  const loading = useAppSelector((state) => state.stepper.loading);
+ // const [isBidOpened, setIsBidOpened] = useState(false);
 
-  // Redux stepper state (must be above localStorage logic)
-  const completedSteps = useAppSelector(state => state.stepper.completedSteps);
-  const currentStepIndex = useAppSelector(state => state.stepper.currentStepIndex);
+  const bidRequest = useAppSelector(state => productId ? state.stepper.productsInProgress[productId]?.bidRequest : undefined);
+
+  // Redux stepper state (per productId)
+  const stepperState = useAppSelector(state => productId ? state.stepper.productsInProgress[productId] : undefined);
+  const loading = stepperState?.loading;
+  const completedSteps = stepperState?.completedSteps;
+  const currentStepIndexRedux = stepperState?.currentStepIndex;
   // Assuming this step is index 1 (change as needed)
   const thisStepIndex = 1;
   const isStepCompleted = completedSteps?.[thisStepIndex];
@@ -78,9 +82,6 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   const isReadOnly = !!isStepCompleted;
   // const isReadOnly = (currentStepIndex ?? -1) > thisStepIndex;
 
-
-  // Get bidRequest from Redux
-  const bidRequest = useAppSelector(state => state.stepper.bidRequest);
 
   const [categoryId, setCategoryId] = useState<string | Category | null>(getCategoryIdValue(bidRequest?.categoryId ?? null));
   const [locationPreference, setLocationPreference] = useState<string | null>(bidRequest?.locationPreference ?? null);
@@ -104,24 +105,31 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
     }
   }, [bidRequest]);
   const dispatch = useDispatch();
+  const navigateToNextStep = () => {
+    if (typeof currentStepIndex === 'number') {
+      const steps = [
+        'product-definition',
+        'manufacturerPreferences',
+        'viewLiveBids',
+        'orderAndPayment',
+        'tracking',
+        'delivery',
+      ];
+      const nextKey = steps[currentStepIndex + 1];
+      if (nextKey && productId) {
+        window.location.href = `/create-your-own-product/${productId}/${nextKey}`;
+      }
+    }
+  };
 
   // Prefill logic: on mount, if no bidRequest in Redux and productId exists, fetch from server
   React.useEffect(() => {
     // Only fetch if bidRequest is empty/null and productId exists
-    if (!bidRequest) {
-      let productId: string | null = null;
-      const keys = Object.keys(localStorage);
-      const productKey = keys.find(k => k.startsWith('productId_'));
-      if (productKey) {
-        productId = localStorage.getItem(productKey);
-      }
-
-      if (productId) {
-        // @ts-ignore
-        dispatch(fetchOpenBidRequestsByProductId(productId));
-      }
+    if (!bidRequest && productId) {
+      // @ts-ignore
+      dispatch(fetchOpenBidRequestsByProductId(productId));
     }
-  }, [dispatch]);
+  }, [dispatch, bidRequest, productId]);
 
   const toast = useRef<Toast>(null);
 
@@ -141,7 +149,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
   // Save form data to bidRequest in Redux slice on change
   React.useEffect(() => {
-    if (!isReadOnly && !isInitializing.current) {
+    if (!isReadOnly && !isInitializing.current && productId) {
       const localPayload = {
         categoryId: getCategoryIdValue(categoryId),
         locationPreference,
@@ -165,76 +173,68 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           payload: {
             ...bidRequest,
             ...localPayload,
+            productId,
           }
         });
       }
     }
-  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch, bidRequest]);
+  }, [categoryId, locationPreference, priceRange, deliveryTimeframe, deliveryMethod, rating, isReadOnly, dispatch, bidRequest, productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Get a real productId from localStorage (can be refactored to Redux if needed)
-    let productId = undefined;
-    const guestId = localStorage.getItem('productId_guest');
-    if (guestId) {
-      productId = guestId;
-    } else {
-      const keys = Object.keys(localStorage);
-      const productKey = keys.find(k => k.startsWith('productId_'));
-      if (productKey) {
-        productId = localStorage.getItem(productKey);
-      }
-    }
     if (!productId) {
-  showErrorToast(toast, 'No productId found. Please start from the first step.');
+      showErrorToast(toast, 'No productId found. Please start from the first step.');
       return;
     }
 
-    // Use bidRequest from Redux
-    if (!bidRequest) {
-  showErrorToast(toast, 'Preferences not found in Redux');
-      return;
-    }
+    const baseBidRequest = bidRequest || {
+      categoryId: getCategoryIdValue(categoryId),
+      locationPreference,
+      priceRange,
+      deliveryTimeframe: deliveryTimeframe.toISOString(),
+      deliveryMethod,
+      rating,
+      productId,
+    };
 
     // Validate that all required fields are present
-    if (!bidRequest.categoryId || typeof bidRequest.categoryId !== 'string') {
-  showErrorToast(toast, 'Category is required');
+    if (!baseBidRequest.categoryId || typeof baseBidRequest.categoryId !== 'string') {
+      showErrorToast(toast, 'Category is required');
       return;
     }
-    if (!bidRequest.locationPreference) {
-  showErrorToast(toast, 'Location is required');
+    if (!baseBidRequest.locationPreference) {
+      showErrorToast(toast, 'Location is required');
       return;
     }
-    if (!bidRequest.priceRange?.min || !bidRequest.priceRange?.max) {
-  showErrorToast(toast, 'Price range is required');
+    if (!baseBidRequest.priceRange?.min || !baseBidRequest.priceRange?.max) {
+      showErrorToast(toast, 'Price range is required');
       return;
     }
-    if (!bidRequest.deliveryTimeframe) {
-  showErrorToast(toast, 'Delivery timeframe is required');
+    if (!baseBidRequest.deliveryTimeframe) {
+      showErrorToast(toast, 'Delivery timeframe is required');
       return;
     }
-    if (!bidRequest.deliveryMethod) {
-  showErrorToast(toast, 'Delivery method is required');
+    if (!baseBidRequest.deliveryMethod) {
+      showErrorToast(toast, 'Delivery method is required');
       return;
     }
 
     // clientId is required on the server - we will use userId from Redux
     if (!userId) {
-  showErrorToast(toast, 'Client ID is required. Please login.');
+      showErrorToast(toast, 'Client ID is required. Please login.');
       return;
     }
     
     const preferences = {
-      ...bidRequest,
+      ...baseBidRequest,
       clientId: userId,
       creatorId: userId,
       productId,
-      categoryId: getCategoryIdValue(bidRequest.categoryId),
+      categoryId: getCategoryIdValue(baseBidRequest.categoryId),
     };
 
     dispatch({ type: 'stepper/setBidRequest', payload: preferences });
-
 
     try {
       // @ts-ignore
@@ -242,16 +242,21 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
 
       // @ts-ignore
       if (resultAction.meta && resultAction.meta.requestStatus === 'fulfilled') {
-  showSuccessToast(toast, 'Bid request opened successfully.');
-        // Can proceed to the next step only after success
+        showSuccessToast(toast, 'Bid request opened successfully.');
         setCanGoNext && setCanGoNext(true);
         onComplete && onComplete();
+        //setIsBidOpened(true);
+        if (onNextStep) {
+          onNextStep();
+        } else {
+          navigateToNextStep();
+        }
       } else {
-  showErrorToast(toast, 'Failed to create bid request. Please try again.');
+        showErrorToast(toast, 'Failed to create bid request. Please try again.');
       }
     } catch (error: any) {
       console.error('Error creating bid request:', error);
-  showErrorToast(toast, 'Failed to create bid request. Please try again.');
+      showErrorToast(toast, 'Failed to create bid request. Please try again.');
     }
   };
 
@@ -285,7 +290,7 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
   };
 
   const isFormValid = categoryId && locationPreference && priceRange.min && priceRange.max && deliveryTimeframe && deliveryMethod;
-  if (!loading || currentStepIndex !== null) {
+  if (!loading || currentStepIndexRedux !== null) {
     return (
       <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 max-w-3xl mx-auto bg-white rounded shadow" onKeyPress={handleKeyPress}>
         <Toast ref={toast} />
@@ -379,10 +384,20 @@ const ManufacturerPreferencesStep: React.FC<StepProps> = ({ onComplete, setCanGo
           />
         </div>
 
-        <Button type="submit" label="Continue" className="mt-6 w-full" disabled={!isFormValid || isReadOnly} />
+        <Button type="submit" label="Open Bid Request" className="mt-6 w-full" disabled={!isFormValid || isReadOnly} />
       </form>
     );
   };
+
+  React.useEffect(() => {
+    if (setCanGoNext && (isStepCompleted || (bidRequest && bidRequest.productId))) {
+      setCanGoNext(true);
+    }
+  }, [setCanGoNext, isStepCompleted, bidRequest, currentStepIndex]);
+
+  if (isReadOnly && setCanGoNext) {
+    setCanGoNext(true);
+  }
 }
 
 export default ManufacturerPreferencesStep;

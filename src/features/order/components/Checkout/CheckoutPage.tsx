@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import type { Order, Product, User } from '../../../../types';
@@ -25,27 +25,52 @@ export const orderSchema = yup.object().shape({
     street: yup.string().required('Street is required'),
     city: yup.string().required('City is required'),
     state: yup.string().min(2, 'State must be at least 2 characters').required('State is required'),
-    zipCode: yup.string().matches(/^\d{4,10}$/, 'Invalid zip code').required('Zip code is required'),
+    zipCode: yup.string().matches(/^[\d]{4,10}$/, 'Invalid zip code').required('Zip code is required'),
     country: yup.string().required('Country is required'),
   }),
   notes: yup.string().max(500),
 });
+
 interface CheckoutPageProps {
   order?: Order;
+  product?: Product;
+  creator?: { name: string, _id: string };
+  price?: number;
+  onOrderSuccess?: () => void;
 }
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
-  const productFromState = location.state?.product;
+  const buyerId = user.id;
   const toast = useRef<Toast>(null);
-  const currentOrder = location.state?.order as Order;  
-  const product: Product = productFromState || currentOrder?.product;
+  const product: Product = props.product || (location.state as { product?: Product })?.product || {
+    _id: '',
+    title: '',
+    description: '',
+    price: 0,
+    images: [],
+    creator: { id: '', _id: '', name: '', email: '', role: 'creator' },
+    category: { _id: '', name: '' },
+    subCategories: [],
+    tags: [],
+    stock: 0,
+    sales: 0,
+    status: 'draft',
+    condition: 'new',
+    location: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-  // Initialize order state, using props.order if provided
+  const productPrice = props.price !== undefined && props.price !== null
+    ? props.price
+    : product?.price || 0;
+
+
   const initialQuantity = 1;
-  const initialTotalAmount = product ? product.price * initialQuantity : 0;
+
   const [order, setOrder] = useState<Order>(() => {
     const fallbackProduct: Product = product || {
       _id: '',
@@ -53,32 +78,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
       description: '',
       price: 0,
       images: [],
-      creator: { id: '', name: '', email: '', role: 'creator' },
-      category: { _id: '', name: '' },
-      subCategories: [],
-      status: 'draft',
-      condition: 'new',
-      location: '',
+      creator: { _id: '', name: '' },
+      creatorName: '',
+      category: '',
+      stock: 0,
       tags: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: '',
+      updatedAt: '',
     };
-    if (currentOrder) {
-      return {
-        ...currentOrder,
-        productId: currentOrder.productId || fallbackProduct._id,
-        buyerId: currentOrder.buyerId || user.id,
-        creator: currentOrder.creator || { name: fallbackProduct.creator.name, _id: fallbackProduct.creator.id || fallbackProduct.creator._id || '' },
-        product: currentOrder.product || fallbackProduct,
-      };
-    }
+
     return {
       _id: '',
-      productId: fallbackProduct._id,
-      buyerId: user.id,
-      creator: { name: fallbackProduct.creator.name, _id: fallbackProduct.creator.id || fallbackProduct.creator._id || '' },
+      productId: product?._id || fallbackProduct._id,
+      buyerId: buyerId || '',
+      creator: props.creator
+        ? { name: props.creator.name, _id: props.creator._id || '' }
+        : { name: fallbackProduct.creator.name, _id: fallbackProduct.creator._id || '' },
       status: 'pending',
-      totalAmount: initialTotalAmount,
+      totalAmount: (props.price !== undefined ? props.price : product?.price || 0) * initialQuantity,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
       notes: '',
@@ -88,41 +105,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
       product: fallbackProduct,
     };
   });
-
-  // Sync order state with props.order if it changes
   useEffect(() => {
-    if (currentOrder) {
-      setOrder(prev => ({
-        ...prev,
-        ...currentOrder,
-        productId: currentOrder.productId || product?._id || '',
-        buyerId: currentOrder.buyerId || user.id,
-        creator: currentOrder.creator || { name: product?.creator.name || '', _id: product?.creator._id || '' },
-        product: currentOrder.product || {
-          _id: product?._id || '',
-          title: product?.title || '',
-          images: product?.images || [],
-          creatorName: product?.creator.name || '',
-        },
-      }));
-    }
-  }, [currentOrder, product, user.id]);
+    setOrder(prev => ({ ...prev, buyerId: buyerId || '' }));
+  }, [buyerId]);
 
   const [shipping, setShipping] = useState<string>('standard');
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
-
   const [createOrder] = useCreateOrderMutation();
+  const [isReadOnly,] = useState(false);
 
-  //Update total amount
   useEffect(() => {
-    if (product) {
+    if (product && productPrice > 0 && order.quantity > 0) {
       const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
-      const totalAmount = product.price * order.quantity + shippingPrice;
+      const totalAmount = productPrice * order.quantity + shippingPrice;
       setOrder(prev => ({ ...prev, totalAmount }));
     }
-  }, [product, order.quantity, shipping]);
+  }, [product, productPrice, order.quantity, shipping]);
 
   const handlePay = async () => {
     setSubmitted(true);
@@ -141,8 +141,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
   const addNewOrder = async () => {
     try {
       await createOrder(order).unwrap();
-       dispatch(addOrder(order));
+      dispatch(addOrder(order));
+      localStorage.setItem(`completedOrder_${order._id}`, JSON.stringify(order));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
+      if (props.onOrderSuccess) props.onOrderSuccess();
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
     } finally {
@@ -164,8 +166,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
             submitted={submitted}
             formErrors={formErrors}
             product={product}
+            readOnly={isReadOnly}
           />
         </div>
+
         <div className='right-side'>
           <OrderSummary
             order={order}
@@ -186,5 +190,3 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = () => {
     </div>
   );
 };
-
-

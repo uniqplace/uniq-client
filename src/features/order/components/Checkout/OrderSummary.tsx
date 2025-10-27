@@ -12,9 +12,22 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ order, product, shipping }) => {
-    const productTotal = product.price * order.quantity;
+    if (!product) {
+        return (
+            <div className="checkout-summary">
+                <Divider align="right"><b>Order Summary</b></Divider>
+                <div className="summary-card">
+                    <div className="summary-item">
+                        <span>Product information is unavailable.</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const productTotal = (order.totalAmount - (SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0)) || 0;
     const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
-    const totalAmount = productTotal + shippingPrice;
+    const totalAmount = order.totalAmount || 0;
 
     // Format dates as DD/MM/YYYY
     const formatDate = (dateStr: string) => {

@@ -43,13 +43,22 @@ export interface AuditEntry {
 
 export interface ProductPayload {
   sessionId: string;
-  productName?: string;
-  category?: { id: string; name: string; confidence: number };
-  aiVersion?: string;
+  title: string;
+  description: string;
+  price: number;
+  images: string[];
+  creator?: any;
+  category?: any;
+  subCategories: any[];
+  status: "idle" | "draft" | "drafting" | "refining" | "validating" | "locked" | "error" | "published" | "hidden";
+  condition: "new" | "like_new" | "good" | "fair" | "poor";
+  location: string;
+  tags: string[];
   params: ProductParam[];
   summary?: ProductSummary;
   audit: AuditEntry[];
   locale?: { currency?: string; units?: "metric" | "imperial"; language?: string };
-  status: "idle" | "drafting" | "refining" | "validating" | "locked" | "error";
   error?: string;
+  aiVersion?: string;
+  createdByAI?: boolean;
 }

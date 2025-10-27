@@ -8,17 +8,42 @@ import type {
 import {
   generateDraft,
   refineSpec,
-  validateSpec,
   lockSpec,
 } from "./aiProductThunks";
+import { saveToLocalStorage, loadFromLocalStorage } from '../../../utils/localStorageUtils';
+import { validateProductPayload } from '../../../utils/validation';
+import type { Middleware } from '@reduxjs/toolkit';
+
+// ==== Local Storage Helpers ====
+const LOCAL_STORAGE_KEY = 'aiProductState';
+
+function getInitialProductState(): ProductPayload {
+  const loadedState = loadFromLocalStorage<ProductPayload>(LOCAL_STORAGE_KEY);
+  return validateProductPayload(loadedState)
+    ? loadedState
+    : {
+        sessionId: uuidv4(),
+        title: "",
+        description: "",
+        price: 0,
+        images: [],
+        creator: undefined,
+        category: undefined,
+        subCategories: [],
+        status: "draft",
+        condition: "new",
+        location: "",
+        tags: [],
+        params: [],
+        audit: [],
+        summary: undefined,
+        aiVersion: undefined,
+        createdByAI: true
+      };
+}
 
 // ==== Initial State ====
-const initialState: ProductPayload = {
-  sessionId: uuidv4(),
-  params: [],
-  audit: [],
-  status: "idle",
-};
+const initialState: ProductPayload = getInitialProductState();
 
 // ==== Slice ====
 const aiProductSlice = createSlice({
@@ -64,6 +89,10 @@ const aiProductSlice = createSlice({
         });
       }
     },
+    resetProductState(state) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      Object.assign(state, initialState);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -72,24 +101,39 @@ const aiProductSlice = createSlice({
       })
       .addCase(generateDraft.fulfilled, (state, action) => {
         state.status = "idle";
-        state.params = action.payload.params;
-        state.summary = action.payload.summary;
-        state.category = action.payload.category;
-        state.aiVersion = action.payload.aiVersion;
+        const payload = action.payload || {};
+        state.params = payload.params || [];
+        state.summary = payload.summary || "";
+        state.category = payload.category || "";
+        state.aiVersion = payload.aiVersion || "";
+        state.title = payload.title || "";
+        state.description = payload.description || "";
+        state.price = payload.price || 0;
+        state.images = payload.images || [];
+        state.subCategories = payload.subCategories || [];
+        state.condition = payload.condition || "new";
+        state.location = payload.location || "";
+        state.tags = payload.tags || [];
+        state.locale = payload.locale || undefined;
       })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
       })
       .addCase(refineSpec.fulfilled, (state, action) => {
-        state.status = "idle";
-        state.params = action.payload.updatedParams;
+        state.status = action.payload?.status || "idle";
+        state.params = action.payload?.params || action.payload?.updatedParams || [];
         state.summary = action.payload.summary;
-      })
-      .addCase(validateSpec.pending, (state) => {
-        state.status = "validating";
-      })
-      .addCase(validateSpec.fulfilled, (state, action) => {
-        state.status = action.payload.blocking ? "error" : "idle";
+        state.category = action.payload.category || state.category;
+        state.aiVersion = action.payload.aiVersion || state.aiVersion;
+        if (action.payload.title) state.title = action.payload.title;
+        if (action.payload.description) state.description = action.payload.description;
+        if (action.payload.price) state.price = action.payload.price;
+        if (action.payload.images) state.images = action.payload.images;
+        if (action.payload.subCategories) state.subCategories = action.payload.subCategories;
+        if (action.payload.condition) state.condition = action.payload.condition;
+        if (action.payload.location) state.location = action.payload.location;
+        if (action.payload.tags) state.tags = action.payload.tags;
+        if (action.payload.locale) state.locale = action.payload.locale;
       })
       .addCase(lockSpec.fulfilled, (state) => {
         state.status = "locked";
@@ -97,5 +141,31 @@ const aiProductSlice = createSlice({
   },
 });
 
-export const { addParam, updateParam, skipParam } = aiProductSlice.actions;
+export const { addParam, updateParam, skipParam, resetProductState } = aiProductSlice.actions;
 export default aiProductSlice.reducer;
+
+// NOTE: If you use local state (useState) for params/messages in any component, make sure to reset them as well on logout/login!
+// For example, in AiProductDebugPanel, reset messages state when user changes or on logout.
+//
+// Example for AiProductDebugPanel:
+// const user = useAppSelector(state => state.user);
+// useEffect(() => {
+//   setMessages([]); // or set to initial value
+// }, [user]);
+
+// Custom middleware to persist state changes automatically
+export const persistAiProductStateMiddleware: Middleware = (store) => (next) => (action: any) => {
+  const result = next(action);
+
+  // Check if the action is related to aiProduct and persist the state
+  if (action.type.startsWith('aiProduct/')) {
+    const state = store.getState().aiProduct;
+    saveToLocalStorage(LOCAL_STORAGE_KEY, state);
+  }
+
+  return result;
+};
+
+// Ensure to add this middleware to the store configuration
+// Example: applyMiddleware(persistAiProductStateMiddleware)
+

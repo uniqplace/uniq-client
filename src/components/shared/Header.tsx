@@ -22,7 +22,8 @@ const Header: React.FC = () => {
       { label: 'Login', icon: 'pi pi-sign-in', command: () => navigate('/login') },
     ] : []),
     { label: 'CreatorMarketplace', icon: 'pi pi-star', command: () => navigate('/CreatorProductPage') },
-    { label: 'Create Your Own Product', icon: 'pi pi-plus', command: () => navigate('/create-your-own-product') },
+    // { label: 'Create Your Own Product', icon: 'pi pi-plus', command: () => navigate('/create-your-own-product') },
+    { label: 'AI Product Debug', icon: 'pi pi-cog', command: () => navigate('/ai-product-debug') },
 
 
   ];
