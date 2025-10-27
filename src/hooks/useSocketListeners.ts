@@ -76,7 +76,7 @@ const useSocketListeners = () => {
     }
   }, [user?.id, user?.email]);
 
-  // רישום משתמש ב־mount שניוני (אם צריך)
+   // User registration on secondary mount (if needed)  
   useEffect(() => {
     if (user?.id) {
       const socket = getSocket() ?? initializeSocket();

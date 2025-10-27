@@ -167,7 +167,7 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
               </div>
             </div>
           </div>
-          {/* מידע נוסף מה-context */}
+          {/* Additional info from context */}
           <div className="flex flex-col min-w-0 mt-1">
             {/* Date at top right */}
             {lastMessage?.created_at && (

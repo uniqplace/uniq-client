@@ -11,8 +11,7 @@ export const initializeSocket = (): Socket => {
       transports: ['websocket'],
       path: import.meta.env.VITE_SOCKET_PATH || '/socket.io',
     });
-
-    // DEBUG חיבור ושגיאות
+ // DEBUG: connection and error listeners
     socket.on('connect', () => {
       console.log('[socket] connected', socket?.id);
     });
@@ -35,4 +34,9 @@ export const initializeSocket = (): Socket => {
 export const getSocket = () => socket;
 export const disconnectSocket = () => { socket?.disconnect(); socket = null; };
 
-export default { on:(e: string, cb:any)=>socket?.on(e, cb), off:(e:string, cb?:any)=>socket?.off(e, cb), emit:(e:string,d?:any)=>socket?.emit(e,d), disconnect:disconnectSocket };
+export default {
+  on: (event: string, callback: (...args: unknown[]) => void) => socket?.on(event, callback),
+  off: (event: string, callback?: (...args: unknown[]) => void) => socket?.off(event, callback),
+  emit: (event: string, data?: unknown) => socket?.emit(event, data),
+  disconnect: disconnectSocket,
+};

@@ -112,7 +112,16 @@ const ProductPage: React.FC = () => {
     } catch (e) {
       // Error handling for common cases
       let msg = 'Failed to open chat with seller';
-      const status = (e && typeof e === 'object' && 'response' in e && e.response && typeof e.response === 'object' && 'status' in e.response) ? e.response.status : undefined;
+      // Type guard for Axios-like errors
+      function isAxiosError(err: any): err is { response?: { status?: number } } {
+        return (
+          err && typeof err === 'object' &&
+          'response' in err &&
+          err.response && typeof err.response === 'object' &&
+          'status' in err.response && typeof err.response.status === 'number'
+        );
+      }
+      const status = isAxiosError(e) ? e.response?.status : undefined;
       if (status === 401) {
         msg = 'Please login again';
         toast.error(msg);

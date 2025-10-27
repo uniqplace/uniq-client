@@ -47,7 +47,7 @@ export default function ThreadsPage() {
           })
           .map((channel) => (
           thread = threads.find(t => t.streamCid === channel.cid) ,
-          console.log('Matched thread:', thread),
+         
           <ThreadPreview
             key={channel.cid}
             thread={{

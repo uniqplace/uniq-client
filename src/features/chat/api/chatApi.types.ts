@@ -1,7 +1,7 @@
 export type EnsureDirectBidReq = { bidRequestId: string; bidOfferId: string };
 export type EnsureDirectBidRes = { cid: string; threadId: string };
 
-/** חדש: פתיחת צ׳אט לפי מוצר */
+/** New: open chat by product */
 export type EnsureDirectProductReq = {
   productId: string;
   sellerUserId: string;
@@ -10,16 +10,16 @@ export type EnsureDirectProductReq = {
 };
 export type EnsureDirectProductRes = { cid: string; threadId: string };
 
-/** הרחבה: סינונים אופציונליים לרשימת ת׳רדים */
+/** Extension: optional filters for thread list */
 export type ListThreadsQuery = {
   archived?: boolean;
   page?: number;
   limit?: number;
   q?: string;
-  // חדשים:
+  // New:
   productId?: string;
   orderId?: string;
-  // קיימים להקשר מכרז (אם תרצה לסנן גם שם מהקליינט):
+  // Existing for bid context (if you want to filter also from client):
   bidRequestId?: string;
   bidOfferId?: string;
 };
