@@ -44,7 +44,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
-
   const auth = useSelector((state: RootState) => state.auth);
   const buyerId = user.id;
   const toast = useRef<Toast>(null);
@@ -101,6 +100,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       totalAmount: (props.price !== undefined ? props.price : product?.price || 0) * initialQuantity,
       paymentMethod: 'credit_card',
       shippingAddress: { street: '', city: '', state: '', zipCode: '', country: '' },
+      shippingOption: { label: 'Standard (5$)', value: 'standard', price: 5 },
       notes: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -121,9 +121,19 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 
   useEffect(() => {
     if (product && productPrice > 0 && order.quantity > 0) {
-      const shippingPrice = SHIPPING_OPTIONS.find(opt => opt.value === shipping)?.price || 0;
+      const selectedShippingOption = SHIPPING_OPTIONS.find(opt => opt.value === shipping) || SHIPPING_OPTIONS[0]; 
+      const shippingPrice = selectedShippingOption.price as 5 | 15; 
       const totalAmount = productPrice * order.quantity + shippingPrice;
-      setOrder(prev => ({ ...prev, totalAmount }));
+      setOrder(prev => ({
+        ...prev,
+        totalAmount,
+        shippingOption: {
+          ...selectedShippingOption,
+          label: selectedShippingOption.label as 'Standard (5$)' | 'Express (15$)',
+          value: selectedShippingOption.value as 'standard' | 'express',
+          price: shippingPrice,
+        },
+      }));
     }
   }, [product, productPrice, order.quantity, shipping]);
 
@@ -163,7 +173,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       // Update the orderId in the related bid request
       dispatch(updateBidRequestInStepper({ productId: order.productId, orderId }));
 
-      if (props.onOrderSuccess) props.onOrderSuccess();
+      if (props.onOrderSuccess) props.onOrderSuccess();      
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
     } finally {
@@ -245,7 +255,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
           <OrderDetails
             order={order}
             setOrder={setOrder}
-            shipping={shipping}
+            shipping={order.shippingOption?.value || 'standard'} 
             setShipping={setShipping}
             submitted={submitted}
             formErrors={formErrors}

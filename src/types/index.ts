@@ -59,12 +59,23 @@ export interface Order {
   totalAmount: number;
   paymentMethod: string;
   shippingAddress: Address;
+  trackingNumber?: string; 
+  shippingOption?: {
+    label: 'Standard (5$)' | 'Express (15$)';
+    value: 'standard' | 'express';
+    price: 5 | 15;
+  };
   quantity: number;
   createdAt: string;
   updatedAt: string;
   product: Product;
   notes?: string;
 }
+
+export const SHIPPING_OPTIONS = [
+  { label: 'Standard (5$)', value: 'standard', price: 5 },
+  { label: 'Express (15$)', value: 'express', price: 15 },
+];
 
 export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
 
@@ -252,5 +263,7 @@ export interface ProductPayload {
   updatedAt?: Date;
   createdByAI?: boolean; 
 }
+
+
 
 

@@ -8,6 +8,8 @@ import {
   addParam,
   updateParam,
   skipParam,
+  resetProductState,
+  clearError,
 } from "../slices/aiProductSlice";
 import {
   generateDraft,
@@ -17,17 +19,22 @@ import {
 } from "../slices/aiProductThunks";
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
+import { Skeleton } from 'primereact/skeleton';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../../marketplace/slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
+import { Button } from "primereact/button";
 
 export default function AiProductDebugPanel() {
   const dispatch = useAppDispatch();
   const aiProduct = useAppSelector((state: RootState) => state.aiProduct);
   const user = useAppSelector((state: RootState) => state.user);
 
-  const [messages, setMessages] = useState<
-    { sender: "user" | "ai"; text: string }[]
-  >(() => {
+  type ChatMessage = {
+    sender: "user" | "ai" | "error";
+    text: string;
+    files?: { name: string; size: number }[];
+  };
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const data = localStorage.getItem("aiProductChat");
       if (data) return JSON.parse(data);
@@ -37,10 +44,14 @@ export default function AiProductDebugPanel() {
 
   const [files, setFiles] = useState<File[]>([]);
 
-  // Reset chat/messages when user changes (logout/login)
+  // Reset chat/messages and aiProduct params when user changes (logout/login) or on mount/unmount
   useEffect(() => {
     setMessages([]);
     localStorage.removeItem("aiProductChat");
+    dispatch(resetProductState());
+    return () => {
+      dispatch(resetProductState());
+    };
   }, [user?.id]);
 
   const [newParam, setNewParam] = useState<{
@@ -58,36 +69,56 @@ export default function AiProductDebugPanel() {
   const addParamRowRef = useRef<HTMLInputElement>(null);
   const [editProduct, setEditProduct] = useState<any>(null);
   const toast = useRef<Toast>(null);
+  // Disable input and send button while pending
+  const isPending = aiProduct.status === "drafting" || aiProduct.status === "refining";
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  function saveChat(messages: { sender: "user" | "ai"; text: string }[]) {
+  function saveChat(messages: ChatMessage[]) {
     try {
       localStorage.setItem("aiProductChat", JSON.stringify(messages));
     } catch (e) { }
   }
 
+  // Add error message to chat history when error occurs, but avoid duplicate consecutive errors
+  useEffect(() => {
+    if (aiProduct.status === 'error' && aiProduct.errorMessage) {
+      setMessages((msgs) => {
+        // Only add if last message is not the same error
+        const lastMsg = msgs[msgs.length - 1];
+        if (lastMsg && lastMsg.sender === 'error' && lastMsg.text === aiProduct.errorMessage) {
+          return msgs;
+        }
+        const newMsgs: ChatMessage[] = [...msgs, { sender: 'error', text: aiProduct.errorMessage || '' }];
+        saveChat(newMsgs);
+        return newMsgs;
+      });
+    }
+  }, [aiProduct.status, aiProduct.errorMessage]);
+
   const handleSend = () => {
     setMessages((msgs) => {
-      const newMsgs = [...msgs, { sender: "user" as const, text: userText }];
+      const userMsg: ChatMessage = {
+        sender: "user",
+        text: userText,
+        files: files.length > 0 ? files.map(f => ({ name: f.name, size: f.size })) : undefined,
+      };
+      const newMsgs = [...msgs, userMsg];
       saveChat(newMsgs);
       return newMsgs;
     });
     if (messages.length === 0) {
-      
       if (!userText.trim()) {
         toast.current?.show({ severity: 'error', summary: 'Error', detail: 'User prompt cannot be empty.', life: 3000 });
         return;
       }
-
       const sessionId = aiProduct.sessionId;
       if (!sessionId) {
         toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Session ID is missing. Please try again.', life: 3000 });
         return;
       }
-
       dispatch(generateDraft({ userPrompt: userText, files })).then((res: any) => {
         if (res?.payload) {
           const aiMsg = res.payload.chat || res.payload.aiResponse;
@@ -124,12 +155,12 @@ export default function AiProductDebugPanel() {
   const conditionOptions = ["new", "like_new", "good", "fair", "poor"];
 
   // Fetch categories from API
-  const { data: categoriesResponse} = useGetAllCategoriesQuery();
+  const { data: categoriesResponse } = useGetAllCategoriesQuery();
   const categories: Category[] = categoriesResponse?.data || [];
 
   // Fetch subCategories from API based on selected category
   const selectedCategoryId = editProduct?.category || '';
-  const { data: subCategoriesResponse,} = useGetSubCategoriesByCategoryQuery(selectedCategoryId, { skip: !selectedCategoryId });
+  const { data: subCategoriesResponse, } = useGetSubCategoriesByCategoryQuery(selectedCategoryId, { skip: !selectedCategoryId });
   const subCategories: SubCategory[] = subCategoriesResponse || [];
 
   // Validation for required fields
@@ -163,78 +194,178 @@ export default function AiProductDebugPanel() {
               Start the conversation...
             </div>
           )}
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex items-start gap-2 ${msg.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-            >
-              {msg.sender === "ai" && (
-                <div className="bg-purple-500 text-white rounded-full p-2">
-                  <Bot size={18} />
+          {messages.map((msg, i) => {
+            if (msg.sender === "error") {
+              const isLastError = i === messages.length - 1 && aiProduct.status === 'error';
+              return (
+                <div key={i} className="flex items-start gap-2 justify-center">
+                  <div className="max-w-[80%] w-full">
+                    <div className="flex bg-red-50 border border-red-200 rounded-2xl px-4 py-3 shadow-sm gap-3">
+                      <i className="pi pi-times-circle text-red-500 text-2xl flex-shrink-0 self-start mt-1" aria-hidden="true" />
+                      <div className="flex flex-col gap-2">
+                        <span className="font-semibold text-red-700 text-base">{msg.text}</span>
+                        {isLastError && (
+                          <Button
+                            icon="pi pi-refresh"
+                            iconPos="left"
+                            className="p-button-sm p-button-danger p-button-raised mt-1 p-1 bg-red-500 text-white hover:bg-red-700"
+                            aria-label="Try Again"
+                            style={{ fontWeight: 600, fontSize: '1rem', letterSpacing: 0.5, minHeight: 36, maxWidth: 160 }}
+                            onClick={async () => {
+                              const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
+                              if (!lastUserMsg) return;
+                              dispatch(clearError());
+                              if (messages.length === 1) {
+                                await dispatch(generateDraft({ userPrompt: lastUserMsg.text, files }));
+                              } else {
+                                await dispatch(refineSpec({ userPrompt: lastUserMsg.text, productPayload: aiProduct, files }));
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+              );
+            }
+            // user/ai messages
+            return (
               <div
-                className={`px-3 py-2 rounded-2xl max-w-[80%] ${msg.sender === "user"
+                key={i}
+                className={`flex items-start gap-2 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {msg.sender === "ai" && (
+                  <div className="bg-purple-500 text-white rounded-full p-2">
+                    <Bot size={18} />
+                  </div>
+                )}
+                <div
+                  className={`px-3 py-2 rounded-2xl max-w-[80%] ${msg.sender === "user"
                     ? "bg-blue-100 text-gray-800"
                     : "bg-purple-100 text-gray-800"
                   }`}
-              >
-                {msg.text}
-              </div>
-              {msg.sender === "user" && (
-                <div className="bg-blue-500 text-white rounded-full p-2">
-                  <User size={18} />
+                >
+                  <div>{msg.text}</div>
+                  {/* Show sent files for user messages */}
+                  {msg.sender === 'user' && msg.files && msg.files.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {msg.files.map((file, idx) => (
+                        <div key={idx} className="flex items-center bg-blue-50 border border-blue-200 rounded px-2 py-1 text-xs gap-1">
+                          <span className="text-blue-500"><AiOutlinePaperClip size={13} /></span>
+                          <span className="font-medium text-blue-900 max-w-[90px] truncate" title={file.name}>{file.name}</span>
+                          <span className="text-gray-500">({(file.size / 1024).toFixed(1)} KB)</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+                {msg.sender === "user" && (
+                  <div className="bg-blue-500 text-white rounded-full p-2">
+                    <User size={18} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {/* Error bubble is now rendered as part of messages history above */}
+          {(aiProduct.status === "drafting" || aiProduct.status === "refining") && (
+            <div className="flex items-start gap-2 justify-start">
+              <div className="bg-purple-500 text-white rounded-full p-2">
+                <Bot size={18} />
+              </div>
+              <div className="px-3 py-2 rounded-2xl max-w-[80%] bg-purple-100 text-gray-800 flex items-center">
+                <div className="flex gap-2 dot-skeleton-loader">
+                  <Skeleton width="0.7em" height="0.7em" borderRadius="50%" style={{ animation: 'dot-bounce-skeleton 1.2s infinite' }} />
+                  <Skeleton width="0.7em" height="0.7em" borderRadius="50%" style={{ animation: 'dot-bounce-skeleton 1.2s infinite 0.2s' }} />
+                  <Skeleton width="0.7em" height="0.7em" borderRadius="50%" style={{ animation: 'dot-bounce-skeleton 1.2s infinite 0.4s' }} />
+                </div>
+              </div>
             </div>
-          ))}
+          )}
           <div ref={chatEndRef} />
         </div>
 
-        <div className="p-4 border-t flex gap-2">
-          <input
-            type="text"
-            placeholder="Type your message..."
-            value={userText}
-            onChange={(e) => setUserText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSend();
-            }}
-            className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200"
-          />
-          {/* File Upload */}
-          <label
-            style={{
-              background: "#E0E7FF",
-              color: "#3730A3",
-              padding: "10px 16px",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 500,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <AiOutlinePaperClip size={20} />
+        <div className="p-4 border-t flex flex-col gap-2">
+          <div className="flex gap-2">
             <input
-              type="file"
-              multiple
-              onChange={(e) => {
-                if (e.target.files) {
-                  setFiles(Array.from(e.target.files)); 
-                }
+              type="text"
+              placeholder="Type your message..."
+              value={userText}
+              onChange={(e) => setUserText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isPending) handleSend();
               }}
-              style={{ display: "none" }}
+              className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200"
             />
-          </label>
-          <button
-            onClick={handleSend}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center justify-center"
-            aria-label="Send"
-          >
-            <span className="pi pi-send text-lg"></span>
-          </button>
+            {/* File Upload */}
+            <label
+              style={{
+                background: "#E0E7FF",
+                color: "#3730A3",
+                padding: "10px 16px",
+                borderRadius: 8,
+                cursor: isPending ? "not-allowed" : "pointer",
+                fontSize: 14,
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                opacity: isPending ? 0.6 : 1,
+              }}
+            >
+              <AiOutlinePaperClip size={20} />
+              <input
+                type="file"
+                multiple
+                onChange={(e) => {
+                  const fileList = e.target.files;
+                  if (fileList && fileList.length > 0) {
+                    const newFiles = Array.from(fileList);
+                    setFiles(prevFiles => {
+                      const merged = [...prevFiles];
+                      newFiles.forEach(f => {
+                        if (!merged.some(existing => existing.name === f.name && existing.size === f.size)) {
+                          merged.push(f);
+                        }
+                      });
+                      return merged;
+                    });
+                    // Reset input value so user can re-add the same file if needed
+                    e.target.value = '';
+                  }
+                }}
+                style={{ display: "none" }}
+                disabled={isPending}
+              />
+            </label>
+            <button
+              onClick={handleSend}
+              className={`bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center justify-center ${isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
+              aria-label="Send"
+              disabled={isPending}
+            >
+              <span className="pi pi-send text-lg"></span>
+            </button>
+          </div>
+          {/* Selected files preview */}
+          {files.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {files.map((file, idx) => (
+                <div key={idx} className="flex items-center bg-indigo-50 border border-indigo-200 rounded px-2 py-1 text-xs gap-2 shadow-sm">
+                  <span className="text-indigo-500"><AiOutlinePaperClip size={16} /></span>
+                  <span className="font-medium text-indigo-900 max-w-[120px] truncate" title={file.name}>{file.name}</span>
+                  <span className="text-gray-500">({(file.size / 1024).toFixed(1)} KB)</span>
+                  <button
+                    type="button"
+                    className="ml-1 text-red-500 hover:text-red-700 focus:outline-none"
+                    title="Remove file"
+                    onClick={() => setFiles(files => files.filter((_, i) => i !== idx))}
+                  >
+                    <span className="pi pi-times" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -453,10 +584,10 @@ export default function AiProductDebugPanel() {
                   setShowConfirmDialog(false);
                   try {
                     const lockRes = await dispatch(
-                      lockSpec({ 
+                      lockSpec({
                         category: editProduct.category, // Replace with the actual category
                         productPayload: editProduct.productPayload, // Replace with the actual product payload
-                        productData: editProduct 
+                        productData: editProduct
                       })
                     );
                     if (lockRes?.payload?.success) {
@@ -613,6 +744,15 @@ export default function AiProductDebugPanel() {
         </Dialog>
         <Toast ref={toast} />
       </div>
+
+      <style>
+        {`
+@keyframes dot-bounce-skeleton {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.95; }
+  40% { transform: translateY(-9px); opacity: 1; }
+}
+`}
+      </style>
     </div>
   );
 }

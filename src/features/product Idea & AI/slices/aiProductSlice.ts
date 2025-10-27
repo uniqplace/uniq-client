@@ -48,7 +48,10 @@ const initialState: ProductPayload = getInitialProductState();
 // ==== Slice ====
 const aiProductSlice = createSlice({
   name: "aiProduct",
-  initialState,
+  initialState: {
+    ...initialState,
+    errorMessage: undefined as string | undefined,
+  },
   reducers: {
     addParam(state, action: PayloadAction<ProductParam>) {
       state.params.push({ ...action.payload, source: "user" });
@@ -92,15 +95,22 @@ const aiProductSlice = createSlice({
     resetProductState(state) {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       Object.assign(state, initialState);
+      state.errorMessage = undefined;
     },
+    clearError(state) {
+       state.status = 'idle';
+       state.errorMessage = '';
+     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(generateDraft.pending, (state) => {
         state.status = "drafting";
+        state.errorMessage = undefined;
       })
       .addCase(generateDraft.fulfilled, (state, action) => {
         state.status = "idle";
+        state.errorMessage = undefined;
         const payload = action.payload || {};
         state.params = payload.params || [];
         state.summary = payload.summary || "";
@@ -116,11 +126,17 @@ const aiProductSlice = createSlice({
         state.tags = payload.tags || [];
         state.locale = payload.locale || undefined;
       })
+      .addCase(generateDraft.rejected, (state, action) => {
+        state.status = "error";
+        state.errorMessage = action.error?.message || "AI request failed. Please try again.";
+      })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
+        state.errorMessage = undefined;
       })
       .addCase(refineSpec.fulfilled, (state, action) => {
         state.status = action.payload?.status || "idle";
+        state.errorMessage = undefined;
         state.params = action.payload?.params || action.payload?.updatedParams || [];
         state.summary = action.payload.summary;
         state.category = action.payload.category || state.category;
@@ -135,13 +151,17 @@ const aiProductSlice = createSlice({
         if (action.payload.tags) state.tags = action.payload.tags;
         if (action.payload.locale) state.locale = action.payload.locale;
       })
+      .addCase(refineSpec.rejected, (state, action) => {
+        state.status = "error";
+        state.errorMessage = action.error?.message || "AI request failed. Please try again.";
+      })
       .addCase(lockSpec.fulfilled, (state) => {
         state.status = "locked";
       });
   },
 });
 
-export const { addParam, updateParam, skipParam, resetProductState } = aiProductSlice.actions;
+export const { addParam, updateParam, skipParam, resetProductState, clearError } = aiProductSlice.actions;
 export default aiProductSlice.reducer;
 
 // NOTE: If you use local state (useState) for params/messages in any component, make sure to reset them as well on logout/login!
@@ -168,4 +188,3 @@ export const persistAiProductStateMiddleware: Middleware = (store) => (next) => 
 
 // Ensure to add this middleware to the store configuration
 // Example: applyMiddleware(persistAiProductStateMiddleware)
-
