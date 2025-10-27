@@ -157,6 +157,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       localStorage.setItem(`completedOrder_${orderId}`, JSON.stringify(createdOrder));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
 
+      // Save a mapping of productId to orderId in localStorage
+      localStorage.setItem(`productToOrder_${order.productId}`, orderId);
+
       // Update the orderId in the related bid request
       dispatch(updateBidRequestInStepper({ productId: order.productId, orderId }));
 
@@ -170,12 +173,26 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      const storedOrder = localStorage.getItem(`completedOrder_${order.productId}`);
+      let storedOrder = null;
+
+      // Iterate through localStorage keys to find the order by productId
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('completedOrder_')) {
+          const orderData = localStorage.getItem(key);
+          if (orderData) {
+            const parsedOrder = JSON.parse(orderData);
+            if (parsedOrder.product === order.productId) {
+              storedOrder = parsedOrder;
+              break;
+            }
+          }
+        }
+      }
+
       if (storedOrder) {
-        console.log("😍😍");
-        
-        const parsedOrder = JSON.parse(storedOrder);
-        setOrder(parsedOrder);
+        console.log('Order found in localStorage:', storedOrder);
+        setOrder(storedOrder);
         setIsReadOnly(true);
       } else {
         // Fetch order details from the server if not in localStorage
