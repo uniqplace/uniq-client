@@ -147,6 +147,7 @@ export interface BidRequest {
   createdAt: Date;
   updatedAt: Date;
   rating?: number;
+  orderId?: string;
 }
 
 

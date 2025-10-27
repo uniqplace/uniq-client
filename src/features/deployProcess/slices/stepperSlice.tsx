@@ -77,7 +77,7 @@ export const fetchBidRequestByProductId = createAsyncThunk(
         { withCredentials: true }
       );
       const State = thunkAPI.getState() as any;
-      const userId= State.user?.id;
+      const userId = State.user?.id;
       const bidRequests = response.data.bidRequests || [];
       const filtered = bidRequests.filter((br: any) => br.creatorId?._id === userId);
       const sorted = filtered.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -177,7 +177,7 @@ export const fetchOpenBidRequestsByProductId = createAsyncThunk(
   }
 );
 
-const stepperSlice = createSlice({
+export const stepperSlice = createSlice({
   name: 'stepper',
   initialState,
   reducers: {
@@ -213,6 +213,21 @@ const stepperSlice = createSlice({
       delete state.productsInProgress[productId];
       if (state.currentProductId === productId) state.currentProductId = null;
       saveProductsInProgressToStorage(state.productsInProgress);
+    },
+    updateBidRequestInStepper: (state, action: PayloadAction<{ productId: string; orderId: string }>) => {
+      const { productId, orderId } = action.payload;
+      const product = state.productsInProgress[productId];
+      console.log("updateBidRequestInStepper called with:", { productId, orderId });
+      if (!productId) {
+        console.error("Product ID is required to create an order.");
+        return;
+      }
+      if (product && product.bidRequest) {
+        console.log("Updating bidRequest for product:", product);
+        product.bidRequest.orderId = orderId;
+      } else {
+        console.warn("Product or bidRequest not found for productId:", productId);
+      }
     },
   },
 
@@ -302,6 +317,7 @@ export const {
   setCompletedSteps,
   markStepCompleted,
   clearStepper,
+  updateBidRequestInStepper,
 } = stepperSlice.actions;
 
 export default stepperSlice.reducer;

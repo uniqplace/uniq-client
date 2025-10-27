@@ -20,13 +20,13 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       query: ({ userId, productId }) => `orders/byUserAndProduct?userId=${userId}&productId=${productId}`,
       transformResponse: (response: { success: boolean; data: Order }) => response.data,
     }),
-    createOrder: builder.mutation<Order, Partial<Order>>({
+    createOrder: builder.mutation<{ success: boolean; data: Order }, Partial<Order>>({
       query: (order) => {
         return {
           url: '/orders',
           method: 'POST',
           body: order,
-        }
+        };
       },
       invalidatesTags: ['Order'],
     }),

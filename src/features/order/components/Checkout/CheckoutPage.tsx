@@ -13,6 +13,7 @@ import Payment from '../../../payments/components/Payment';
 import * as yup from 'yup';
 import OrderSummary from './OrderSummary';
 import { addOrder } from '../../slices/orderSlice';
+import { updateBidRequestInStepper } from '../../../deployProcess/slices/stepperSlice';
 
 export const SHIPPING_OPTIONS = [
   { label: 'Standard (5$)', value: 'standard', price: 5 },
@@ -43,6 +44,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as User;
+
+  const auth = useSelector((state: RootState) => state.auth);
   const buyerId = user.id;
   const toast = useRef<Toast>(null);
   const product: Product = props.product || (location.state as { product?: Product })?.product || {
@@ -114,7 +117,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
   const [createOrder] = useCreateOrderMutation();
-  const [isReadOnly,] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   useEffect(() => {
     if (product && productPrice > 0 && order.quantity > 0) {
@@ -140,10 +143,23 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 
   const addNewOrder = async () => {
     try {
-      await createOrder(order).unwrap();
-      dispatch(addOrder(order));
-      localStorage.setItem(`completedOrder_${order._id}`, JSON.stringify(order));
+      console.log(order.productId);
+
+      const createdOrderResponse = await createOrder(order).unwrap();
+      const createdOrder = createdOrderResponse?.data || createdOrderResponse; // Handle both cases
+      const orderId = createdOrder?._id; // Extract the order ID from the server response
+      if (!orderId) {
+        console.error("Order ID is missing from server response.");
+        return;
+      }
+
+      dispatch(addOrder(createdOrder));
+      localStorage.setItem(`completedOrder_${orderId}`, JSON.stringify(createdOrder));
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Order created successfully', life: 3000 });
+
+      // Update the orderId in the related bid request
+      dispatch(updateBidRequestInStepper({ productId: order.productId, orderId }));
+
       if (props.onOrderSuccess) props.onOrderSuccess();
     } catch {
       toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create order', life: 3000 });
@@ -151,6 +167,54 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       setPaymentDialog(false);
     }
   };
+
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      const storedOrder = localStorage.getItem(`completedOrder_${order.productId}`);
+      if (storedOrder) {
+        console.log("😍😍");
+        
+        const parsedOrder = JSON.parse(storedOrder);
+        setOrder(parsedOrder);
+        setIsReadOnly(true);
+      } else {
+        // Fetch order details from the server if not in localStorage
+        try {
+          console.log('Fetching order details for productId:', order.productId);
+          console.log('Full URL:', `/api/orders/byProduct/${order.productId}`);
+
+          const token = auth?.token || localStorage.getItem('token'); // Retrieve token from Redux or localStorage
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders/byProduct/${order.productId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const fetchedOrder = await response.json();
+            console.log('Fetched order details:', fetchedOrder); // Log the fetched order details
+
+            if (fetchedOrder?.success && fetchedOrder.data) {
+              setOrder(fetchedOrder.data); // Update state with the correct data structure
+              setIsReadOnly(true);
+            } else {
+              console.warn('Fetched order is missing required fields:', fetchedOrder);
+            }
+          } else {
+            console.error('Server returned an error:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error('Failed to fetch order details:', error);
+        }
+      }
+    };
+
+    if (order.productId) {
+      fetchOrderDetails();
+    }
+  }, [order.productId]);
 
   return (
     <div className="checkout-root">
