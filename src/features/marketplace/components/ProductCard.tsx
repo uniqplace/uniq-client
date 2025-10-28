@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '../../../components/shared/Button';
 import { useNavigate } from 'react-router-dom';
 import { Dialog } from 'primereact/dialog';
 import ProductUploadForm from './ProductUploadForm';
@@ -19,6 +20,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const [showEdit, setShowEdit] = useState(false);
+  const [showStockDialog, setShowStockDialog] = useState(false);
 
   const handleViewDetails = () => {
     navigate(`/product/${product._id}`, { state: { product } });
@@ -40,7 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 className="w-full h-48 md:h-full object-cover"
               />
             </div>
-            
+
             {/* Content Section */}
             <div className="flex-1 p-6 flex flex-col justify-between">
               <div>
@@ -48,9 +50,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   <h3 className="text-xl font-bold text-gray-900 line-clamp-2">{product.title}</h3>
                   <span className="text-2xl font-bold text-emerald-600 ml-4">${product.price.toFixed(2)}</span>
                 </div>
-                
+
                 <p className="text-gray-600 mb-4 line-clamp-3">{product.description}</p>
-                
+
                 <div className="flex flex-wrap gap-4 mb-4 text-sm">
                   <span className="flex items-center text-gray-500">
                     <i className="pi pi-user mr-2"></i>
@@ -64,7 +66,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   )}
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
                 <button
@@ -82,18 +84,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   </button>
                 )}
                 {editable && (
-                  <button
-                    onClick={handleEdit}
-                    className="bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 text-white px-6 py-2.5 rounded-lg hover:from-emerald-700 hover:via-teal-800 hover:to-cyan-700 transition-all duration-200 font-medium"
-                  >
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      onClick={handleEdit}
+                      className="bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 text-white px-6 py-2.5 rounded-lg hover:from-emerald-700 hover:via-teal-800 hover:to-cyan-700 transition-all duration-200 font-medium ml-0"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setShowStockDialog(true)}
+                      className="bg-gradient-to-r from-lime-400 to-green-400 text-white px-6 py-2.5 rounded-lg hover:from-lime-500 hover:to-green-500 transition-all duration-200 font-medium"
+                    >
+                      Restock
+                    </button>
+                  </>
                 )}
               </div>
             </div>
           </div>
         </div>
-        
+
         <Dialog
           header="Edit Product"
           visible={showEdit}
@@ -162,12 +172,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 </button>
               )}
               {editable && (
-                <button
-                  onClick={handleEdit}
-                  className="bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 text-white px-6 py-2.5 rounded-lg hover:from-emerald-700 hover:via-teal-800 hover:to-cyan-700 transition-all duration-200 font-medium"
-                >
-                  Edit
-                </button>
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 text-white px-6 py-2.5 rounded-lg hover:from-emerald-700 hover:via-teal-800 hover:to-cyan-700 transition-all duration-200 font-medium ml-0"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setShowStockDialog(true)}
+                    className="bg-gradient-to-r from-lime-400 to-green-400 text-white px-6 py-2.5 rounded-lg hover:from-lime-500 hover:to-green-500 transition-all duration-200 font-medium "
+                  >
+                    Restock
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -182,6 +200,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
         modal
       >
         <ProductUploadForm product={product} onClose={handleCloseEdit} />
+      </Dialog>
+      <Dialog
+        header="Order New Stock from Manufacturer"
+        visible={showStockDialog}
+        style={{ width: '30vw', maxWidth: 400 }}
+        onHide={() => setShowStockDialog(false)}
+        modal
+        footer={<Button label="Close" icon="pi pi-times" onClick={() => setShowStockDialog(false)} className="p-button-text" />}
+      >
+        {/* Here you can add a shared stock order component or a basic form */}
+        <div className="flex flex-col gap-3">
+          <span>This is where the new stock order form for this product will appear.</span>
+        </div>
       </Dialog>
     </>
   );

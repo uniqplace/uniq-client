@@ -24,9 +24,13 @@ function handleError(status: number, message?: string) {
 }
 
 // Reusable GET helper
-async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
+async function get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'GET',
+      credentials: 'include',
+      ...options
+    });
     if (!response.ok) {
       const errorText = await response.text();
       handleError(response.status, errorText);
@@ -42,7 +46,7 @@ async function get<T>(endpoint: string): Promise<ApiResponse<T>> {
 }
 
 const logoutApi = async () => {
-  return axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
+  return axios.post(`${API_BASE_URL}/auth/logout`, {}, {  withCredentials: true });
 };
 
 export const api = {
@@ -54,7 +58,8 @@ export const api = {
 
   // Fetch creators and manufacturers
   getCreatorsAndManufacturers: async (): Promise<ApiResponse<{ _id: string; name: string; avatar?: string }>> => {
-    return await get<{ _id: string; name: string; avatar?: string }>(`/users/creatorsAndManufacturers`);
+    //send token with request
+    return await get<{ _id: string; name: string; avatar?: string }>(`/users/creatorsAndManufacturers`, { credentials: 'include' });
   },
 
 
