@@ -54,7 +54,7 @@ const initialState: ProductPayload = validateProductPayload(loadedState)
       tags: [],
       params: [],
       audit: [],
-      embedding: undefined,
+      embedding: [],
       summary: undefined,
       aiVersion: undefined,
       createdByAI: true
