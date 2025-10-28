@@ -1,5 +1,5 @@
 import apiSlice from '../../../api/apiSlice';
-import type { Filters, Product } from '../../../types';
+import type { Filters, Product, ProductManufacturer } from '../../../types';
 
 // Utility to create product tags for RTK Query
 function getProductTags(result: Product[] | undefined) {
@@ -106,6 +106,27 @@ const marketplaceApiSlice = apiSlice.injectEndpoints({
       transformResponse: (response: { data: Product }) => response.data,
       providesTags: (_result, _error, id) => [{ type: 'Product', id }],
     }),
+    // Add manufacturer to product
+    addManufacturerToProduct: builder.mutation<Product, { productId: string; manufacturerId: string; units?: number; unitPrice?: number; review?: string }>({
+      query: ({ productId, manufacturerId, units, unitPrice, review }) => ({
+        url: `/products/${productId}/add-manufacturer`,
+        method: 'PUT',
+        body: { manufacturerId, units, unitPrice, review },
+      }),
+      transformResponse: (response: { success: boolean; data: Product }) => response.data,
+      invalidatesTags: (_result, _error, { productId }) => [
+        { type: 'Product', id: productId },
+        { type: 'Product', id: 'LIST' },
+      ],
+    }),
+    // Get manufacturers history for a product
+    getProductManufacturersHistory: builder.query<ProductManufacturer[], string>({
+      query: (productId) => `/products/${productId}/manufacturers-history`,
+      transformResponse: (response: { success: boolean; data: ProductManufacturer[] }) => response.data,
+      providesTags: (_result, _error, productId) => [
+        { type: 'Product', id: productId },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -117,4 +138,6 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useGetProductByIdQuery,
+  useAddManufacturerToProductMutation,
+  useGetProductManufacturersHistoryQuery,
 } = marketplaceApiSlice;

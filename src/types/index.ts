@@ -25,6 +25,19 @@ export interface Creator {
   followers: number | User[];
 }
 
+// --- Manufacturer purchase history for a product ---
+export interface ManufacturerPurchase {
+  date: string; // ISO string
+  quantity: number;
+  unitPrice: number;
+  review?: string;
+}
+
+export interface ProductManufacturer {
+  manufacturerId: string | ManufacturerProfile;
+  purchases: ManufacturerPurchase[];
+}
+
 // 3. Product
 export interface Product {
   _id: string;
@@ -47,6 +60,7 @@ export interface Product {
   sales?: number;
   stock?: number;
   createdByAI?: boolean;
+  manufacturers?: ProductManufacturer[];
 }
 
 
@@ -55,6 +69,7 @@ export interface Order {
   productId: string;
   buyerId: string;
   creator: { name: string, _id: string };
+  manufacturer?: string | ManufacturerProfile;
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   totalAmount: number;
   paymentMethod: string;

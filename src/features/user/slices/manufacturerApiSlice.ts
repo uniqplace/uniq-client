@@ -25,6 +25,12 @@ export const manufacturerApiSlice = apiSlice.injectEndpoints({
       transformResponse: (response: { data: ManufacturerProfile }) => response.data, // Extract only the `data` field
       providesTags: ['ManufacturerProfile'],
     }),
+    // Get suitable manufacturers for a given category
+    getSuitableManufacturers: builder.query<ManufacturerProfile[], string>({
+      query: (categoryId) => `/manufacturers/suitable?categoryId=${categoryId}`,
+      transformResponse: (response: { data: ManufacturerProfile[] }) => response.data,
+      providesTags: ['ManufacturerProfile'],
+    }),
   }),
 });
 
@@ -32,4 +38,5 @@ export const {
   useCreateManufacturerProfileMutation,
   useUpdateManufacturerProfileByUserIdMutation,
   useGetManufacturerProfileByUserIdQuery,
+  useGetSuitableManufacturersQuery,
 } = manufacturerApiSlice;
