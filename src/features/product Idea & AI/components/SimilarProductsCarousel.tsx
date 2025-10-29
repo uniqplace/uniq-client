@@ -52,7 +52,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
       >
         <div
           style={{
-            height: "100px", // 2. גובה קשיח וקטן יותר לתמונה
+            height: "100px", // Fixed and smaller height for the image
             backgroundColor: imageUrl ? undefined : "#f0f0f0",
             display: "flex",
             alignItems: "center",
