@@ -64,7 +64,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
             <img
               src={imageUrl}
               alt={product.title}
-              // ודא שהתמונה ממלאת את השטח שיועד לה
+              // Make sure the image fills the allocated space
               style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
               onError={(e) => ((e.target as HTMLImageElement).src = "")}
             />
