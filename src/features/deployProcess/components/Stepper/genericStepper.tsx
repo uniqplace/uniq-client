@@ -1,6 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
-// ...existing imports...
-import { getUserProductKey } from '../../../../utils/productStorageKey';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Steps } from 'primereact/steps';
 import { Button } from 'primereact/button';
@@ -10,7 +8,6 @@ import {
   updateProductStep,
   setCurrentStepIndex,
 } from '../../slices/stepperSlice';
-import useInitProduct from '../../../../hooks/useInitProduct';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import '../../../../styles/genericStepper.css';
 import 'primeicons/primeicons.css';
@@ -20,7 +17,8 @@ import ProductCompletedDialog from './ProductCompletedDialog';
 import { stepsConfig } from './steps';
 
 interface GenericStepperProps {
-  steps: Array<{
+  productId: string;
+  steps?: Array<{
     key: string;
     title: string;
     component: React.ComponentType<any>;
@@ -28,8 +26,63 @@ interface GenericStepperProps {
   }>;
 }
 
-const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsConfig }) => {
+const GenericStepper: React.FC<GenericStepperProps> = ({ productId, steps = stepsConfig }) => {
+  const stepperState = useAppSelector(state => {
+    const products = state.stepper.productsInProgress;
+    return productId ? products[productId] : undefined;
+  });
+  const currentStepIndex = stepperState?.currentStepIndex;
+  const completedSteps = stepperState?.completedSteps;
+  const product = stepperState?.product;
+  const loading = stepperState?.loading;
+  const error = stepperState?.error;
+  const safeStepIndex = typeof currentStepIndex === 'number' ? currentStepIndex : undefined;
+  const CurrentStepComponent = safeStepIndex !== undefined ? steps[safeStepIndex]?.component : null;
+  const [showFinalPopup, setShowFinalPopup] = useState(false);
+  const [canGoNext, setCanGoNext] = useState(false);
   const { isValid, error: stepperError } = useStepperValidation(steps);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { stepKey } = useParams<{ stepKey: string }>();
+
+ 
+
+
+  useEffect(() => {
+    if (!productId || !product || !product.CreationStatus || loading) return;
+    const idx = steps.findIndex(s => s.title === product.CreationStatus);
+    if (idx >= 0) {
+      const completedArr = steps.map((_, i) => i < idx);
+      dispatch({ type: 'stepper/setCompletedSteps', payload: { productId, completed: completedArr } });
+      dispatch(setCurrentStepIndex({ productId, stepIndex: idx }));
+      if (stepKey !== steps[idx].key) {
+        navigate(`/create-your-own-product/${productId}/${steps[idx].key}`, { replace: true });
+      }
+    } else {
+      console.warn('[Stepper] No matching step title found for CreationStatus:', product.CreationStatus);
+    }
+  }, [productId, product?._id, loading]);
+
+  useEffect(() => {
+    if (!productId || !stepKey || loading) return;
+    const index = steps.findIndex((s) => s.key === stepKey);
+    if (index !== -1) {
+      dispatch(setCurrentStepIndex({ productId, stepIndex: index }));
+    }
+  }, [dispatch, stepKey, loading, productId]);
+
+  useEffect(() => {
+    if (safeStepIndex === undefined || !productId || !product) return;
+    const serverStepIndex = steps.findIndex((s) => s.title === product.CreationStatus);
+    if (safeStepIndex > serverStepIndex) {
+      dispatch(updateProductStep({ productId, stepNumber: safeStepIndex + 1 }));
+    }
+  }, [safeStepIndex, dispatch, product, productId]);
+
+  useEffect(() => {
+    setCanGoNext(false);
+  }, [currentStepIndex]);
+
   if (!isValid) {
     console.error(stepperError, { steps });
     return (
@@ -38,184 +91,73 @@ const GenericStepper: React.FC<Partial<GenericStepperProps>> = ({ steps = stepsC
       </div>
     );
   }
-
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { stepKey } = useParams<{ stepKey: string }>();
-
-  const { currentStepIndex, completedSteps, product, loading, error } = useAppSelector(
-    (state) => state.stepper
-  );
-  const userId = useAppSelector((state) => state.user?.id);
-
-
-  
-  useEffect(() => {
-    if (!product || !product.CreationStatus) return;
-    const idx = steps.findIndex(s => s.title === product.CreationStatus);
-
-    if (idx >= 0) {
-      const completedArr = steps.map((_, i) => i < idx);
-
-      dispatch({ type: 'stepper/setCompletedSteps', payload: completedArr });
-      dispatch(setCurrentStepIndex(idx));
-
-      if (stepKey !== steps[idx].key) {
-        navigate(`/create-your-own-product/${steps[idx].key}`, { replace: true });
-      }
-    } else {
-      console.warn('[Stepper] No matching step title found for CreationStatus:', product.CreationStatus);
-    }
-  }, [product?._id]);
-
-
-  const [showFinalPopup, setShowFinalPopup] = useState(false);
-
-  const { loading: initLoading, createNewProduct } = useInitProduct();
-
-
-
-  useEffect(() => {
-    if (!stepKey || loading) return;
-    const index = steps.findIndex((s) => s.key === stepKey);
-    if (index !== -1) {
-      dispatch(setCurrentStepIndex(index));
-    }
-  }, [dispatch, stepKey, loading]);
-
-
-  useEffect(() => {
-    if (currentStepIndex === null) return;
-
-    const key = getUserProductKey(userId);
-    const productId = localStorage.getItem(key);
-    if (!productId || !product) {
-      return;
-    }
-
-    const serverStepIndex = steps.findIndex(
-      (s) => s.title === product.CreationStatus
-    );
-
-    if (currentStepIndex > serverStepIndex) {
-      console.log('[Stepper] Advancing product step on server', {
-        productId,
-        from: serverStepIndex,
-        to: currentStepIndex,
-      });
-      dispatch(updateProductStep({
-        productId,
-        stepNumber: currentStepIndex + 1
-      }));
-    } else {
-    }
-  }, [currentStepIndex, dispatch, product]);
-
-
-  const [canGoNext, setCanGoNext] = useState(false);
-
-  useEffect(() => {
-    setCanGoNext(false);
-  }, [currentStepIndex]);
-
-  const CurrentStepComponent = currentStepIndex !== null ? steps[currentStepIndex]?.component : null;
-
-  const validateCurrentStep = async () => {
-    if (currentStepIndex === null) return false;
-    const validateStepFn = steps[currentStepIndex]?.validateStep;
-    if (validateStepFn) {
-      try {
-        const valid = await validateStepFn();
-        return !!valid;
-      } catch {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const getCurrentProductId = () => {
-    let productId: string | undefined;
-    productId = product?._id;
-    return productId;
-  };
-
-
-  const updateStepOnServer = (stepIndex: number) => {
-    if (typeof stepIndex === 'number' && stepIndex > 0) {
-      dispatch(markStepCompleted(stepIndex - 1));
-    }
-  };
+  if (!productId || loading || !product) {
+    return <ProgressSpinner />;
+  }
 
   const navigateToNextStep = () => {
-    if (typeof currentStepIndex !== 'number') return;
-    if (currentStepIndex === steps.length - 1) {
+    if (safeStepIndex === undefined) return;
+    if (safeStepIndex === steps.length - 1) {
       setShowFinalPopup(true);
     } else {
-      const nextKey = steps[currentStepIndex + 1]?.key;
+      const nextKey = steps[safeStepIndex + 1]?.key;
       if (nextKey) {
-        navigate(`/create-your-own-product/${nextKey}`);
+        navigate(`/create-your-own-product/${productId}/${nextKey}`);
       } else {
         console.warn('[Stepper] No nextKey found, not navigating');
       }
     }
   };
 
-  const handleCompleteStep = useCallback(async () => {
-    if (typeof currentStepIndex !== 'number') return;
-    const valid = await validateCurrentStep();
-    if (!valid) {
-      window.alert('Please complete all required fields before continuing.');
-      return;
+  const updateStepOnServer = (stepIndex: number) => {
+    if (typeof stepIndex === 'number' && stepIndex > 0 && productId) {
+      dispatch(markStepCompleted({ productId, stepIndex: stepIndex - 1 }));
     }
-    const productId = getCurrentProductId();
+  };
+
+  const handleBack = () => {
+    if (safeStepIndex !== undefined && safeStepIndex > 0) {
+      const prevKey = steps[safeStepIndex - 1]?.key;
+      if (prevKey) {
+        navigate(`/create-your-own-product/${productId}/${prevKey}`);
+      }
+    }
+  };
+
+  const handleCompleteStep = async () => {
+    if (safeStepIndex === undefined) return;
     if (!productId) {
       console.warn('[Stepper] No productId, cannot complete step');
       return;
     }
-    updateStepOnServer(currentStepIndex);
+    updateStepOnServer(safeStepIndex);
     navigateToNextStep();
-  }, [currentStepIndex, dispatch, navigate, product?._id, userId]);
-
-
-  const handleBack = () => {
-    if (currentStepIndex !== null && currentStepIndex > 0) {
-      const prevKey = steps[currentStepIndex - 1]?.key;
-      if (prevKey) {
-        navigate(`/create-your-own-product/${prevKey}`);
-      }
-    }
   };
 
   const stepsModel = steps.map((step, index) => ({
     label: step.title,
     icon: completedSteps && completedSteps[index] ? 'pi pi-check' : undefined,
   }));
-  const isStepCompleted = currentStepIndex !== null ? completedSteps[currentStepIndex] : false;
+  const isStepCompleted = safeStepIndex !== undefined ? completedSteps?.[safeStepIndex] : false;
 
-  if (loading && product && product._id) {
-    return <ProgressSpinner />;
-  }
-  if (currentStepIndex === null) {
-    return <ProgressSpinner />;
-  }
+  const currentStepKey = safeStepIndex !== undefined ? steps[safeStepIndex]?.key : undefined;
 
 
-  const bidRequestId = product?._id;
   const baseStepProps = {
     product,
-    
+    productId,
     onComplete: () => setCanGoNext(true),
     setCanGoNext,
+    currentStepIndex: safeStepIndex, 
+    onNextStep: handleCompleteStep, 
   };
 
-let renderedStep = null;
-const currentStepKey = currentStepIndex !== null ? steps[currentStepIndex]?.key : undefined;
-if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
-  renderedStep = <CurrentStepComponent {...baseStepProps} bidRequestId={bidRequestId} />;
-} else if (CurrentStepComponent) {
-  renderedStep = <CurrentStepComponent {...baseStepProps} />;
-}
+  let renderedStep = null;
+  if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
+    renderedStep = <CurrentStepComponent {...baseStepProps} bidRequestId={product?._id} />;
+  } else if (CurrentStepComponent) {
+    renderedStep = <CurrentStepComponent {...baseStepProps} />;
+  }
 
   return (
     <div className="uniq-gradient-steps card max-w-5xl mx-auto p-8 shadow-2xl rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 border border-gray-200">
@@ -225,7 +167,7 @@ if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
 
       <Steps
         model={stepsModel}
-        activeIndex={currentStepIndex}
+        activeIndex={safeStepIndex}
         readOnly
         className="custom-steps mb-8 px-2"
         style={{ background: 'transparent', borderRadius: '1rem', boxShadow: 'none' }}
@@ -249,11 +191,11 @@ if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
         <Button
           label="Back"
           onClick={handleBack}
-          disabled={currentStepIndex === 0 || currentStepIndex === null}
+          disabled={safeStepIndex === undefined || safeStepIndex === 0}
           className="p-button-secondary px-6 py-2 rounded-lg text-base shadow-sm"
         />
         <Button
-          label={currentStepIndex === steps.length - 1 ? 'Finish' : 'Next'}
+          label={safeStepIndex === steps.length - 1 ? 'Finish' : 'Next'}
           onClick={handleCompleteStep}
           disabled={loading || !product || !product._id || !canGoNext}
           className="p-button-primary px-8 py-2 rounded-lg text-base font-semibold shadow-md bg-gradient-to-r from-primary to-blue-500 border-0"
@@ -263,11 +205,6 @@ if (CurrentStepComponent && currentStepKey === 'viewLiveBids') {
       <ProductCompletedDialog
         visible={showFinalPopup}
         onHide={() => setShowFinalPopup(false)}
-        onCreateNewProduct={async () => {
-          setShowFinalPopup(false);
-          await createNewProduct();
-        }}
-        loading={initLoading}
       />
     </div>
   );

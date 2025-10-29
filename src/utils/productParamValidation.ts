@@ -1,4 +1,5 @@
 import type { ProductParam } from "../features/product Idea & AI/slices/aiProductTypes";
+
 export function validateProductParams(params: ProductParam[]): { error?: string; paramId?: string } | null {
   for (const param of params) {
     if (param.requiredByAI && (param.value === undefined || param.value === null || param.value === "")) {

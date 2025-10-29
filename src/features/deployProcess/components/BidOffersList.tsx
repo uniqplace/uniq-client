@@ -6,6 +6,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBidOffersByRequest } from '../slices/BidOfferSlice';
+import { fetchBidRequestByProductId } from '../slices/stepperSlice';
 import type { RootState, AppDispatch } from '../../../store';
 import type { BidOffer } from '../../../types';
 import { Avatar } from 'primereact/avatar';
@@ -14,17 +15,30 @@ import NormalizedRating from '../../../components/shared/NormalizedRating';
 import { openDirectChat } from '../../chat/chatThunks';
 import { selectEnsuring } from '../../chat/chatSelectors';
 import { openPopup } from '../../chat/popupSlice';
+import { persistSelectedOffer } from '../../../utils/persistSelectedOffer';
 
 
 interface BidOffersListProps {
   bidRequestId: string;
   setCanGoNext?: (canGo: boolean) => void;
 }
-const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNext }) => {
-  // Always allow next step (for now)
+const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId: initialBidRequestId, setCanGoNext }) => {
+  const [bidRequestId, setBidRequestId] = useState<string>(initialBidRequestId);
+  const productId = initialBidRequestId; // assume initialBidRequestId is productId if bidRequestId is missing
+
+  // Manufacturer selection state
+  const [isSelectingManufacturer, setIsSelectingManufacturer] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (setCanGoNext) setCanGoNext(true);
-  }, [setCanGoNext]);
+    if (setCanGoNext) {
+      if (isSelectingManufacturer) {
+        setCanGoNext(!!selectedOfferId);
+      } else {
+        setCanGoNext(false);
+      }
+    }
+  }, [isSelectingManufacturer, selectedOfferId, setCanGoNext]);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [sortOption, setSortOption] = useState<'date' | 'price' | 'rating'>('date');
@@ -33,26 +47,42 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   const error = useSelector((state: RootState) => state.bidOffer.error);
   const ensuring = useSelector(selectEnsuring);
 
-  // Manufacturer selection state
-  const [isSelectingManufacturer, setIsSelectingManufacturer] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+
   const sortOptions = [
     { label: 'By Price', value: 'price' },
     { label: 'By Rating', value: 'rating' },
     { label: 'By Date', value: 'date' }
   ];
+
+  // Fetch bidRequestId by productId if needed
   useEffect(() => {
-    if (bidRequestId) {
-      const sortParam = sortOption !== 'date' ? sortOption : undefined;
-      dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
+    if (!bidRequestId && productId) {
+      dispatch(fetchBidRequestByProductId(productId)).then((action: any) => {
+        if (action.payload && action.payload._id) {
+          setBidRequestId(action.payload._id);
+        }
+      });
     }
+  }, [bidRequestId, productId, dispatch]);
+
+  useEffect(() => {
+    if (!bidRequestId || bidRequestId.length < 10) {
+      return;
+    }
+    const sortParam = sortOption !== 'date' ? sortOption : undefined;
+    dispatch(fetchBidOffersByRequest({ bidRequestId, sort: sortParam }));
   }, [dispatch, bidRequestId, sortOption]);
+
+
   // Row click behavior changes depending on selection mode
   const handleRowClick = (offer: BidOffer) => {
     if (isSelectingManufacturer) {
-      // Always pass string or null, never undefined
       if (offer._id) {
-        setSelectedOfferId(offer._id === selectedOfferId ? null : offer._id);
+        const newSelectedOfferId = offer._id === selectedOfferId ? null : offer._id;
+        setSelectedOfferId(newSelectedOfferId);
+
+        // Use the utility function to persist the selected offer
+        persistSelectedOffer(newSelectedOfferId ? offer : null);
       } else {
         setSelectedOfferId(null);
       }
@@ -110,6 +140,11 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
   }
   return (
     <Card className="p-2 shadow-2 border-round">
+      {(!bidRequestId || bidRequestId.length < 10) && (
+        <div className="text-red-500 text-center py-5">
+          bidRequestId is missing or invalid: {String(bidRequestId)}
+        </div>
+      )}
       {offers && offers.length > 0 && <h1 className="text-xl font-bold mb-4">Bid Offers for Request #{offers[0]?.bidRequestId?.productId?.title}</h1>}
       <div className="flex justify-between align-items-center mb-3">
         <h2 className="text-2xl font-bold">Received Bids</h2>
@@ -295,9 +330,11 @@ const BidOffersList: React.FC<BidOffersListProps> = ({ bidRequestId, setCanGoNex
             onClick={() => {
               if (isSelectingManufacturer) {
                 setIsSelectingManufacturer(false);
-                setSelectedOfferId(null);
+                setSelectedOfferId(null); 
+                if (setCanGoNext) setCanGoNext(false); 
               } else {
                 setIsSelectingManufacturer(true);
+                if (setCanGoNext) setCanGoNext(false); 
               }
             }}
           />

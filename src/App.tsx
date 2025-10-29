@@ -102,6 +102,7 @@ function App() {
           <Route path="/uploadProduct" element={<ProductUploadForm />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/CreatorProductPage" element={<CreatorProductPage />} />
+          <Route path="/create-your-own-product/:productId/:stepKey/*" element={<CreateYourOwnProduct />} />
           <Route path="/create-your-own-product/*" element={<CreateYourOwnProduct />} />
           <Route path="/checkout/:productId" element={<CheckoutPage />} />
           <Route
@@ -126,6 +127,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/ai-product-debug" element={<AiProductDebugPanel />} />
 
             <Route path="/chat" element={<ThreadsStream />} />
 

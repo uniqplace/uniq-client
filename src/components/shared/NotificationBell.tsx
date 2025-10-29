@@ -45,7 +45,6 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   const user = useAppSelector((state: RootState) => state.user);
-  // Ref למיכל התראות (scroll container)
   const listRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   

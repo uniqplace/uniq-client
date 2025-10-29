@@ -1,62 +1,101 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import type { ProductParam } from "./aiProductTypes";
-import { validateProductParams } from '../../../utils/productParamValidation';
-function shapeDraftPayload(payload: { userText: string; locale?: any }, sessionId: string) {
-  return {
-    sessionId,
-    userPrompt: payload.userText,
-    locale: payload.locale,
-  };
-}
+import type { ProductPayload } from "./aiProductTypes";
 export const generateDraft = createAsyncThunk(
   "aiProduct/generateDraft",
-  async (payload: { userText: string; locale?: any }, thunkAPI) => {
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId;
-    const shapedPayload = shapeDraftPayload(payload, sessionId);
-    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/ai/spec/draft`, shapedPayload);
-    return res.data;
+  async (payload: { userPrompt: string; files: File[] }, thunkAPI) => {
+    try {
+      const state: any = thunkAPI.getState();
+      const sessionId = state.aiProduct?.sessionId;
+      const formData = new FormData();
+      if (payload.userPrompt) formData.append("userPrompt", payload.userPrompt);
+      payload.files.forEach((file) => formData.append("files", file));
+      formData.append("sessionId", sessionId);
+      const requestBody = {
+        userPrompt: payload.userPrompt,
+        sessionId,
+      };
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/ai/spec/draft`,
+        requestBody,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return res.data;
+    } catch (e) {
+      console.error("error in generateDraft", e);
+      return thunkAPI.rejectWithValue(e);
+    }
   }
 );
 export const refineSpec = createAsyncThunk(
   "aiProduct/refineSpec",
-  async (payload: { userInstruction: string; params: ProductParam[]; locale?: any }, thunkAPI) => {
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId;
-    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/ai/spec/refine`, {
-      sessionId,
-      ...payload,
-    });
-    return res.data;
-  }
-);
-export const validateSpec = createAsyncThunk(
-  "aiProduct/validateSpec",
-  async (params: ProductParam[], thunkAPI) => {
-    const validationError = validateProductParams(params);
-    if (validationError) {
-      return thunkAPI.rejectWithValue(validationError);
+  async (
+    payload: {
+      userPrompt: string;
+      productPayload: ProductPayload;
+      files?: File[];
+      forcedSkips?: string[];
+      forcedKeeps?: string[];
+    },
+    thunkAPI
+  ) => {
+    try {
+      const state: any = thunkAPI.getState();
+      const sessionId = state.aiProduct?.sessionId;
+      const formData = new FormData();
+      formData.append("userInstruction", payload.userPrompt);
+      formData.append("sessionId", sessionId);
+      formData.append("productPayload", JSON.stringify(payload.productPayload));
+      if (payload.files && payload.files.length > 0) {
+        payload.files.forEach((file) => {
+          formData.append("files", file);
+        });
+      }
+      const requestBody = {
+        sessionId,
+        userInstruction: payload.userPrompt,
+        params: payload.productPayload.params,
+        forcedSkips: payload.forcedSkips || [],
+        forcedKeeps: payload.forcedKeeps || [],
+        locale: payload.productPayload.locale,
+      };
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/ai/spec/refine`,
+        requestBody,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return res.data;
+    } catch (e) {
+      console.error("error in refineSpec", e);
+      return thunkAPI.rejectWithValue(e);
     }
-    // If all is valid – send to server
-    const state: any = thunkAPI.getState();
-    const sessionId = state.aiProduct?.sessionId;
-    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/product/validate`, {
-      sessionId,
-      params,
-    });
-    return res.data;
-  }
-);
+  });
 export const lockSpec = createAsyncThunk(
   "aiProduct/lockSpec",
-  async (payload: { productData: any }, thunkAPI) => {
+  async (
+    payload: { category: any; productPayload: ProductPayload; productData?: any },
+    thunkAPI
+  ) => {
     const state: any = thunkAPI.getState();
     const sessionId = state.aiProduct?.sessionId;
-    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/product/lock`, {
-      sessionId,
-      ...payload.productData,
-    });
+    const userId = state.auth?.userId;
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/ai/product/lock`,
+      {
+        userId,
+        sessionId,
+        ...payload,
+      },
+      {
+        withCredentials: true,
+      }
+    );
     return res.data;
   }
 );

@@ -1,19 +1,23 @@
 // import React, { createRef } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FinishStepButton from './finishStepButton';
 import ManufacturerPreferencesStep from '../ManufacturerPreferencesStep';
 // import type { ProductUploadFormHandle } from '../../../../features/marketplace/components/ProductUploadForm';
 import FakeUploadStep from '../FakeUploadStep';
 import BidOffersList from '../BidOffersList';
-import { useBidRequestId } from '../../../../hooks/useBidRequestId';
 import AuctionLoadingError from './AuctionLoadingError';
-import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
-import { useSelector } from 'react-redux';
+import { useAppSelector, useAppDispatch } from '../../../../hooks/hooks';
 import type { RootState } from '../../../../store';
+import { CheckoutPage } from '../../../order/components/Checkout/CheckoutPage';
+import type { BidOffer, Product } from '../../../../types';
+import { fetchBidRequestByProductId } from '../../slices/stepperSlice';
+import { loadPersistedBidOffer } from '../../slices/BidOfferSlice';
+
 
 export interface StepProps {
   onComplete: (data?: any) => void;
   setCanGoNext?: (val: boolean) => void;
+  productId?: string;
 }
 
 export interface StepDefinition {
@@ -25,64 +29,34 @@ export interface StepDefinition {
 
 // export const productFormRef = createRef<ProductUploadFormHandle>();
 
-export const OpenBidConfirmationStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
-  <div className="p-4 text-center">
-    <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
-      <span role="img" aria-label="auction">📤</span>
-      New Bid Process Opened
-    </h2>
-    <p className="text-gray-700 text-base mb-4">
-      A new auction has been opened for your product!<br />
-      Your product will now be sent to the most relevant manufacturers based on your preferences.<br />
-      You will receive an email notification for every offer submitted by a manufacturer.<br />
-      <span className="text-sm text-gray-500">Stay tuned and review offers as they arrive.</span>
-    </p>
-    <FinishStepButton onClick={() => {
-      onComplete();
-      setCanGoNext && setCanGoNext(true);
-    }} />
-  </div>
-);
 
 
-export const SelectManufacturerStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
-  <div className="p-4 text-center">
-    <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
-      <span role="img" aria-label="factory">🏭</span>
-      Choose Manufacturer
-    </h2>
-    <p className="text-gray-700 text-base mb-4">Pick the manufacturer that best fits your needs.</p>
-    <FinishStepButton onClick={() => {
-      onComplete();
-      setCanGoNext && setCanGoNext(true);
-    }} />
-  </div>
-);
+export const PaymentAndOrderStep: React.FC<StepProps> = ({ setCanGoNext }) => {
+  const dispatch = useAppDispatch();
 
-export const AgreementAndSummaryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) => (
-  <div className="p-4 text-center">
-    <h2 className="text-xl font-semibold mb-3 flex justify-center items-center gap-2">
-      <span role="img" aria-label="contract">📝</span>
-      Agreement & Summary
-    </h2>
-    <p className="text-gray-700 text-base mb-4">Review and approve the final production terms.</p>
-    <FinishStepButton onClick={() => {
-      onComplete();
-      setCanGoNext && setCanGoNext(true);
-    }} />
-  </div>
-);
+  useEffect(() => {
+    dispatch(loadPersistedBidOffer());
+  }, [dispatch]);
 
-export const PaymentAndOrderStep: React.FC<StepProps> = ({setCanGoNext }) => {
-  const stepper = useSelector((state: RootState) => state.stepper);
-  const bidOffers=useSelector((state: RootState)=> state.bidOffer.offers);
-  const selectedBidOffer=bidOffers.find(offer=>offer.manufacturerId==stepper.bidRequest?.selectedManufacturer)
-  const product=stepper.product;
-  const selectedManufacturer=stepper.bidRequest?.selectedManufacturer
+  const stepper = useAppSelector((state: RootState) => state.stepper);
+  const bidOffers = useAppSelector((state: RootState) => state.bidOffer.offers || []);
+  const productId = stepper.currentProductId;
+  const productStepper = productId ? stepper.productsInProgress[productId] : undefined;
+  const bidRequest = productStepper?.bidRequest;
+  const selectedManufacturer = bidRequest?.selectedManufacturer;
+  const product: Product | undefined = productStepper?.product ?? undefined;
+  const selectedBidOffer = bidOffers.find((offer: BidOffer) => selectedManufacturer && offer.manufacturerId?._id === selectedManufacturer._id) ||
+    useAppSelector((state: RootState) => state.bidOffer.currentBidOffer) ||
+    JSON.parse(localStorage.getItem('selectedBidOffer') || 'null');
   const [, setOrderSuccess] = useState(false);
+  useEffect(() => {
+    if (selectedBidOffer) {
+      dispatch({ type: 'bidOffer/setCurrentBidOffer', payload: selectedBidOffer });
+    }
+  }, [selectedBidOffer, dispatch]);
   return (
     <div className="p-4">
-      <CheckoutPage product={product} creator ={{_id:selectedManufacturer?._id||'' , name: selectedManufacturer?.name|| ''}} price={selectedBidOffer?.price } onOrderSuccess={() => {
+      <CheckoutPage product={product} creator={{ _id: product?.creator?._id || '', name: product?.creator?.name || '' }} price={selectedBidOffer?.price} onOrderSuccess={() => {
         setOrderSuccess(true);
         setCanGoNext && setCanGoNext(true);
       }} />
@@ -118,13 +92,24 @@ export const DeliveryStep: React.FC<StepProps> = ({ onComplete, setCanGoNext }) 
   </div>
 );
 
-const ViewLiveBidsStep: React.FC<StepProps> = (props) => {
-  const { bidRequestId, productId } = useBidRequestId();
+const ViewLiveBidsStep: React.FC<StepProps> = ({ productId, ...props }) => {
+  const dispatch = useAppDispatch();
+  const bidRequestId = useAppSelector(
+    (state: RootState) =>
+      productId
+        ? state.stepper.productsInProgress[productId]?.bidRequest?._id
+        : undefined
+  );
+
+  useEffect(() => {
+    if (productId && !bidRequestId) {
+      dispatch(fetchBidRequestByProductId(productId));
+    }
+  }, [productId, bidRequestId, dispatch]);
 
   if (!bidRequestId) {
-    return <AuctionLoadingError productId={productId} />;
+    return <AuctionLoadingError productId={productId || ''} />;
   }
-
   return <BidOffersList {...props} bidRequestId={bidRequestId} />;
 };
 
@@ -142,32 +127,14 @@ export const stepsConfig: StepDefinition[] = [
     validateStep: async () => true,
   },
   {
-    key: 'sendToMarketplace',
-    title: 'Send to Marketplace',
-    component: OpenBidConfirmationStep,
-    validateStep: () => Promise.resolve(true),
-  },
-  {
     key: 'viewLiveBids',
     title: 'View Live Bids',
     component: ViewLiveBidsStep,
     validateStep: () => Promise.resolve(true),
   },
   {
-    key: 'chooseManufacturer',
-    title: 'Choose Manufacturer',
-    component: SelectManufacturerStep,
-    validateStep: () => Promise.resolve(true),
-  },
-  {
-    key: 'agreement',
-    title: 'Agree to Terms',
-    component: AgreementAndSummaryStep,
-    validateStep: () => Promise.resolve(true),
-  },
-  {
-    key: 'payment',
-    title: 'Make Payment',
+    key: 'orderAndPayment',
+    title: 'Order & Payment',
     component: PaymentAndOrderStep,
     validateStep: () => Promise.resolve(true),
   },

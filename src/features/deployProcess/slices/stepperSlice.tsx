@@ -5,37 +5,51 @@ import axios from 'axios';
 
 import { stepsConfig } from '../components/Stepper/steps';
 import type { BidRequest, Product } from '../../../types';
+import { saveProductsInProgressToStorage, loadProductsInProgressFromStorage } from '../../../utils/stepperStorage';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-const LOCAL_STORAGE_KEYS = {
-  productId: 'productId',
-  currentStep: 'currentStep',
-  completedSteps: 'completedSteps',
-};
+// const LOCAL_STORAGE_KEYS = {
+//   productId: 'productId',
+//   currentStep: 'currentStep',
+//   completedSteps: 'completedSteps',
+// };
 
-interface StepperState {
+interface ProductStepperState {
+  product: Product | null;
   currentStepIndex: number | null;
   completedSteps: boolean[];
-  product?: Product;
   loading: boolean;
   error: string | null;
   bidRequest?: BidRequest | null;
 }
+
+interface StepperState {
+  productsInProgress: Record<string, ProductStepperState>;
+  currentProductId: string | null;
+}
+
+// --- initialState with localStorage ---
+const initialState: StepperState = {
+  productsInProgress: loadProductsInProgressFromStorage(),
+  currentProductId: null,
+};
 
 function getStepIndexByCreationStatus(creationStatus: string): number {
   const idx = stepsConfig.findIndex((step) => step.title === creationStatus);
   return idx >= 0 ? idx : 0;
 }
 
-const initialState: StepperState = {
-  currentStepIndex: null,
-  completedSteps: new Array(stepsConfig.length).fill(false),
-  product: undefined,
-  loading: false,
-  error: null,
-  bidRequest: null,
-};
+function extractProductId(val: any): string | undefined {
+  if (!val) return undefined;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    if ('_id' in val && typeof val._id === 'string') return val._id;
+    if ('$oid' in val) return val.$oid;
+    if ('_id' in val && typeof val._id === 'object' && '$oid' in val._id) return val._id.$oid;
+  }
+  return undefined;
+}
 
 // Thunk to save bidRequest to server
 export const saveBidRequest = createAsyncThunk(
@@ -62,7 +76,12 @@ export const fetchBidRequestByProductId = createAsyncThunk(
         `${apiBaseUrl}/bidRequests/product/${productId}`,
         { withCredentials: true }
       );
-      return response.data as BidRequest;
+      const State = thunkAPI.getState() as any;
+      const userId= State.user?.id;
+      const bidRequests = response.data.bidRequests || [];
+      const filtered = bidRequests.filter((br: any) => br.creatorId?._id === userId);
+      const sorted = filtered.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return sorted[0] || null;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -78,6 +97,8 @@ export const createProduct = createAsyncThunk<Product, Partial<Product>>(
         productData ?? {},
         { withCredentials: true }
       );
+
+
       return response.data as Product;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
@@ -99,7 +120,7 @@ export const fetchProductStatus = createAsyncThunk<Product, string>(
     }
   }
 );
-export const fetchProductByUserID = createAsyncThunk<Product, string>(
+export const fetchProductByUserID = createAsyncThunk<Product[], string>(
   'stepper/fetchProductByUserID',
   async (userId, thunkAPI) => {
     try {
@@ -107,7 +128,7 @@ export const fetchProductByUserID = createAsyncThunk<Product, string>(
         `${apiBaseUrl}/create-product/user/${userId}`,
         { withCredentials: true }
       );
-      return response.data as Product;
+      return response.data as Product[];
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -119,19 +140,19 @@ export const updateProductStep = createAsyncThunk<
   { productId: string; stepNumber: number }
 >(
   'stepper/updateProductStep',
-async ({ productId, stepNumber }, thunkAPI) => {
-  try {
-    const stepIndex = stepNumber - 1;
-    if (stepIndex < 0 || stepIndex >= stepsConfig.length) {
-      throw new Error(`Invalid stepNumber: ${stepNumber}`);
-    }
-    const stepName = stepsConfig[stepIndex].title;
+  async ({ productId, stepNumber }, thunkAPI) => {
+    try {
+      const stepIndex = stepNumber - 1;
+      if (stepIndex < 0 || stepIndex >= stepsConfig.length) {
+        throw new Error(`Invalid stepNumber: ${stepNumber}`);
+      }
+      const stepName = stepsConfig[stepIndex].title;
       const response = await axios.patch(
         `${apiBaseUrl}/create-product/${productId}/step-${stepNumber}`,
         { step: stepName },
         { withCredentials: true }
       );
-      
+
       return response.data as Product;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
@@ -160,156 +181,129 @@ const stepperSlice = createSlice({
   name: 'stepper',
   initialState,
   reducers: {
-    setCurrentStepIndex(state, action: PayloadAction<number>) {
-      
-      state.currentStepIndex = action.payload;
-      localStorage.setItem(LOCAL_STORAGE_KEYS.currentStep, action.payload.toString());
+    setCurrentProductId(state, action: PayloadAction<string | null>) {
+      state.currentProductId = action.payload;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
-    setCompletedSteps(state, action: PayloadAction<boolean[]>) {
-
-      state.completedSteps = action.payload;
-      localStorage.setItem(LOCAL_STORAGE_KEYS.completedSteps, JSON.stringify(action.payload));
+    setCurrentStepIndex(state, action: PayloadAction<{ productId: string; stepIndex: number }>) {
+      const { productId, stepIndex } = action.payload;
+      if (!state.productsInProgress[productId]) {
+        return;
+      }
+      state.productsInProgress[productId].currentStepIndex = stepIndex;
+      if (stepIndex > 0) {
+        state.productsInProgress[productId].completedSteps[stepIndex - 1] = true;
+      }
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
-    markStepCompleted(state, action: PayloadAction<number>) {
-      state.completedSteps[action.payload] = true;
-      localStorage.setItem(
-        LOCAL_STORAGE_KEYS.completedSteps,
-        JSON.stringify(state.completedSteps)
-      );
+    setCompletedSteps(state, action: PayloadAction<{ productId: string; completed: boolean[] }>) {
+      const { productId, completed } = action.payload;
+      if (!state.productsInProgress[productId]) return;
+      state.productsInProgress[productId].completedSteps = completed;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
-    restoreStepperState(state) {
-      const savedStep = localStorage.getItem(LOCAL_STORAGE_KEYS.currentStep);
-      const savedCompleted = localStorage.getItem(LOCAL_STORAGE_KEYS.completedSteps);
-      if (savedStep) state.currentStepIndex = parseInt(savedStep);
-      if (savedCompleted) state.completedSteps = JSON.parse(savedCompleted);
+    markStepCompleted(state, action: PayloadAction<{ productId: string; stepIndex: number }>) {
+      const { productId, stepIndex } = action.payload;
+      if (!state.productsInProgress[productId]) return;
+      state.productsInProgress[productId].completedSteps[stepIndex] = true;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
-    clearStepper(state) {
-      state.currentStepIndex = 0;
-      state.completedSteps = new Array(stepsConfig.length).fill(false);
-      state.product = undefined;
-      state.loading = false;
-      state.error = null;
-      state.bidRequest = null;
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.productId);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.currentStep);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.completedSteps);
-    },
-    setBidRequest(state, action: PayloadAction<BidRequest | null>) {
-      state.bidRequest = action.payload;
-    },
-    clearBidRequest(state) {
-      state.bidRequest = null;
+    clearStepper(state, action: PayloadAction<{ productId: string }>) {
+      const { productId } = action.payload;
+      delete state.productsInProgress[productId];
+      if (state.currentProductId === productId) state.currentProductId = null;
+      saveProductsInProgressToStorage(state.productsInProgress);
     },
   },
 
   extraReducers: (builder) => {
     builder
-      .addCase(saveBidRequest.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(saveBidRequest.pending, (state, action) => {
+        const productId = extractProductId(action.meta.arg.productId) || extractProductId(action.meta.arg._id) || state.currentProductId;
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod) { prod.loading = true; prod.error = null; }
       })
       .addCase(saveBidRequest.fulfilled, (state, action) => {
-        state.loading = false;
-        state.bidRequest = action.payload;
+        const productId = extractProductId(action.payload.productId) || state.currentProductId;
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod) { prod.loading = false; prod.bidRequest = action.payload; }
       })
       .addCase(saveBidRequest.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchOpenBidRequestsByProductId.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchOpenBidRequestsByProductId.fulfilled, (state, action) => {
-        state.loading = false;
-        state.bidRequest = action.payload;
-      })
-      .addCase(fetchOpenBidRequestsByProductId.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchBidRequestByProductId.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        const productId = extractProductId(action.meta.arg.productId) || extractProductId(action.meta.arg._id) || state.currentProductId;
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod) { prod.loading = false; prod.error = action.payload as string; }
       })
       .addCase(fetchBidRequestByProductId.fulfilled, (state, action) => {
-        state.loading = false;
-        state.bidRequest = action.payload;
-      })
-      .addCase(fetchBidRequestByProductId.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(createProduct.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        const productId = extractProductId(action.payload.productId) || state.currentProductId;
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod) { prod.bidRequest = action.payload; }
       })
       .addCase(createProduct.fulfilled, (state, action) => {
-        state.loading = false;
-        state.product = action.payload;
-        state.currentStepIndex = 0;
-        state.completedSteps = new Array(stepsConfig.length).fill(false);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.productId, action.payload._id);
-      })
-      .addCase(createProduct.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchProductStatus.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        const productId = extractProductId(action.payload._id) || state.currentProductId;
+        if (!productId) return;
+        state.productsInProgress[productId] = {
+          product: action.payload,
+          currentStepIndex: 0,
+          completedSteps: new Array(stepsConfig.length).fill(false),
+          loading: false,
+          error: null,
+          bidRequest: null,
+        };
+        state.currentProductId = productId;
       })
       .addCase(fetchProductStatus.fulfilled, (state, action) => {
-        state.loading = false;
-        state.product = action.payload;
-        const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
-        state.currentStepIndex = idx;
-        state.completedSteps = state.completedSteps.map((_, i) => i < idx);
-      })
-      .addCase(fetchProductByUserID.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchProductByUserID.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchProductByUserID.fulfilled, (state, action) => {
-        state.loading = false;
-        state.product = action.payload;
-        const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
-        state.currentStepIndex = idx;
-        state.completedSteps = state.completedSteps.map((_, i) => i < idx);
-      })
-      .addCase(fetchProductStatus.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(updateProductStep.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateProductStep.fulfilled, (state, action) => {
-        state.loading = false;
-        state.product = action.payload;
-        const idx = getStepIndexByCreationStatus(action.payload.CreationStatus);
-        if (idx >= 0) {
-          state.currentStepIndex = idx;
-          state.completedSteps = state.completedSteps.map((_, i) => i < idx);
+        const productId = extractProductId(action.payload._id) || state.currentProductId || '';
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod && action.payload.CreationStatus) {
+          prod.product = action.payload;
+          prod.currentStepIndex = getStepIndexByCreationStatus(action.payload.CreationStatus);
         }
       })
-      .addCase(updateProductStep.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      .addCase(fetchProductByUserID.fulfilled, (state, action) => {
+        (action.payload as Product[]).forEach((product: Product) => {
+          const productId = extractProductId(product._id);
+          if (!productId) return;
+          state.productsInProgress[productId] = {
+            product,
+            currentStepIndex: 0,
+            completedSteps: new Array(stepsConfig.length).fill(false),
+            loading: false,
+            error: null,
+            bidRequest: null,
+          };
+        });
+      })
+      .addCase(updateProductStep.fulfilled, (state, action) => {
+        const productId = extractProductId(action.payload._id) || state.currentProductId;
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod && action.payload.CreationStatus) {
+          prod.product = action.payload;
+          prod.currentStepIndex = getStepIndexByCreationStatus(action.payload.CreationStatus);
+        }
+      })
+      .addCase(fetchOpenBidRequestsByProductId.fulfilled, (state, action) => {
+        const productId = extractProductId(action.meta.arg) || state.currentProductId;
+        if (!productId) return;
+        const prod = state.productsInProgress[productId];
+        if (prod) { prod.bidRequest = action.payload; }
       });
   },
 });
 
 export const {
+  setCurrentProductId,
   setCurrentStepIndex,
+  setCompletedSteps,
   markStepCompleted,
-  restoreStepperState,
   clearStepper,
 } = stepperSlice.actions;
-export { getStepIndexByCreationStatus };
+
 export default stepperSlice.reducer;
+
+

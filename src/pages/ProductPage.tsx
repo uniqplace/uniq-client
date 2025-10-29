@@ -10,8 +10,6 @@ import type { RootState, AppDispatch } from '../store';
 import type { Product } from '../types';
 import UserCard from '../components/shared/UserCard';
 
-
-
 const ProductPage: React.FC = () => {
   const location = useLocation();
   const product = (location.state as { product?: Product })?.product;
@@ -22,7 +20,6 @@ const ProductPage: React.FC = () => {
   const { selectedProduct, productLoading, productError } = useSelector(
     (state: RootState) => state.marketplace
   );
-
 
   useEffect(() => {
     if (product) {
@@ -86,6 +83,7 @@ const ProductPage: React.FC = () => {
       </div>
     );
   }
+
   const handleBuyNow = () => {
     navigate(`/checkout/${currentProduct._id}`, { state: { product: currentProduct } });
   };
@@ -107,7 +105,12 @@ const ProductPage: React.FC = () => {
             </button>
             {currentProduct.creator && (
               <div className="w-full lg:w-auto m-0 p-0 box-border">
-                <UserCard user={currentProduct.creator} />
+                <UserCard user={{
+                  id: currentProduct.creator.id || currentProduct.creator._id || '',
+                  name: currentProduct.creator.name,
+                  email: currentProduct.creator.email || '',
+                  role: currentProduct.creator.role || 'creator',
+                }} />
               </div>
             )}
           </div>
@@ -157,7 +160,7 @@ const ProductPage: React.FC = () => {
               <RatingComponent 
                 itemId={currentProduct._id} 
                 itemType="product" 
-                ownerId={currentProduct.creator?.id || currentProduct.creator?._id} 
+                ownerId={currentProduct.creator.id || currentProduct.creator._id} 
               />
                 </div>
               </div>

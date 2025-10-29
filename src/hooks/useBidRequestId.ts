@@ -6,19 +6,30 @@ import { fetchOpenBidRequestsByProductId } from '../features/deployProcess/slice
 export function useBidRequestId() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.user);
-  const bidRequest = useAppSelector((state: RootState) => state.stepper.bidRequest);
+
+  const [productId, setProductId] = useState<string>(() => {
+    const keys = Object.keys(localStorage);
+    const productKey = keys.find(k => k.startsWith('productId_'));
+    if (productKey) {
+      return localStorage.getItem(productKey) || '';
+    }
+    return '';
+  });
+
+  const bidRequest = useAppSelector((state: RootState) => productId ? state.stepper.productsInProgress[productId]?.bidRequest : undefined);
+  const reduxProduct = useAppSelector((state: RootState) => productId ? state.stepper.productsInProgress[productId]?.product : undefined);
   const bidRequestId = bidRequest?._id || '';
-  const reduxProductId = useAppSelector((state: RootState) => state.stepper.product)?._id || '';
-  const [productId, setProductId] = useState<string>(reduxProductId);
 
   useEffect(() => {
-    if (!reduxProductId) {
-      const localProductId = localStorage.getItem(`productId_${user.id}`) || '';
-      setProductId(localProductId);
-    } else {
-      setProductId(reduxProductId);
+    const keys = Object.keys(localStorage);
+    const productKey = keys.find(k => k.startsWith('productId_'));
+    if (productKey) {
+      const localProductId = localStorage.getItem(productKey) || '';
+      if (localProductId && localProductId !== productId) {
+        setProductId(localProductId);
+      }
     }
-  }, [user.id, reduxProductId]);
+  }, [user.id]);
 
   useEffect(() => {
     if (!bidRequestId && productId) {
@@ -26,5 +37,5 @@ export function useBidRequestId() {
     }
   }, [bidRequestId, dispatch, productId]);
 
-  return { bidRequestId, productId };
+  return { bidRequestId, productId, reduxProduct, bidRequest };
 }

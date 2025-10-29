@@ -5,8 +5,9 @@ import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { useRef } from 'react';
 import { clearUser } from '../../features/user/slices/userSlice';
-import { clearStepper } from '../../features/deployProcess/slices/stepperSlice';
 import { api } from '../../services/api';
+import { resetProductState } from '../../features/product Idea & AI/slices/aiProductSlice';
+import { clearProductsInProgress } from '../../utils/productUtils';
 import type { RootState } from '../../store';
 import type { User } from '../../types';
 
@@ -27,10 +28,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
     // { icon: 'pi pi-home', label: 'Home', href: '/' },
     { icon: 'pi pi-star', label: 'Marketplace', href: '/marketplace' },
     { icon: 'pi pi-shopping-cart', label: 'Orders', href: '/account/orders' },
-    { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
+    // { icon: 'pi pi-plus', label: 'Create Product', href: '/create-your-own-product' },
     { icon: 'pi pi-info-circle', label: 'About', href: '/about' },
     { icon: 'pi pi-briefcase', label: 'My Bid Requests', href: '/MyBidRequest' },
-    { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' }, // Removed duplicate key
+    { icon: 'pi pi-users', label: 'Creator Marketplace', href: '/CreatorProductPage' },
+    { icon: 'pi pi-cog', label: 'AI Product Debug', href: '/ai-product-debug' },
     { icon: 'pi pi-comments', label: 'Chats', href: '/chat' },
   ];
 
@@ -38,6 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const authItems = !user?.id ? [
     { icon: 'pi pi-user-plus', label: 'Register', href: '/register' },
     { icon: 'pi pi-sign-in', label: 'Login', href: '/login' },
+    
   ] : [];
 
   const allMenuItems = [...menuItems, ...authItems];
@@ -45,9 +48,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) => {
   const handleLogout = async () => {
     await api.logoutApi();
     dispatch(clearUser());
-    dispatch(clearStepper());
-    localStorage.clear(); 
+    handleClearProducts();
+    dispatch(resetProductState());
+    localStorage.removeItem('aiProductState');
+    localStorage.clear();
     navigate('/login');
+  };
+
+  const handleClearProducts = () => {
+    clearProductsInProgress(dispatch);
   };
 
   const avatarMenuItems = [

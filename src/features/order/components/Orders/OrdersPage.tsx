@@ -1,4 +1,3 @@
-
 import { Message } from 'primereact/message';
 import { EmptyOrders } from './EmptyOrders';
 import { OrderDetailsModal } from './OrderDetailsModal';
@@ -48,7 +47,7 @@ export default function OrdersPage({
 
   if (!user?.id) return <Message severity="warn" text="The user is not logged in" />;
   if (isLoading) return <div className="flex justify-center mt-10"><ProgressSpinner /></div>;
-  if (error) return <Message severity="error" text="שגיאה בטעינת ההזמנות" />;
+  if (error) return <Message severity="error" text="Error loading orders" />;
   if (!orders || orders.length === 0) return <EmptyOrders />;
 
   const filteredOrders = orders.filter(order => {

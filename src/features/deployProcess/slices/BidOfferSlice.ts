@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { BidOffer } from "../../../types";
 import type { RootState } from "../../../store";
+import { toast } from 'react-toastify';
 
 export const fetchBidOfferById = createAsyncThunk(
   "BidOffer/fetchById",
@@ -27,7 +28,7 @@ export const fetchBidOffersByRequest = createAsyncThunk(
   ) => {
     try {
       const { bidRequestId, sort } = params;
-      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/by-bid-request/${bidRequestId}` +
+      const url = `${import.meta.env.VITE_API_BASE_URL}/bidOffers/MyBidOffers/${bidRequestId}` +
         (sort ? `?sort=${sort}` : '');
       const response = await axios.get(url, {
         withCredentials: true,
@@ -35,6 +36,7 @@ export const fetchBidOffersByRequest = createAsyncThunk(
       // The response is { success, data: [...] }
       return response.data.data || [];
     } catch (error: any) {
+      toast.error('[fetchBidOffersByRequest] Error occurred: ' + (error.response?.data?.message || error.message));
       return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch offers');
     }
   }
@@ -95,7 +97,17 @@ const bidOfferSlice = createSlice({
     },
     setCurrentBidOffer:(state,action)=>{
       state.currentBidOffer=action.payload;
-    }
+    },
+    persistSelectedBidOffer: (state, action) => {
+      state.currentBidOffer = action.payload;
+      localStorage.setItem('selectedBidOffer', JSON.stringify(action.payload));
+    },
+    loadPersistedBidOffer: (state) => {
+      const persistedOffer = localStorage.getItem('selectedBidOffer');
+      if (persistedOffer) {
+        state.currentBidOffer = JSON.parse(persistedOffer);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -158,6 +170,6 @@ const bidOfferSlice = createSlice({
   },
 });
 
-export const { resetBidOffer, setCurrentBidOffer } = bidOfferSlice.actions;
+export const { resetBidOffer, setCurrentBidOffer, persistSelectedBidOffer, loadPersistedBidOffer } = bidOfferSlice.actions;
 
 export default bidOfferSlice.reducer;

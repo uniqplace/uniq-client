@@ -16,7 +16,6 @@ const useSocketListeners = () => {
       const socket = initializeSocket();
       
       const handleBidSentConfirmation = (data: Notification) => {
-        console.log('Bid sent confirmation:', data);
         if (data.error) {
           toast(React.createElement(CustomToast, { icon: "❌", message: data.message, color: "#721c24", background: "#f8d7da" }), {
             style: { background: "#f8d7da", color: "#721c24" }
@@ -43,7 +42,6 @@ const useSocketListeners = () => {
         });
       };
       const handleGeneralNotification = (data: Notification) => {
-        console.log('General notification:', data);
         if (data.error) {
           toast(React.createElement(CustomToast, { icon: "⚠️", message: data.message, color: "#856404", background: "#fff3cd" }), {
             style: { background: "#fff3cd", color: "#856404" }
@@ -56,10 +54,8 @@ const useSocketListeners = () => {
       };
 
       const handleCONNECT =  () => {
-        console.log('Socket connected with ID:', socket.id);
         if (user?.id) {
           socket.emit(socket_events.register_user, { userId: user.id, role: user.role });
-          console.log('User registered to socket:', { userId: user.id, role: user.role });
         }
       };
 

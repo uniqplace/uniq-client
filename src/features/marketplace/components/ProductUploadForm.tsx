@@ -150,7 +150,6 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    console.log('Form data:', data);
     if (imageUrls.length === 0) {
       setImageError('You must upload at least one image');
       return;
