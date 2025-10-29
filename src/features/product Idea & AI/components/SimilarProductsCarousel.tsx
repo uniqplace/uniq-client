@@ -75,7 +75,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
         <p style={descriptionStyle as React.CSSProperties}> 
           {product.description}
         </p>
-        <div style={{ marginTop: "auto" }}> {/* דחיפת הכפתור לתחתית */}
+        <div style={{ marginTop: "auto" }}> {/* Push the button to the bottom */}
           <Button
             label="View Details"
             icon="pi pi-eye"
