@@ -52,7 +52,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
       >
         <div
           style={{
-            height: "100px", // 2. גובה קשיח וקטן יותר לתמונה
+            height: "100px", // Fixed and smaller height for the image
             backgroundColor: imageUrl ? undefined : "#f0f0f0",
             display: "flex",
             alignItems: "center",
@@ -64,7 +64,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
             <img
               src={imageUrl}
               alt={product.title}
-              // ודא שהתמונה ממלאת את השטח שיועד לה
+              // Make sure the image fills the allocated space
               style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
               onError={(e) => ((e.target as HTMLImageElement).src = "")}
             />
@@ -75,7 +75,7 @@ const SimilarProductsCarousel: React.FC<SimilarProductsCarouselProps> = ({ produ
         <p style={descriptionStyle as React.CSSProperties}> 
           {product.description}
         </p>
-        <div style={{ marginTop: "auto" }}> {/* דחיפת הכפתור לתחתית */}
+        <div style={{ marginTop: "auto" }}> {/* Push the button to the bottom */}
           <Button
             label="View Details"
             icon="pi pi-eye"
