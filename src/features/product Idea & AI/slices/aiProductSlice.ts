@@ -36,6 +36,7 @@ function getInitialProductState(): ProductPayload {
         tags: [],
         params: [],
         audit: [],
+        embedding: [],
         summary: undefined,
         aiVersion: undefined,
         createdByAI: true
@@ -58,6 +59,7 @@ const aiProductSlice = createSlice({
         action: "add_param",
         details: { id: action.payload.id },
       });
+      saveToLocalStorage(LOCAL_STORAGE_KEY, state);
     },
     updateParam(state, action: PayloadAction<{ id: string; value: any }>) {
       const param = state.params.find((p) => p.id === action.payload.id);
@@ -70,6 +72,7 @@ const aiProductSlice = createSlice({
           action: "update_param",
           details: { id: param.id, value: action.payload.value },
         });
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     skipParam(state, action: PayloadAction<{ id: string; reason?: string }>) {
@@ -87,6 +90,7 @@ const aiProductSlice = createSlice({
           action: "skip_param",
           details: { id: param.id },
         });
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       }
     },
     resetProductState(state) {
@@ -115,6 +119,7 @@ const aiProductSlice = createSlice({
         state.location = payload.location || "";
         state.tags = payload.tags || [];
         state.locale = payload.locale || undefined;
+        state.embedding = payload.embedding || [];
       })
       .addCase(refineSpec.pending, (state) => {
         state.status = "refining";
@@ -134,9 +139,11 @@ const aiProductSlice = createSlice({
         if (action.payload.location) state.location = action.payload.location;
         if (action.payload.tags) state.tags = action.payload.tags;
         if (action.payload.locale) state.locale = action.payload.locale;
+        if (action.payload.embedding) state.embedding = action.payload.embedding;
       })
       .addCase(lockSpec.fulfilled, (state) => {
         state.status = "locked";
+        saveToLocalStorage(LOCAL_STORAGE_KEY, state);
       });
   },
 });

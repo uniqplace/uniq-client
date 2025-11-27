@@ -3,7 +3,6 @@
 export type ParamStatus = "confirmed" | "missing" | "skipped";
 export type ParamSource = "ai" | "user";
 export type ParamType = "text" | "number" | "boolean" | "color" | "enum" | "file" | "date";
-
 export interface ProductParam {
   id: string;
   label: string;
@@ -22,7 +21,6 @@ export interface ProductParam {
   notes?: string;
   validation?: { valid: boolean; issues?: string[] };
 }
-
 export interface ProductSummary {
   requiredTotal: number;
   requiredConfirmed: number;
@@ -33,14 +31,12 @@ export interface ProductSummary {
   completenessScore: number;
   blocking: boolean;
 }
-
 export interface AuditEntry {
   at: string;
   actor: "user" | "system" | "ai";
   action: string;
   details?: any;
 }
-
 export interface ProductPayload {
   sessionId: string;
   title: string;
@@ -57,6 +53,7 @@ export interface ProductPayload {
   params: ProductParam[];
   summary?: ProductSummary;
   audit: AuditEntry[];
+  embedding: number[]; 
   locale?: { currency?: string; units?: "metric" | "imperial"; language?: string };
   error?: string;
   aiVersion?: string;

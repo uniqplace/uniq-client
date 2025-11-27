@@ -14,9 +14,9 @@ import { Message } from 'primereact/message';
 import { TreeSelect } from 'primereact/treeselect';
 import { useAddProductMutation, useUpdateProductMutation } from '../slices/productApiSlice';
 import { useGetCategoriesTreeQuery } from '../slices/categoriesApiSlice';
-import type { Product } from '../../../types';
 import { useDeleteImagesMutation } from '../../../api/apiSlice';
 import FilesUpload from '../../../components/shared/FilesUpload';
+import type { Category, Product, SubCategory } from '../../../types';
 
 interface ProductFormData {
   title: string;
@@ -28,6 +28,10 @@ interface ProductFormData {
   status: 'draft' | 'published' | 'hidden';
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
   location: string;
+}
+interface CategoryState {
+  checked: boolean;
+  partialChecked: boolean;
 }
 
 export interface ProductUploadFormProps {
@@ -80,6 +84,7 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
   const [imageError, setImageError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { data: categoriesTree, isLoading: loadingCategories, error: categoriesError } = useGetCategoriesTreeQuery();
+
   const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [deleteImages] = useDeleteImagesMutation();
@@ -151,29 +156,46 @@ const ProductUploadForm: React.FC<ProductUploadFormProps> = ({ product, onClose,
     }
 
     try {
-      const selectedCategories = Object.keys(data.categories || {});
-      // Send all as subCategories objects
-      const subCategories = selectedCategories.map(key => ({
-        _id: key.replace(/^sub_/, ''),
-        name: '',
-        type: 'subCategory',
-        category: '',
-      }));
+      console.log('data.categories:', data.categories);
 
-      // Build productData without categories
+      let category: Category | undefined = undefined;
+      let subCategories: SubCategory[] = [];
+
+      const entries = Object.entries(data.categories || {}) as unknown as [string, CategoryState][];
+      entries.forEach(([id, state]) => {
+        if (!state.checked && state.partialChecked) {
+          category = {
+           _id:id,
+           name:''
+          };
+        } else if (state.checked) {
+          subCategories.push({_id:id.replace(/^sub_/, ''),
+            name:'',
+            category:'',
+            type:'subCategory'
+           });
+        }
+      });
+
+      console.log('Parent category ID:', category);
+      console.log('Sub category IDs:', subCategories);
+
+
       const { categories, ...rest } = data;
       const productData = {
         ...rest,
         subCategories,
+        category,
         images: imageUrls,
       };
 
       if (product) {
         await updateProduct({ _id: product._id, ...productData }).unwrap();
       } else {
+        console.log('Creating product with data:', productData);
         await addProduct(productData).unwrap();
       }
-    
+
       onComplete?.();
       reset();
       setImages([]);

@@ -33,7 +33,6 @@ import MyOrdersWrapper from './features/order/components/Orders/MyOrdersWrapper'
 import { OpenBidPage } from './features/deployProcess/components/OpenBidPage';
 import BidOfferDetails from './features/deployProcess/components/BidOfferDetails';
 import { PrivateRoute } from './utils/PrivateRoute';
-import AiProductDebugPanel from './features/product Idea & AI/components/AiProductDebugPanel';
 // import ThreadsPage from './features/chat/pages/ThreadsPage';
 import ChatPage from './features/chat/pages/ChatPage';
 import { initChatSocketBridge } from './features/chat/socketBridge';
@@ -42,6 +41,7 @@ import ThreadsStream from './features/chat/pages/ThreadsStream';
 
 import CreatorProfilePage from './features/user/components/CreatorProfilePage';
 import ManufacturerProfilePage from './features/user/components/ManufacturerProfilePage';
+import AiProductDebugPanel from './features/product Idea & AI/components/AiProductDebugPanel';
 
 
 

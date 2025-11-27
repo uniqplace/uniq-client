@@ -19,6 +19,8 @@ import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { useGetAllCategoriesQuery, useGetSubCategoriesByCategoryQuery } from '../../marketplace/slices/categoriesApiSlice';
 import type { Category, SubCategory } from '../../../types';
+import { useCreateEmbeddingMutation, useGetSimilarProductsQuery } from "../../marketplace/slices/productApiSlice";
+import SimilarProductsCarousel from "./SimilarProductsCarousel";
 
 export default function AiProductDebugPanel() {
   const dispatch = useAppDispatch();
@@ -58,6 +60,32 @@ export default function AiProductDebugPanel() {
   const addParamRowRef = useRef<HTMLInputElement>(null);
   const [editProduct, setEditProduct] = useState<any>(null);
   const toast = useRef<Toast>(null);
+
+    const [embedding, setEmbedding] = useState<number[]>([]);
+  const [createEmbedding] = useCreateEmbeddingMutation()
+  const { data: products = [], isLoading } = useGetSimilarProductsQuery(
+    embedding,
+    {
+      skip: !embedding || embedding.length === 0,
+    }
+  );
+
+  useEffect(() => {
+    const lastMsg = messages[messages.length - 1];
+    if (
+      aiProduct &&
+      Array.isArray(aiProduct.params) &&
+      aiProduct.params.length > 0 &&
+      lastMsg &&
+      lastMsg.sender === "ai"
+    ) {
+      createEmbedding(aiProduct)
+        .unwrap()
+        .then((res) => setEmbedding(res))
+        .catch((err) => console.error("Error creating embedding:", err));
+    }
+    // eslint-disable-next-line
+  }, [JSON.stringify(aiProduct.params), messages]);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -153,6 +181,7 @@ export default function AiProductDebugPanel() {
   const isSaveDisabled = missingFields.length > 0;
 
   return (
+    <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
       {/* Chat Section */}
       <div className="flex flex-col h-[600px] border rounded-2xl bg-white shadow-sm">
@@ -614,6 +643,10 @@ export default function AiProductDebugPanel() {
         <Toast ref={toast} />
       </div>
     </div>
+      {!isLoading && products.length > 0 && (
+        <SimilarProductsCarousel products={products} />
+      )}
+      </>
   );
 }
 

@@ -132,6 +132,7 @@ export interface BidManufacturer {
 }
 
 // Bid Request
+
 export interface BidRequest {
   _id: string;
   creatorId: string | User; // Creator ID or User object
