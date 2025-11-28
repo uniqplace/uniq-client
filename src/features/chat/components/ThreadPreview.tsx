@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useStreamClient } from '../components/ChatProvider';
+import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
 import ContextTags from './ContextTags';
 import type { Thread } from '../chatTypes';
+import { useStreamClient } from './ChatProvider';
 
 export interface ThreadPreviewProps {
   thread: Thread;
@@ -21,12 +22,22 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
   const [lastMessage, setLastMessage] = useState<any>(null);
   const [isArchived, setIsArchived] = useState(false);
 
+  const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
     let isMounted = true;
     async function loadChannel() {
       if (chatClient && thread.streamCid) {
         const [type, id] = thread.streamCid.split(":");
         const ch = chatClient.channel(type, id);
+        // Permission check: is current user a member?
+        const members = ch.state?.members ? Object.keys(ch.state.members) : [];
+        if (myId && !members.includes(myId)) {
+          if (isMounted) {
+            setError('You do not have permission to view this chat');
+            setLoading(false);
+          }
+          return;
+        }
         try {
           await ch.watch();
           if (isMounted) {
@@ -40,7 +51,7 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
           }
         } catch (err) {
           if (isMounted) {
-            setError('שגיאה בטעינת ערוץ הצ׳אט');
+            setError('Error loading chat channel');
             setLoading(false);
           }
         }
@@ -48,7 +59,7 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
     }
     loadChannel();
     return () => { isMounted = false; };
-  }, [chatClient, thread.streamCid]);
+  }, [chatClient, thread.streamCid, reloadKey]);
 
   // Listen for real-time events
   useEffect(() => {
@@ -89,15 +100,25 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
 
   return (
     <div
-      className={`p-3 border-b flex flex-col gap-1 ${isActive ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
+      className={`p-3 border-b border-gray-100 group cursor-pointer ${isActive ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
       onClick={onSelect}
       style={{ cursor: 'pointer' }}
     >
-      {/* מציג הודעת שגיאה אם יש */}
       {error ? (
-        <div className="text-xs text-red-500">{error}</div>
+        <div className="flex flex-col items-start gap-2">
+          <div className="text-xs text-red-500">{error}</div>
+          <button
+            className="px-2 py-1 bg-blue-500 text-white text-xs rounded"
+            onClick={e => {
+              e.stopPropagation();
+              setLoading(true);
+              setError(null);
+              setReloadKey(k => k + 1);
+            }}
+          >נסה שוב</button>
+        </div>
       ) : loading ? (
-        <div className="text-xs text-gray-400">טוען נתוני …</div>
+        <div className="text-xs text-gray-400">Loading data…</div>
       ) : (
         <>
           <div className="flex gap-3 items-center">
@@ -146,12 +167,22 @@ export default function ThreadPreview({ thread, isActive, onSelect, onOpenPopup 
               </div>
             </div>
           </div>
-          {/* מידע נוסף מה-context */}
+          {/* Additional info from context */}
           <div className="flex flex-col min-w-0 mt-1">
+            {/* Date at top right */}
+            {lastMessage?.created_at && (
+              <div className="flex justify-end mb-1">
+                <span className="text-xs text-gray-400" title={format(new Date(lastMessage.created_at), 'dd/MM/yyyy HH:mm')}>
+                  {differenceInDays(new Date(), new Date(lastMessage.created_at)) < 1
+                    ? formatDistanceToNow(new Date(lastMessage.created_at), { addSuffix: true })
+                    : format(new Date(lastMessage.created_at), 'dd/MM/yyyy HH:mm')}
+                </span>
+              </div>
+            )}
             <ContextTags context={thread.context ?? null} />
             <button
               type="button"
-              title="פתח חלון  קטן"
+              title="Open chat in popup"
               onClick={e => {
                 e.stopPropagation();
                 if (onOpenPopup) onOpenPopup();

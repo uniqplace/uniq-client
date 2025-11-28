@@ -13,6 +13,7 @@ import {
   CHAT_POPUP_MAX_WIDTH,
   CHAT_POPUP_MAX_HEIGHT,
 } from '../hooks/chatPopup.constants';
+import ChatProvider from './ChatProvider';
 
 export default function ChatPopup({ cid, onClose, size }: ChatPopupProps) {
   if (!cid) return null;
@@ -49,7 +50,9 @@ export default function ChatPopup({ cid, onClose, size }: ChatPopupProps) {
           >✕</button>
         </div>
         <div className="flex-1 min-h-0">
-          <ChatWindow cid={cid} />
+          <ChatProvider>
+            <ChatWindow cid={cid} />
+          </ChatProvider>
         </div>
       </div>
     </>

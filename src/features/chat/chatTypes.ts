@@ -76,6 +76,8 @@ export type Thread = {
   streamCid: string;
   lastMessageText?: string;
   lastMessageAt?: string;
+  lastMessageSender?: string;
+  unreadCount?: number;
   participants: Array<{ _id: string; name?: string; email?: string; avatarUrl?: string }>;
   peer?: { _id: string; name?: string; email?: string; avatarUrl?: string } | null;
   context?: ThreadContext;

@@ -40,7 +40,7 @@ const UserProfile = () => {
           {profile.role && (
             <Badge value={profile.role} className="bg-blue-100 text-blue-800" style={{ direction: 'rtl' }}></Badge>
           )}
-          {/* ניתן להוסיף כאן שדות נוספים אם קיימים ב-User */}
+          {/* You can add more fields here if they exist in User */}
         </div>
       </Card>
     </div>

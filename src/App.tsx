@@ -48,15 +48,16 @@ import ManufacturerProfilePage from './features/user/components/ManufacturerProf
 
 // UserProfile extracted to its own component
 import UserProfile from './components/shared/UserProfile';
+import useSocketListeners from './hooks/useSocketListeners';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user) as import('./features/user/slices/userSlice').UserState;
   const loading = useSelector((state: RootState) => state.user.loading);
   const [wasLoading, setWasLoading] = useState(false);
-
+  useSocketListeners();
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
@@ -88,7 +89,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NewHeader />
-      <ToastContainer position="top-right" autoClose={5000} style={{ marginTop: '56px' }} />
+
       <MainContent>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -139,6 +140,7 @@ function App() {
           <Route path="*" element={<div className="p-8 text-center">404 - Page Not Found</div>} />
         </Routes>
       </MainContent>
+      <ToastContainer position="top-right" newestOnTop />
     </div>
   );
 }

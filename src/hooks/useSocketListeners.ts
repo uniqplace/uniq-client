@@ -1,59 +1,54 @@
-import React from 'react';
-import { useEffect } from 'react';
+// hooks/useSocketListeners.ts
+import React, { useEffect } from 'react';
 import { disconnectSocket, getSocket, initializeSocket } from '../services/socket';
 import { socket_events } from '../constants/socketEvents';
 import { toast } from 'react-toastify';
 import CustomToast from '../components/shared/CustomToast';
 import { useAppSelector } from './hooks';
-import type { RootState } from '../store'; // Adjust the path if your store file is elsewhere
+import type { RootState } from '../store';
 import type { Notification } from '../types/notification';
 
 const useSocketListeners = () => {
+  const user = useAppSelector((state: RootState) => state.user);
 
-  const user= useAppSelector((state: RootState) => state.user);
- useEffect(() => {
+  useEffect(() => {
     if (user?.id && user?.email) {
       const socket = initializeSocket();
-      
+
+      const notify = (icon: string, message: string, color: string, background: string) => {
+        toast(React.createElement(CustomToast, { icon, message, color, background }), {
+          style: { background, color },
+        });
+      };
+
       const handleBidSentConfirmation = (data: Notification) => {
         if (data.error) {
-          toast(React.createElement(CustomToast, { icon: "❌", message: data.message, color: "#721c24", background: "#f8d7da" }), {
-            style: { background: "#f8d7da", color: "#721c24" }
-          });
+          notify('❌', data.message, '#721c24', '#f8d7da');
         } else {
-          toast(React.createElement(CustomToast, { icon: "✅", message: data.message, color: "#155724", background: "#d4edda" }), {
-            style: { background: "#d4edda", color: "#155724" }
-          });
+          notify('✅', data.message, '#155724', '#d4edda');
         }
       };
       const handleNewBid = (bidData: Notification) => {
-        toast(React.createElement(CustomToast, { icon: "📨", message: `New bid received: ${bidData.payload.message || 'No title'}`, color: "#0c5460", background: "#d1ecf1" }), {
-          style: { background: "#d1ecf1", color: "#0c5460" }
-        });
+        notify('📨', `New bid received: ${bidData.payload?.message || 'No title'}`, '#0c5460', '#d1ecf1');
       };
       const handleNewBidOffer = (offerData: Notification) => {
-        toast(React.createElement(CustomToast, { icon: "💼", message: `New bid offer: ${offerData.payload.message || 'No title'}`, color: "#0c5460", background: "#d1ecf1" }), {
-          style: { background: "#d1ecf1", color: "#0c5460" }
-        });
+        notify('💼', `New bid offer: ${offerData.payload?.message || 'No title'}`, '#0c5460', '#d1ecf1');
       };
       const handleNewOrder = (orderData: Notification) => {
-        toast(React.createElement(CustomToast, { icon: "🛒", message: `New order placed: ${orderData.payload.message || 'No title'}`, color: "#155724", background: "#d4edda" }), {
-          style: { background: "#d4edda", color: "#155724" }
-        });
+        notify('🛒', `New order placed: ${orderData.payload?.message || 'No title'}`, '#155724', '#d4edda');
       };
       const handleGeneralNotification = (data: Notification) => {
         if (data.error) {
-          toast(React.createElement(CustomToast, { icon: "⚠️", message: data.message, color: "#856404", background: "#fff3cd" }), {
-            style: { background: "#fff3cd", color: "#856404" }
-          });
+          notify('⚠️', data.message, '#856404', '#fff3cd');
         } else {
-          toast(React.createElement(CustomToast, { icon: "🔔", message: data.payload.message || 'Notification received', color: "#004085", background: "#cce5ff" }), {
-            style: { background: "#cce5ff", color: "#004085" }
-          });
+          notify('🔔', data.payload?.message || 'Notification received', '#004085', '#cce5ff');
         }
       };
+      const handleChatMessage = (chatData: any) => {
+        notify('💬', `New chat thread: ${chatData?.payload?.message || 'No message'}`, '#383d41', '#e2e3e5');
+      };
 
-      const handleCONNECT =  () => {
+      const handleCONNECT = () => {
         if (user?.id) {
           socket.emit(socket_events.register_user, { userId: user.id, role: user.role });
         }
@@ -64,6 +59,7 @@ const useSocketListeners = () => {
       socket.on(socket_events.general_notification, handleGeneralNotification);
       socket.on(socket_events.bid_sent_confirmation, handleBidSentConfirmation);
       socket.on(socket_events.new_order, handleNewOrder);
+      socket.on(socket_events.chat_new_thread, handleChatMessage);
       socket.on(socket_events.connect, handleCONNECT);
 
       return () => {
@@ -72,6 +68,7 @@ const useSocketListeners = () => {
         socket.off(socket_events.general_notification, handleGeneralNotification);
         socket.off(socket_events.bid_sent_confirmation, handleBidSentConfirmation);
         socket.off(socket_events.new_order, handleNewOrder);
+        socket.off(socket_events.chat_new_thread, handleChatMessage);
         socket.off(socket_events.connect, handleCONNECT);
       };
     } else {
@@ -79,12 +76,13 @@ const useSocketListeners = () => {
     }
   }, [user?.id, user?.email]);
 
-    useEffect(() => {
+   // User registration on secondary mount (if needed)  
+  useEffect(() => {
     if (user?.id) {
-      const socket = getSocket();
-      socket?.emit(socket_events.register_user, user.id);
+      const socket = getSocket() ?? initializeSocket();
+      socket.emit(socket_events.register_user, { userId: user.id, role: user.role });
     }
-  }, [user?.id]);
-}
+  }, [user?.id, user?.role]);
+};
 
-  export default useSocketListeners;
+export default useSocketListeners;
